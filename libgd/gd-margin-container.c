@@ -323,12 +323,6 @@ gd_margin_container_get_preferred_height_for_width (GtkWidget *widget,
                                           for_size, minimum_size, natural_size);
 }
 
-GdMarginContainer *
-gd_margin_container_new (void)
-{
-    return g_object_new (GD_TYPE_MARGIN_CONTAINER, NULL);
-}
-
 static void
 gd_margin_container_init (GdMarginContainer *self)
 {
@@ -376,4 +370,10 @@ gd_margin_container_class_init (GdMarginContainerClass *klass)
                                     "orientation");
 ;
   g_type_class_add_private (klass, sizeof (GdMarginContainerPrivate));
+}
+
+GdMarginContainer *
+gd_margin_container_new (void)
+{
+  return g_object_new (GD_TYPE_MARGIN_CONTAINER, NULL);
 }
