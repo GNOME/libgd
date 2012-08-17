@@ -15,6 +15,7 @@ AM_CPPFLAGS =					\
 noinst_LTLIBRARIES = libgd.la
 libgd_la_LIBADD = $(LIBGD_LIBS) $(LIBM)
 libgd_la_LDFLAGS = -static -avoid-version
+libgd_la_SOURCES = libgd/gd.h
 nodist_libgd_la_SOURCES =
 
 if LIBGD_GTK_HACKS
@@ -92,6 +93,7 @@ Gd_gir_INCLUDES = $(LIBGD_GIR_INCLUDES)
 Gd_gir_FILES = $(nodist_libgd_la_SOURCES)
 
 noinst_DATA += $(INTROSPECTION_GIRS)
+EXTRA_DIST += $(INTROSPECTION_GIRS)
 MAINTAINERCLEANFILES += $(INTROSPECTION_GIRS)
 endif
 
@@ -105,6 +107,7 @@ gd.vapi: Gd.gir
 		$<
 
 noinst_DATA += $(VAPIS)
+EXTRA_DIST += $(VAPIS)
 MAINTAINERCLEANFILES += $(VAPIS)
 endif
 
