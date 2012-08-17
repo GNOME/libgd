@@ -111,4 +111,4 @@ EXTRA_DIST += $(VAPIS)
 MAINTAINERCLEANFILES += $(VAPIS)
 endif
 
--include $(srcdir)/git.mk
+-include $(top_srcdir)/git.mk
