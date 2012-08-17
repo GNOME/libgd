@@ -17,6 +17,52 @@ libgd_la_LIBADD = $(LIBGD_LIBS) $(LIBM)
 libgd_la_LDFLAGS = -static -avoid-version
 nodist_libgd_la_SOURCES =
 
+if LIBGD_GTK_HACKS
+gtk_hacks_sources =                             \
+        libgd/gd-entry-focus-hack.c             \
+        libgd/gd-entry-focus-hack.h             \
+        $(NULL)
+
+nodist_libgd_la_SOURCES += $(gtk_hacks_sources)
+EXTRA_DIST += $(gtk_hacks_sources)
+endif
+
+if LIBGD_MAIN_ICON_VIEW
+main_icon_view_sources =			\
+	libgd/gd-main-icon-view.c		\
+	libgd/gd-main-icon-view.h		\
+	libgd/gd-main-view-generic.c            \
+	libgd/gd-main-view-generic.h            \
+	libgd/gd-toggle-pixbuf-renderer.c	\
+	libgd/gd-toggle-pixbuf-renderer.h	\
+	libgd/gd-two-lines-renderer.c		\
+	libgd/gd-two-lines-renderer.h		\
+	$(NULL)
+
+nodist_libgd_la_SOURCES += $(main_icon_view_sources)
+EXTRA_DIST += $(main_icon_view_sources)
+endif
+
+if LIBGD_MAIN_TOOLBAR
+main_toolbar_sources =				\
+	libgd/gd-main-toolbar.c			\
+	libgd/gd-main-toolbar.h			\
+	$(NULL)
+
+nodist_libgd_la_SOURCES += $(main_toolbar_sources)
+EXTRA_DIST += $(main_toolbar_sources)
+endif
+
+if LIBGD_MARGIN_CONTAINER
+margin_container_sources =			\
+	libgd/gd-margin-container.c		\
+	libgd/gd-margin-container.h		\
+	$(NULL)
+
+nodist_libgd_la_SOURCES += $(margin_container_sources)
+EXTRA_DIST += $(margin_container_sources)
+endif
+
 if LIBGD_TAGGED_ENTRY
 tagged_entry_sources =				\
 	libgd/gd-tagged-entry.c			\

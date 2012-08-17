@@ -25,6 +25,25 @@
 
 G_BEGIN_DECLS
 
+#ifdef LIBGD_GTK_HACKS
+# include <libgd/gd-entry-focus-hack.h>
+#endif
+
+#ifdef LIBGD_MAIN_ICON_VIEW
+# include <libgd/gd-main-icon-view.h>
+# include <libgd/gd-main-view-generic.h>
+# include <libgd/gd-toggle-pixbuf-renderer.h>
+# include <libgd/gd-two-lines-renderer.h>
+#endif
+
+#ifdef LIBGD_MAIN_TOOLBAR
+# include <libgd/gd-main-toolbar.h>
+#endif
+
+#ifdef LIBGD_MARGIN_CONTAINER
+# include <libgd/gd-margin-container.h>
+#endif
+
 #ifdef LIBGD_TAGGED_ENTRY
 # include <libgd/gd-tagged-entry.h>
 #endif

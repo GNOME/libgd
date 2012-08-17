@@ -42,6 +42,30 @@ AC_DEFUN([LIBGD_INIT], [
     LIBGD_GIR_INCLUDES="Gtk-3.0"
     LIBGD_SOURCES=""
 
+    # gtk-hacks: collection of Gtk+ hacks and workarounds
+    AM_CONDITIONAL([LIBGD_GTK_HACKS],[_LIBGD_IF_OPTION_SET([gtk-hacks],[true],[false])])
+    _LIBGD_IF_OPTION_SET([gtk-hacks],[
+        AC_DEFINE([LIBGD_GTK_HACKS], [1], [Description])
+    ])
+
+    # main-icon-view:
+    AM_CONDITIONAL([LIBGD_MAIN_ICON_VIEW],[_LIBGD_IF_OPTION_SET([main-icon-view],[true],[false])])
+    _LIBGD_IF_OPTION_SET([main-icon-view],[
+        AC_DEFINE([LIBGD_MAIN_ICON_VIEW], [1], [Description])
+    ])
+
+    # main-toolbar:
+    AM_CONDITIONAL([LIBGD_MAIN_TOOLBAR],[_LIBGD_IF_OPTION_SET([main-toolbar],[true],[false])])
+    _LIBGD_IF_OPTION_SET([main-toolbar],[
+        AC_DEFINE([LIBGD_MAIN_TOOLBAR], [1], [Description])
+    ])
+
+    # margin-container:
+    AM_CONDITIONAL([LIBGD_MARGIN_CONTAINER],[_LIBGD_IF_OPTION_SET([margin-container],[true],[false])])
+    _LIBGD_IF_OPTION_SET([margin-container],[
+        AC_DEFINE([LIBGD_MARGIN_CONTAINER], [1], [Description])
+    ])
+
     # tagged-entry: Gtk+ widget
     AM_CONDITIONAL([LIBGD_TAGGED_ENTRY],[_LIBGD_IF_OPTION_SET([tagged-entry],[true],[false])])
     _LIBGD_IF_OPTION_SET([tagged-entry],[
