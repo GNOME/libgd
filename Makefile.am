@@ -92,15 +92,15 @@ Gd_gir_SCANNERFLAGS =				\
 Gd_gir_INCLUDES = $(LIBGD_GIR_INCLUDES)
 Gd_gir_FILES = $(nodist_libgd_la_SOURCES)
 
-noinst_DATA += $(INTROSPECTION_GIRS)
-EXTRA_DIST += $(INTROSPECTION_GIRS)
-MAINTAINERCLEANFILES += $(INTROSPECTION_GIRS)
+noinst_DATA += $(srcdir)/Gd.gir
+EXTRA_DIST += $(srcdir)/Gd.gir
+MAINTAINERCLEANFILES += $(srcdir)/Gd.gir
 endif
 
 if LIBGD_VAPI
-VAPIS = gd.vapi
+VAPIS = $(srcdir)/gd.vapi
 
-gd.vapi: Gd.gir
+$(srcdir)/gd.vapi: $(srcdir)/Gd.gir
 	$(AM_V_GEN)$(VAPIGEN)			\
 		--library gd			\
 		--pkg gtk+-3.0			\
