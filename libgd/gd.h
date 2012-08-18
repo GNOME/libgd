@@ -20,12 +20,16 @@
 #ifndef __GD_H__
 #define __GD_H__
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include <glib-object.h>
-#include <config.h>
 
 G_BEGIN_DECLS
 
 #ifdef LIBGD_GTK_HACKS
+# include <libgd/gd-create-symbolic-icon.h>
 # include <libgd/gd-entry-focus-hack.h>
 #endif
 
