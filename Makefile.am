@@ -12,11 +12,20 @@ AM_CPPFLAGS =					\
         $(LIBGD_CFLAGS)				\
         $(NULL)
 
+if LIBGD_STATIC
 noinst_LTLIBRARIES = libgd.la
+else
+pkglib_LTLIBRARIES = libgd.la
+endif
+
 libgd_la_LIBADD = $(LIBGD_LIBS) $(LIBM)
-libgd_la_LDFLAGS = -static -avoid-version
+libgd_la_LDFLAGS = -avoid-version
 libgd_la_SOURCES = libgd/gd.h
 nodist_libgd_la_SOURCES =
+
+if LIBGD_STATIC
+libgd_la_LDFLAGS += -static
+endif
 
 if LIBGD_GTK_HACKS
 gtk_hacks_sources =                             \

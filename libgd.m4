@@ -42,6 +42,8 @@ AC_DEFUN([LIBGD_INIT], [
     LIBGD_GIR_INCLUDES="Gtk-3.0"
     LIBGD_SOURCES=""
 
+    AM_CONDITIONAL([LIBGD_STATIC],[_LIBGD_IF_OPTION_SET([static],[true],[false])])
+
     # gtk-hacks: collection of Gtk+ hacks and workarounds
     AM_CONDITIONAL([LIBGD_GTK_HACKS],[_LIBGD_IF_OPTION_SET([gtk-hacks],[true],[false])])
     _LIBGD_IF_OPTION_SET([gtk-hacks],[

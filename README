@@ -58,15 +58,13 @@ LIBGD_INIT options
 
 - margin-container
 
+- static
+
 - tagged-entry
 
 - vapi
 
 - gir
-
-- static: TODO
-
-- shared: TODO
 
 How to modify or add an API?
 ============================
@@ -79,3 +77,5 @@ TODO
 - add some form of build test
 - document: options, modification process
 - eventually add documentation generation
+- some licensing check
+- more modularity (not all in libgd.m4/Makefile.am)
