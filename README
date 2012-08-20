@@ -19,9 +19,38 @@ a specific development version.
 GObject Introspection based bindings generation such as Javascript or
 Vala are also supported.
 
+More Background
+---------------
+
 libgd originates from the GNOME Documents project (written by Cosimo
 Cecchi), which was one of the first application to follow the novel
 GNOME 3 application design.
+
+Since other applications have similar needs, it makes sense to try to
+reuse and improve the exisiting work. However, the design being not
+frozen, and the code being not yet mattured enough and proven, it is
+not possible for the developpers to guarantee API and propose the
+addition to the respective projects (Gtk+, or GLib for example).
+
+Traditionnally, this problem is solved by copying often outdated
+snippets of code around, hardly centralized (libegg).
+
+In the past, there used to be some common GNOME application libraries
+above Gtk+ which has been slowly deprecated in favour of Gtk+ (gnomeui
+and friends).
+
+All approaches have pros and cons. A configurable git submodule
+approach has the following advantages:
+
+- no direct code copying necessary because API/ABI breakage (history
+  is preserved etc..)
+- code is shared and maintained in a common project
+- you can stick to a particular upstream version, or branch off your
+  own version if needed (hopefully you find your way back upstream)
+- update the submodule version when your project is ready
+- the libgd options should help you to configure a library to suit
+  your needs, taking care of some of autofoo stuff for you
+
 
 Usage
 =====
@@ -79,3 +108,4 @@ TODO
 - eventually add documentation generation
 - some licensing check
 - more modularity (not all in libgd.m4/Makefile.am)
+- CSS styling and data: shared only with gnome-themes-standard?
