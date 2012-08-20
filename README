@@ -51,7 +51,6 @@ approach has the following advantages:
 - the libgd options should help you to configure a library to suit
   your needs, taking care of some of autofoo stuff for you
 
-
 Usage
 =====
 
@@ -75,6 +74,16 @@ In order to use libgd, an application using autotools needs to:
 5. from your program Makefile.am, you may now for example:
     - link with $(top_builddir)/libgd/libgd.la, and include
       <libgd/gd.h> (adjust your AM_CPPFLAGS as necessary)
+
+You may be interested to look at the commit switching GNOME Boxes from
+private libgd usage to the libgd submodule:
+
+http://git.gnome.org/browse/gnome-boxes/commit/?id=395652458d8b311a25ecb27cc42287602a122b1f
+
+Note for example that the submodule url is "../libgd", which is a
+better alternative for projects hosted on git.gnome.org. It will allow
+the submodule update to reuse the address and the credentials given to
+the toplevel project.
 
 LIBGD_INIT options
 ==================
