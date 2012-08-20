@@ -30,23 +30,26 @@ Since other applications have similar needs, it makes sense to try to
 reuse and improve the exisiting work. However, the design being not
 frozen, and the code being not yet mattured enough and proven, it is
 not possible for the developpers to guarantee API and propose the
-addition to the respective projects (Gtk+, or GLib for example).
+addition to the respective projects (Gtk+, or GLib for example) right
+now. Sharing the code allows to experiment, discuss and test together
+before proposing it upstream.
 
 Traditionnally, this problem is solved by copying often outdated
-snippets of code around, hardly centralized (libegg).
+snippets of code around (due to no API/ABI guaratee), often not
+centralized (libegg).
 
-In the past, there used to be some common GNOME application libraries
-above Gtk+ which has been slowly deprecated in favour of Gtk+ (gnomeui
-and friends).
+In the past, there used to be some common aging GNOME application
+libraries above Gtk+ which have been slowly deprecated in favour of
+Gtk+ (gnomeui and friends).
 
 All approaches have pros and cons. A configurable git submodule
-approach has the following advantages:
+has the following advantages:
 
 - no direct code copying necessary because API/ABI breakage (history
   is preserved etc..)
 - code is shared and maintained in a common project
 - you can stick to a particular upstream version, or branch off your
-  own version if needed (hopefully you find your way back upstream)
+  own version easily if needed (hopefully you find your way back upstream)
 - update the submodule version when your project is ready
 - the libgd options should help you to configure a library to suit
   your needs, taking care of some of autofoo stuff for you
