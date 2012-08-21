@@ -68,6 +68,12 @@ AC_DEFUN([LIBGD_INIT], [
         AC_DEFINE([LIBGD_MARGIN_CONTAINER], [1], [Description])
     ])
 
+    # notification:
+    AM_CONDITIONAL([LIBGD_NOTIFICATION],[_LIBGD_IF_OPTION_SET([notification],[true],[false])])
+    _LIBGD_IF_OPTION_SET([notification],[
+        AC_DEFINE([LIBGD_NOTIFICATION], [1], [Description])
+    ])
+
     # tagged-entry: Gtk+ widget
     AM_CONDITIONAL([LIBGD_TAGGED_ENTRY],[_LIBGD_IF_OPTION_SET([tagged-entry],[true],[false])])
     _LIBGD_IF_OPTION_SET([tagged-entry],[

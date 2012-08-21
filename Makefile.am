@@ -76,6 +76,16 @@ nodist_libgd_la_SOURCES += $(margin_container_sources)
 EXTRA_DIST += $(margin_container_sources)
 endif
 
+if LIBGD_NOTIFICATION
+notification_sources =				\
+	libgd/gd-notification.c			\
+	libgd/gd-notification.h			\
+	$(NULL)
+
+nodist_libgd_la_SOURCES += $(notification_sources)
+EXTRA_DIST += $(notification_sources)
+endif
+
 if LIBGD_TAGGED_ENTRY
 tagged_entry_sources =				\
 	libgd/gd-tagged-entry.c			\
