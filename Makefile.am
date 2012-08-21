@@ -40,20 +40,43 @@ nodist_libgd_la_SOURCES += $(gtk_hacks_sources)
 EXTRA_DIST += $(gtk_hacks_sources)
 endif
 
-if LIBGD_MAIN_ICON_VIEW
-main_icon_view_sources =			\
-	libgd/gd-main-icon-view.c		\
-	libgd/gd-main-icon-view.h		\
-	libgd/gd-main-view-generic.c            \
-	libgd/gd-main-view-generic.h            \
-	libgd/gd-toggle-pixbuf-renderer.c	\
-	libgd/gd-toggle-pixbuf-renderer.h	\
+view_common_sources =				\
+	libgd/gd-main-view-generic.c		\
+	libgd/gd-main-view-generic.h		\
 	libgd/gd-two-lines-renderer.c		\
 	libgd/gd-two-lines-renderer.h		\
 	$(NULL)
 
+if LIBGD_MAIN_ICON_VIEW
+main_icon_view_sources =			\
+	libgd/gd-main-icon-view.c		\
+	libgd/gd-main-icon-view.h		\
+	libgd/gd-toggle-pixbuf-renderer.c	\
+	libgd/gd-toggle-pixbuf-renderer.h	\
+	$(NULL)
+
 nodist_libgd_la_SOURCES += $(main_icon_view_sources)
 EXTRA_DIST += $(main_icon_view_sources)
+endif
+
+if LIBGD_MAIN_LIST_VIEW
+main_list_view_sources =			\
+	libgd/gd-main-list-view.c		\
+	libgd/gd-main-list-view.h		\
+	$(NULL)
+
+nodist_libgd_la_SOURCES += $(main_list_view_sources)
+EXTRA_DIST += $(main_list_view_sources)
+endif
+
+if !LIBGD_MAIN_ICON_VIEW
+  if LIBGD_MAIN_LIST_VIEW
+    nodist_libgd_la_SOURCES += $(view_common_sources)
+    EXTRA_DIST += $(view_common_sources)
+  endif
+else
+  nodist_libgd_la_SOURCES += $(view_common_sources)
+  EXTRA_DIST += $(view_common_sources)
 endif
 
 if LIBGD_MAIN_TOOLBAR
