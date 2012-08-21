@@ -62,6 +62,16 @@ AC_DEFUN([LIBGD_INIT], [
         AC_DEFINE([LIBGD_MAIN_LIST_VIEW], [1], [Description])
     ])
 
+    # main-view:
+    AM_CONDITIONAL([LIBGD_MAIN_VIEW],[_LIBGD_IF_OPTION_SET([main-view],[true],[false])])
+    AM_CONDITIONAL([LIBGD_MAIN_ICON_VIEW],[_LIBGD_IF_OPTION_SET([main-view],[true],[false])])
+    AM_CONDITIONAL([LIBGD_MAIN_LIST_VIEW],[_LIBGD_IF_OPTION_SET([main-view],[true],[false])])
+    _LIBGD_IF_OPTION_SET([main-view],[
+        AC_DEFINE([LIBGD_MAIN_ICON_VIEW], [1], [Description])
+        AC_DEFINE([LIBGD_MAIN_LIST_VIEW], [1], [Description])
+        AC_DEFINE([LIBGD_MAIN_VIEW], [1], [Description])
+    ])
+
     # main-toolbar:
     AM_CONDITIONAL([LIBGD_MAIN_TOOLBAR],[_LIBGD_IF_OPTION_SET([main-toolbar],[true],[false])])
     _LIBGD_IF_OPTION_SET([main-toolbar],[

@@ -70,13 +70,23 @@ EXTRA_DIST += $(main_list_view_sources)
 endif
 
 if !LIBGD_MAIN_ICON_VIEW
-  if LIBGD_MAIN_LIST_VIEW
-    nodist_libgd_la_SOURCES += $(view_common_sources)
-    EXTRA_DIST += $(view_common_sources)
-  endif
+if LIBGD_MAIN_LIST_VIEW
+nodist_libgd_la_SOURCES += $(view_common_sources)
+EXTRA_DIST += $(view_common_sources)
+endif
 else
-  nodist_libgd_la_SOURCES += $(view_common_sources)
-  EXTRA_DIST += $(view_common_sources)
+nodist_libgd_la_SOURCES += $(view_common_sources)
+EXTRA_DIST += $(view_common_sources)
+endif
+
+if LIBGD_MAIN_VIEW
+main_view_sources =				\
+	libgd/gd-main-view.c			\
+	libgd/gd-main-view.h			\
+	$(NULL)
+
+nodist_libgd_la_SOURCES += $(main_view_sources)
+EXTRA_DIST += $(main_view_sources)
 endif
 
 if LIBGD_MAIN_TOOLBAR
