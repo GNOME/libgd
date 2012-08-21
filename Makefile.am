@@ -1,4 +1,5 @@
 NULL =
+CLEANFILES =
 MAINTAINERCLEANFILES =
 EXTRA_DIST =
 noinst_DATA =
@@ -87,25 +88,29 @@ endif
 
 if LIBGD_GIR
 include $(INTROSPECTION_MAKEFILE)
-INTROSPECTION_GIRS = Gd.gir
+INTROSPECTION_GIRS = Gd-1.0.gir
 
-Gd.gir: libgd.la Makefile
-Gd_gir_NAMESPACE = Gd
-Gd_gir_VERSION = 1.0
-Gd_gir_LIBS = libgd.la
-Gd_gir_CFLAGS = $(AM_CPPFLAGS)
-Gd_gir_SCANNERFLAGS =				\
+Gd-1.0.gir: libgd.la Makefile
+Gd_1_0_gir_NAMESPACE = Gd
+Gd_1_0_gir_VERSION = 1.0
+Gd_1_0_gir_LIBS = libgd.la
+Gd_1_0_gir_CFLAGS = $(AM_CPPFLAGS)
+Gd_1_0_gir_SCANNERFLAGS =			\
        --warn-all				\
        --symbol-prefix=gd			\
        --identifier-prefix=Gd			\
         --c-include="libgd/gd.h"	        \
        $(NULL)
-Gd_gir_INCLUDES = $(LIBGD_GIR_INCLUDES)
-Gd_gir_FILES = $(nodist_libgd_la_SOURCES)
+Gd_1_0_gir_INCLUDES = $(LIBGD_GIR_INCLUDES)
+Gd_1_0_gir_FILES = $(nodist_libgd_la_SOURCES)
 
-noinst_DATA += $(srcdir)/Gd.gir
-EXTRA_DIST += $(srcdir)/Gd.gir
-MAINTAINERCLEANFILES += $(srcdir)/Gd.gir
+girdir= $(pkgdatadir)/gir-1.0
+typelibdir= $(pkglibdir)/girepository-1.0
+
+gir_DATA = $(INTROSPECTION_GIRS)
+typelib_DATA = $(gir_DATA:.gir=.typelib)
+
+CLEANFILES += $(gir_DATA) $(typelib_DATA)
 endif
 
 if LIBGD_VAPI
