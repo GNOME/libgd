@@ -158,11 +158,11 @@ endif
 endif
 
 if LIBGD_VAPI
-VAPIS = $(srcdir)/gd.vapi
+VAPIS = $(srcdir)/gd-1.0.vapi
 
-$(srcdir)/gd.vapi: $(srcdir)/Gd.gir
+$(srcdir)/gd-1.0.vapi: $(srcdir)/Gd-1.0.gir
 	$(AM_V_GEN)$(VAPIGEN)			\
-		--library gd			\
+		--library gd-1.0		\
 		--pkg gtk+-3.0			\
 		$<
 
