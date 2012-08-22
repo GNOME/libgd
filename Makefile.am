@@ -142,6 +142,11 @@ Gd_1_0_gir_SCANNERFLAGS =			\
 Gd_1_0_gir_INCLUDES = $(LIBGD_GIR_INCLUDES)
 Gd_1_0_gir_FILES = $(nodist_libgd_la_SOURCES)
 
+if LIBGD_STATIC
+noinst_DATA += $(srcdir)/Gd-1.0.gir
+EXTRA_DIST += $(srcdir)/Gd-1.0.gir
+MAINTAINERCLEANFILES += $(srcdir)/Gd-1.0.gir
+else
 girdir= $(pkgdatadir)/gir-1.0
 typelibdir= $(pkglibdir)/girepository-1.0
 
@@ -149,6 +154,7 @@ gir_DATA = $(INTROSPECTION_GIRS)
 typelib_DATA = $(gir_DATA:.gir=.typelib)
 
 CLEANFILES += $(gir_DATA) $(typelib_DATA)
+endif
 endif
 
 if LIBGD_VAPI
