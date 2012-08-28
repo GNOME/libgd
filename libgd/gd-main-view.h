@@ -82,6 +82,9 @@ GdMainViewType gd_main_view_get_selection_mode (GdMainView *self);
 
 GList * gd_main_view_get_selection (GdMainView *self);
 
+void gd_main_view_select_all (GdMainView *self);
+void gd_main_view_unselect_all (GdMainView *self);
+
 GtkTreeModel * gd_main_view_get_model (GdMainView *self);
 void gd_main_view_set_model (GdMainView *self,
                              GtkTreeModel *model);
