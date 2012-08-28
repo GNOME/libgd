@@ -74,6 +74,9 @@ void        gd_main_toolbar_set_labels (GdMainToolbar *self,
                                         const gchar *primary,
                                         const gchar *detail);
 
+void        gd_main_toolbar_set_labels_menu (GdMainToolbar *self,
+                                             GMenuModel    *menu);
+
 void        gd_main_toolbar_clear (GdMainToolbar *self);
 
 GtkWidget * gd_main_toolbar_add_button (GdMainToolbar *self,

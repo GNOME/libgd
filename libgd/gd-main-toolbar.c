@@ -42,8 +42,12 @@ struct _GdMainToolbarPrivate {
 
   GtkWidget *left_grid;
 
+  GtkWidget *labels_grid;
   GtkWidget *title_label;
   GtkWidget *detail_label;
+
+  GtkWidget *center_menu;
+  GtkWidget *center_menu_child;
 
   GtkWidget *right_grid;
 };
@@ -205,7 +209,7 @@ gd_main_toolbar_constructed (GObject *obj)
                              GTK_WIDGET (self->priv->center_group));
 
   /* centered label group */
-  grid = gtk_grid_new ();
+  self->priv->labels_grid = grid = gtk_grid_new ();
   gtk_widget_set_halign (grid, GTK_ALIGN_CENTER);
   gtk_widget_set_valign (grid, GTK_ALIGN_CENTER);
   gtk_grid_set_column_spacing (GTK_GRID (grid), 12);
@@ -348,6 +352,65 @@ add_button_internal (GdMainToolbar *self,
   gtk_widget_show_all (button);
 
   return button;
+}
+
+/**
+ * gd_main_toolbar_set_labels_menu:
+ * @self:
+ * @menu: (allow-none):
+ *
+ */
+void
+gd_main_toolbar_set_labels_menu (GdMainToolbar *self,
+                                 GMenuModel    *menu)
+{
+  GtkWidget *button, *grid, *w;
+
+  if (menu == NULL &&
+      ((gtk_widget_get_parent (self->priv->labels_grid) == GTK_WIDGET (self->priv->center_group)) ||
+       self->priv->center_menu_child == NULL))
+    return;
+
+  if (menu != NULL)
+    {
+      g_object_ref (self->priv->labels_grid);
+      gtk_container_remove (GTK_CONTAINER (self->priv->center_group),
+                            self->priv->labels_grid);
+
+      self->priv->center_menu_child = grid = gtk_grid_new ();
+      gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
+      gtk_container_add (GTK_CONTAINER (grid), self->priv->labels_grid);
+      g_object_unref (self->priv->labels_grid);
+
+      w = gtk_arrow_new (GTK_ARROW_DOWN, GTK_SHADOW_NONE);
+      gtk_container_add (GTK_CONTAINER (grid), w);
+
+      self->priv->center_menu = button = gtk_menu_button_new ();
+      gtk_style_context_add_class (gtk_widget_get_style_context (self->priv->center_menu),
+                                   "selection-menu");
+      gtk_widget_destroy (gtk_bin_get_child (GTK_BIN (button)));
+      gtk_widget_set_halign (button, GTK_ALIGN_CENTER);
+      gtk_menu_button_set_menu_model (GTK_MENU_BUTTON (button), menu);
+      gtk_container_add (GTK_CONTAINER (self->priv->center_menu), grid);
+
+      gtk_container_add (GTK_CONTAINER (self->priv->center_group), button);
+    }
+  else
+    {
+      g_object_ref (self->priv->labels_grid);
+      gtk_container_remove (GTK_CONTAINER (self->priv->center_menu_child),
+                            self->priv->labels_grid);
+      gtk_widget_destroy (self->priv->center_menu);
+
+      self->priv->center_menu = NULL;
+      self->priv->center_menu_child = NULL;
+
+      gtk_container_add (GTK_CONTAINER (self->priv->center_group),
+                         self->priv->labels_grid);
+      g_object_unref (self->priv->labels_grid);
+    }
+
+  gtk_widget_show_all (GTK_WIDGET (self->priv->center_group));
 }
 
 /**
