@@ -316,6 +316,89 @@ get_generic (GdMainView *self)
   return NULL;
 }
 
+static void
+selection_mode_do_select_range (GdMainView *self,
+                                GtkTreeIter *first_element,
+                                GtkTreeIter *last_element)
+{
+  GtkTreeIter iter;
+  GtkTreePath *path, *last_path;
+  gboolean equal;
+
+  last_path = gtk_tree_model_get_path (self->priv->model, last_element);
+  iter = *first_element;
+
+  do
+    {
+      gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
+                          GD_MAIN_COLUMN_SELECTED, TRUE,
+                          -1);
+
+      path = gtk_tree_model_get_path (self->priv->model, &iter);
+      equal = (gtk_tree_path_compare (path, last_path) == 0);
+      gtk_tree_path_free (path);
+
+      if (equal)
+        break;
+    }
+  while (gtk_tree_model_iter_next (self->priv->model, &iter));
+
+  gtk_tree_path_free (last_path);
+}
+
+static void
+selection_mode_select_range (GdMainView *self,
+                             GtkTreeIter *iter)
+{
+  GtkTreeIter other;
+  gboolean found = FALSE;
+  gboolean selected;
+
+  other = *iter;
+  while (gtk_tree_model_iter_previous (self->priv->model, &other))
+    {
+      gtk_tree_model_get (self->priv->model, &other,
+                          GD_MAIN_COLUMN_SELECTED, &selected,
+                          -1);
+
+      if (selected)
+        {
+          found = TRUE;
+          break;
+        }
+    }
+
+  if (found)
+    {
+      selection_mode_do_select_range (self, &other, iter);
+      return;
+    }
+
+  other = *iter;
+  while (gtk_tree_model_iter_next (self->priv->model, &other))
+    {
+      gtk_tree_model_get (self->priv->model, &other,
+                          GD_MAIN_COLUMN_SELECTED, &selected,
+                          -1);
+      if (selected)
+        {
+          found = TRUE;
+          break;
+        }
+    }
+
+  if (found)
+    {
+      selection_mode_do_select_range (self, iter, &other);
+      return;
+    }
+
+  /* no other selected element found, just select the iter */
+  gtk_list_store_set (GTK_LIST_STORE (self->priv->model), iter,
+                      GD_MAIN_COLUMN_SELECTED, TRUE,
+                      -1);
+}
+
 static gboolean
 on_button_release_selection_mode (GdMainView *self,
                                   GdkEventButton *event,
@@ -333,13 +416,20 @@ on_button_release_selection_mode (GdMainView *self,
                       -1);
 
   if (selected && !entered_mode)
-    gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
-                        GD_MAIN_COLUMN_SELECTED, FALSE,
-                        -1);
+    {
+      gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
+                          GD_MAIN_COLUMN_SELECTED, FALSE,
+                          -1);
+    }
   else if (!selected)
-    gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
-                        GD_MAIN_COLUMN_SELECTED, TRUE,
-                        -1);
+    {
+      if ((event->state & GDK_SHIFT_MASK) == 0)
+        gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
+                            GD_MAIN_COLUMN_SELECTED, TRUE,
+                            -1);
+      else
+        selection_mode_select_range (self, &iter);
+    }
 
   g_signal_emit (self, signals[VIEW_SELECTION_CHANGED], 0);
 
