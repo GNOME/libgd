@@ -94,6 +94,10 @@ GtkWidget * gd_main_toolbar_add_menu (GdMainToolbar *self,
                                       const gchar *label,
                                       gboolean pack_start);
 
+void        gd_main_toolbar_add_widget (GdMainToolbar *self,
+                                        GtkWidget *widget,
+                                        gboolean pack_start);
+
 G_END_DECLS
 
 #endif /* __GD_MAIN_TOOLBAR_H__ */

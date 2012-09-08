@@ -346,10 +346,7 @@ add_button_internal (GdMainToolbar *self,
       button = get_empty_button (type);
     }
 
-  if (pack_start)
-    gtk_container_add (GTK_CONTAINER (self->priv->left_grid), button);
-  else
-    gtk_container_add (GTK_CONTAINER (self->priv->right_grid), button);    
+  gd_main_toolbar_add_widget (self, button, pack_start);
 
   gtk_widget_show_all (button);
 
@@ -467,4 +464,22 @@ gd_main_toolbar_add_toggle (GdMainToolbar *self,
                             gboolean pack_start)
 {
   return add_button_internal (self, icon_name, label, pack_start, CHILD_TOGGLE);
+}
+
+/**
+ * gd_main_toolbar_add_widget:
+ * @self:
+ * @widget:
+ * @pack_start:
+ *
+ */
+void
+gd_main_toolbar_add_widget (GdMainToolbar *self,
+                            GtkWidget *widget,
+                            gboolean pack_start)
+{
+  if (pack_start)
+    gtk_container_add (GTK_CONTAINER (self->priv->left_grid), widget);
+  else
+    gtk_container_add (GTK_CONTAINER (self->priv->right_grid), widget);
 }
