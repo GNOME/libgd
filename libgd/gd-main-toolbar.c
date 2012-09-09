@@ -200,6 +200,7 @@ gd_main_toolbar_constructed (GObject *obj)
   self->priv->left_grid = gtk_grid_new ();
   gtk_grid_set_column_spacing (GTK_GRID (self->priv->left_grid), 12);
   gtk_container_add (GTK_CONTAINER (self->priv->left_group), self->priv->left_grid);
+  gtk_widget_set_halign (self->priv->left_grid, GTK_ALIGN_START);
 
   /* center section */
   self->priv->center_group = gtk_tool_item_new ();
@@ -234,6 +235,7 @@ gd_main_toolbar_constructed (GObject *obj)
   self->priv->right_grid = gtk_grid_new ();
   gtk_grid_set_column_spacing (GTK_GRID (self->priv->right_grid), 12);
   gtk_container_add (GTK_CONTAINER (self->priv->right_group), self->priv->right_grid);
+  gtk_widget_set_halign (self->priv->right_grid, GTK_ALIGN_END);
 
   self->priv->size_group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
   gtk_size_group_add_widget (self->priv->size_group, GTK_WIDGET (self->priv->left_group));
