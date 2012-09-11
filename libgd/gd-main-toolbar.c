@@ -221,6 +221,7 @@ gd_main_toolbar_constructed (GObject *obj)
   gtk_container_add (GTK_CONTAINER (grid), self->priv->title_label);
 
   self->priv->detail_label = gtk_label_new (NULL);
+  gtk_label_set_ellipsize (GTK_LABEL (self->priv->detail_label), PANGO_ELLIPSIZE_END);
   gtk_widget_set_no_show_all (self->priv->detail_label, TRUE);
   gtk_style_context_add_class (gtk_widget_get_style_context (self->priv->detail_label), "dim-label");
   gtk_container_add (GTK_CONTAINER (grid), self->priv->detail_label);
