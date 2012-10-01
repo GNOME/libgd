@@ -400,13 +400,15 @@ selection_mode_select_range (GdMainView *self,
 }
 
 static gboolean
-on_button_release_selection_mode (GdMainView *self,
-                                  GdkEventButton *event,
-                                  gboolean entered_mode,
-                                  GtkTreePath *path)
+toggle_selection_for_path (GdMainView *self,
+                           GtkTreePath *path,
+                           gboolean select_range)
 {
   gboolean selected;
   GtkTreeIter iter;
+
+  if (self->priv->model == NULL)
+    return FALSE;
 
   if (!gtk_tree_model_get_iter (self->priv->model, &iter, path))
     return FALSE;
@@ -415,7 +417,7 @@ on_button_release_selection_mode (GdMainView *self,
                       GD_MAIN_COLUMN_SELECTED, &selected,
                       -1);
 
-  if (selected && !entered_mode)
+  if (selected)
     {
       gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
                           GD_MAIN_COLUMN_SELECTED, FALSE,
@@ -423,12 +425,12 @@ on_button_release_selection_mode (GdMainView *self,
     }
   else if (!selected)
     {
-      if ((event->state & GDK_SHIFT_MASK) == 0)
+      if (select_range)
+        selection_mode_select_range (self, &iter);
+      else
         gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
                             GD_MAIN_COLUMN_SELECTED, TRUE,
                             -1);
-      else
-        selection_mode_select_range (self, &iter);
     }
 
   g_signal_emit (self, signals[VIEW_SELECTION_CHANGED], 0);
@@ -437,9 +439,8 @@ on_button_release_selection_mode (GdMainView *self,
 }
 
 static gboolean
-on_button_release_view_mode (GdMainView *self,
-                             GdkEventButton *event,
-                             GtkTreePath *path)
+activate_item_for_path (GdMainView *self,
+                        GtkTreePath *path)
 {
   GtkTreeIter iter;
   gchar *id;
@@ -461,6 +462,22 @@ on_button_release_view_mode (GdMainView *self,
 }
 
 static gboolean
+on_button_release_selection_mode (GdMainView *self,
+                                  GdkEventButton *event,
+                                  GtkTreePath *path)
+{
+  return toggle_selection_for_path (self, path, ((event->state & GDK_SHIFT_MASK) != 0));
+}
+
+static gboolean
+on_button_release_view_mode (GdMainView *self,
+                             GdkEventButton *event,
+                             GtkTreePath *path)
+{
+  return activate_item_for_path (self, path);
+}
+
+static gboolean
 on_button_release_event (GtkWidget *view,
                          GdkEventButton *event,
                          gpointer user_data)
@@ -469,7 +486,7 @@ on_button_release_event (GtkWidget *view,
   GdMainViewGeneric *generic = get_generic (self);
   GtkTreePath *path;
   gchar *button_release_item_path;
-  gboolean entered_mode = FALSE, selection_mode;
+  gboolean selection_mode;
   gboolean res, same_item = FALSE;
 
   /* eat double/triple click events */
@@ -505,12 +522,11 @@ on_button_release_event (GtkWidget *view,
         {
           g_signal_emit (self, signals[SELECTION_MODE_REQUEST], 0);
           selection_mode = TRUE;
-          entered_mode = TRUE;
         }
     }
 
   if (selection_mode)
-    res = on_button_release_selection_mode (self, event, entered_mode, path);
+    res = on_button_release_selection_mode (self, event, path);
   else
     res = on_button_release_view_mode (self, event, path);
 
@@ -617,6 +633,35 @@ on_drag_begin (GdMainViewGeneric *generic,
 }
 
 static void
+on_view_path_activated (GdMainView *self,
+                        GtkTreePath *path)
+{
+  if (self->priv->selection_mode)
+    toggle_selection_for_path (self, path, FALSE);
+  else
+    activate_item_for_path (self, path);
+}
+
+static void
+on_list_view_row_activated (GtkTreeView *tree_view,
+                            GtkTreePath *path,
+                            GtkTreeViewColumn *column,
+                            gpointer user_data)
+{
+  GdMainView *self = user_data;
+  on_view_path_activated (self, path);
+}
+
+static void
+on_icon_view_item_activated (GtkIconView *icon_view,
+                             GtkTreePath *path,
+                             gpointer user_data)
+{
+  GdMainView *self = user_data;
+  on_view_path_activated (self, path);
+}
+
+static void
 gd_main_view_apply_model (GdMainView *self)
 {
   GdMainViewGeneric *generic = get_generic (self);
@@ -644,9 +689,17 @@ gd_main_view_rebuild (GdMainView *self)
     gtk_widget_destroy (self->priv->current_view);
 
   if (self->priv->current_type == GD_MAIN_VIEW_ICON)
-    self->priv->current_view = gd_main_icon_view_new ();
+    {
+      self->priv->current_view = gd_main_icon_view_new ();
+      g_signal_connect (self->priv->current_view, "item-activated",
+                        G_CALLBACK (on_icon_view_item_activated), self);
+    }
   else
-    self->priv->current_view = gd_main_list_view_new ();
+    {
+      self->priv->current_view = gd_main_list_view_new ();
+      g_signal_connect (self->priv->current_view, "row-activated",
+                        G_CALLBACK (on_list_view_row_activated), self);
+    }
 
   context = gtk_widget_get_style_context (self->priv->current_view);
   gtk_style_context_add_class (context, "content-view");
