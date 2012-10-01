@@ -32,8 +32,8 @@ if LIBGD_GTK_HACKS
 gtk_hacks_sources =                             \
         libgd/gd-entry-focus-hack.c             \
         libgd/gd-entry-focus-hack.h             \
-        libgd/gd-create-symbolic-icon.c         \
-        libgd/gd-create-symbolic-icon.h         \
+        libgd/gd-icon-utils.c		        \
+        libgd/gd-icon-utils.h			\
         $(NULL)
 
 nodist_libgd_la_SOURCES += $(gtk_hacks_sources)

@@ -29,7 +29,7 @@
 G_BEGIN_DECLS
 
 #ifdef LIBGD_GTK_HACKS
-# include <libgd/gd-create-symbolic-icon.h>
+# include <libgd/gd-icon-utils.h>
 # include <libgd/gd-entry-focus-hack.h>
 #endif
 
