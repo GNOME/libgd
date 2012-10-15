@@ -399,16 +399,40 @@ gd_two_lines_renderer_get_aligned_area (GtkCellRenderer      *cell,
                                         const GdkRectangle   *cell_area,
                                         GdkRectangle         *aligned_area)
 {
-  gint x_offset_1, x_offset_2, y_offset;
+  GdTwoLinesRenderer *self = GD_TWO_LINES_RENDERER (cell);
+  PangoLayout *layout_one, *layout_two;
+  gint x_offset, x_offset_1, x_offset_2, y_offset, xpad, ypad;
+  PangoRectangle layout_rect;
 
+  /* fetch common information */
+  gd_two_lines_renderer_prepare_layouts (self, widget, &layout_one, &layout_two);
   gd_two_lines_renderer_get_size (cell, widget,
-                                  NULL, NULL,
+                                  layout_one, layout_two,
                                   &aligned_area->width, &aligned_area->height,
-                                  cell_area, 
+                                  cell_area,
                                   &x_offset_1, &x_offset_2, &y_offset);
+  gtk_cell_renderer_get_padding (cell, &xpad, &ypad);
 
-  aligned_area->x = cell_area->x + MAX (x_offset_1, x_offset_2);
+  /* prepare and measure first layout */
+  pango_layout_set_width (layout_one,
+                          (cell_area->width - x_offset_1 - 2 * xpad) * PANGO_SCALE);
+  pango_layout_get_pixel_extents (layout_one, NULL, &layout_rect);
+  x_offset = x_offset_1 - layout_rect.x;
+
+  /* prepare and measure second layout */
+  if (layout_two != NULL)
+    {
+      pango_layout_set_width (layout_two,
+                              (cell_area->width - x_offset_2 - 2 * xpad) * PANGO_SCALE);
+      pango_layout_get_pixel_extents (layout_two, NULL, &layout_rect);
+      x_offset = MIN (x_offset, x_offset_2 - layout_rect.x);
+    }
+
+  aligned_area->x = cell_area->x + x_offset;
   aligned_area->y = cell_area->y;
+
+  g_clear_object (&layout_one);
+  g_clear_object (&layout_two);
 }
 
 static void
