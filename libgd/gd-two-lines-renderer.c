@@ -147,7 +147,7 @@ gd_two_lines_renderer_get_size (GtkCellRenderer *cell,
     {
       pango_layout_get_pixel_extents (layout_two, NULL, (PangoRectangle *) &layout_two_rect);
 
-      layout_union.width = MAX(layout_one_rect.width, layout_two_rect.width);
+      layout_union.width = MAX (layout_one_rect.width, layout_two_rect.width);
       layout_union.height = layout_one_rect.height + layout_two_rect.height;
     }
   else
