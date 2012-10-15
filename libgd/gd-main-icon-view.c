@@ -109,6 +109,7 @@ gd_main_icon_view_constructed (GObject *obj)
 
   cell = gd_two_lines_renderer_new ();
   g_object_set (cell,
+                "xalign", 0.5,
                 "alignment", PANGO_ALIGN_CENTER,
                 "wrap-mode", PANGO_WRAP_WORD_CHAR,
                 "wrap-width", VIEW_ITEM_WRAP_WIDTH,
