@@ -132,6 +132,54 @@ model_get_selection_uris (GtkTreeModel *model)
   return (gchar **) g_ptr_array_free (ptr_array, FALSE);
 }
 
+static gboolean
+set_selection_foreach (GtkTreeModel *model,
+                       GtkTreePath *path,
+                       GtkTreeIter *iter,
+                       gpointer user_data)
+{
+  gboolean selection = GPOINTER_TO_INT (user_data);
+
+  gtk_list_store_set (GTK_LIST_STORE (model), iter,
+                      GD_MAIN_COLUMN_SELECTED, selection,
+                      -1);
+
+  return FALSE;
+}
+
+static void
+set_all_selection (GdMainViewGeneric *self,
+                   GtkTreeModel *model,
+                   gboolean selection)
+{
+  GtkTreeModel *actual_model;
+
+  if (GTK_IS_TREE_MODEL_FILTER (model))
+    actual_model = gtk_tree_model_filter_get_model (model);
+  else
+    actual_model = model;
+
+  gtk_tree_model_foreach (actual_model,
+                          set_selection_foreach,
+                          GINT_TO_POINTER (selection));
+}
+
+void
+gd_main_view_generic_select_all (GdMainViewGeneric *self)
+{
+  GtkTreeModel *model = gd_main_view_generic_get_model (self);
+
+  set_all_selection (self, model, TRUE);
+}
+
+void
+gd_main_view_generic_unselect_all (GdMainViewGeneric *self)
+{
+  GtkTreeModel *model = gd_main_view_generic_get_model (self);
+
+  set_all_selection (self, model, FALSE);
+}
+
 void
 _gd_main_view_generic_dnd_common (GtkTreeModel *model,
                                   gboolean selection_mode,

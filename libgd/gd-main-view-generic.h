@@ -96,6 +96,8 @@ void gd_main_view_generic_set_selection_mode (GdMainViewGeneric *self,
 GtkTreePath * gd_main_view_generic_get_path_at_pos (GdMainViewGeneric *self,
                                                     gint x,
                                                     gint y);
+void gd_main_view_generic_select_all (GdMainViewGeneric *self);
+void gd_main_view_generic_unselect_all (GdMainViewGeneric *self);
 
 /* private */
 void _gd_main_view_generic_dnd_common (GtkTreeModel *model,

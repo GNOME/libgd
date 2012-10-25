@@ -849,39 +849,18 @@ gd_main_view_get_selection (GdMainView *self)
   return g_list_reverse (retval);
 }
 
-static gboolean
-set_selection_foreach (GtkTreeModel *model,
-                       GtkTreePath *path,
-                       GtkTreeIter *iter,
-                       gpointer user_data)
-{
-  gboolean selection = GPOINTER_TO_INT (user_data);
-
-  gtk_list_store_set (GTK_LIST_STORE (model), iter,
-                      GD_MAIN_COLUMN_SELECTED, selection,
-                      -1);
-
-  return FALSE;
-}
-
 void
 gd_main_view_select_all (GdMainView *self)
 {
-  gboolean selection = TRUE;
+  GdMainViewGeneric *generic = get_generic (self);
 
-  gtk_tree_model_foreach (self->priv->model,
-                          set_selection_foreach,
-                          GINT_TO_POINTER (selection));
-  g_signal_emit (self, signals[VIEW_SELECTION_CHANGED], 0);
+  gd_main_view_generic_select_all (generic);
 }
 
 void
 gd_main_view_unselect_all (GdMainView *self)
 {
-  gboolean selection = FALSE;
+  GdMainViewGeneric *generic = get_generic (self);
 
-  gtk_tree_model_foreach (self->priv->model,
-                          set_selection_foreach,
-                          GINT_TO_POINTER (selection));
-  g_signal_emit (self, signals[VIEW_SELECTION_CHANGED], 0);
+  gd_main_view_generic_unselect_all (generic);
 }
