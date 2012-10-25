@@ -21,13 +21,25 @@
 
 #include "gd-main-view-generic.h"
 
+enum {
+  VIEW_SELECTION_CHANGED,
+  NUM_SIGNALS
+};
+
+static guint signals[NUM_SIGNALS] = { 0, };
+
 typedef GdMainViewGenericIface GdMainViewGenericInterface;
 G_DEFINE_INTERFACE (GdMainViewGeneric, gd_main_view_generic, GTK_TYPE_WIDGET)
 
 static void
 gd_main_view_generic_default_init (GdMainViewGenericInterface *iface)
 {
-  /* nothing */
+  signals[VIEW_SELECTION_CHANGED] =
+    g_signal_new ("view-selection-changed",
+                  GD_TYPE_MAIN_VIEW_GENERIC,
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE, 0);
 }
 
 /**
@@ -162,6 +174,7 @@ set_all_selection (GdMainViewGeneric *self,
   gtk_tree_model_foreach (actual_model,
                           set_selection_foreach,
                           GINT_TO_POINTER (selection));
+  g_signal_emit (self, signals[VIEW_SELECTION_CHANGED], 0);
 }
 
 void

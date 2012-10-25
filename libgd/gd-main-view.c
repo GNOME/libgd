@@ -662,6 +662,15 @@ on_icon_view_item_activated (GtkIconView *icon_view,
 }
 
 static void
+on_view_selection_changed (GtkWidget *view,
+                           gpointer user_data)
+{
+  GdMainView *self = user_data;
+
+  g_signal_emit (self, signals[VIEW_SELECTION_CHANGED], 0);
+}
+
+static void
 gd_main_view_apply_model (GdMainView *self)
 {
   GdMainViewGeneric *generic = get_generic (self);
@@ -712,6 +721,8 @@ gd_main_view_rebuild (GdMainView *self)
                     G_CALLBACK (on_button_release_event), self);
   g_signal_connect_after (self->priv->current_view, "drag-begin",
                           G_CALLBACK (on_drag_begin), self);
+  g_signal_connect (self->priv->current_view, "view-selection-changed",
+                    G_CALLBACK (on_view_selection_changed), self);
 
   gd_main_view_apply_selection_mode (self);
   gd_main_view_apply_model (self);
