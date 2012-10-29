@@ -72,6 +72,7 @@ struct _GdMainViewGenericIface
   /* vtable */
   void          (* set_model)            (GdMainViewGeneric  *self,
                                           GtkTreeModel       *model);
+  GtkTreeModel * (* get_model)           (GdMainViewGeneric *self);
 
   GtkTreePath * (* get_path_at_pos)      (GdMainViewGeneric *self,
                                           gint               x, 
@@ -86,6 +87,7 @@ GType gd_main_view_generic_get_type (void) G_GNUC_CONST;
 
 void gd_main_view_generic_set_model (GdMainViewGeneric *self,
                                      GtkTreeModel *model);
+GtkTreeModel * gd_main_view_generic_get_model (GdMainViewGeneric *self);
 
 void gd_main_view_generic_scroll_to_path (GdMainViewGeneric *self,
                                           GtkTreePath *path);

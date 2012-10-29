@@ -81,6 +81,21 @@ gd_main_view_generic_scroll_to_path (GdMainViewGeneric *self,
   (* iface->scroll_to_path) (self, path);
 }
 
+/**
+ * gd_main_view_generic_get_model:
+ *
+ * Returns: (transfer none): The associated model
+ */
+GtkTreeModel *
+gd_main_view_generic_get_model (GdMainViewGeneric *self)
+{
+  GdMainViewGenericInterface *iface;
+
+  iface = GD_MAIN_VIEW_GENERIC_GET_IFACE (self);
+
+  (* iface->get_model) (self);
+}
+
 static gboolean
 build_selection_uris_foreach (GtkTreeModel *model,
                               GtkTreePath *path,

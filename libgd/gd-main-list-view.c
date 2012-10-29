@@ -195,10 +195,17 @@ gd_main_list_view_set_model (GdMainViewGeneric *mv,
   gtk_tree_view_set_model (GTK_TREE_VIEW (mv), model);
 }
 
+static GtkTreeModel *
+gd_main_list_view_get_model (GdMainViewGeneric *mv)
+{
+  return gtk_tree_view_get_model (GTK_TREE_VIEW (mv));
+}
+
 static void
 gd_main_view_generic_iface_init (GdMainViewGenericIface *iface)
 {
   iface->set_model = gd_main_list_view_set_model;
+  iface->get_model = gd_main_list_view_get_model;
   iface->get_path_at_pos = gd_main_list_view_get_path_at_pos;
   iface->scroll_to_path = gd_main_list_view_scroll_to_path;
   iface->set_selection_mode = gd_main_list_view_set_selection_mode;
