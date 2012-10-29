@@ -52,6 +52,10 @@ G_BEGIN_DECLS
 # include <libgd/gd-tagged-entry.h>
 #endif
 
+#ifdef LIBGD_NOTIFICATION
+# include <libgd/gd-notification.h>
+#endif
+
 G_END_DECLS
 
 #endif /* __GD_H__ */
