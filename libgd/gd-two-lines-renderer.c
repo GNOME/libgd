@@ -39,11 +39,12 @@ static GParamSpec *properties[NUM_PROPERTIES] = { NULL, };
 
 static PangoLayout *
 create_layout_with_attrs (GtkWidget *widget,
+                          const GdkRectangle *cell_area,
                           GdTwoLinesRenderer *self,
                           PangoEllipsizeMode ellipsize)
 {
   PangoLayout *layout;
-  gint wrap_width;
+  gint wrap_width, xpad;
   PangoWrapMode wrap_mode;
   PangoAlignment alignment;
 
@@ -51,22 +52,35 @@ create_layout_with_attrs (GtkWidget *widget,
                 "wrap-width", &wrap_width,
                 "wrap-mode", &wrap_mode,
                 "alignment", &alignment,
+                "xpad", &xpad,
                 NULL);
 
   layout = pango_layout_new (gtk_widget_get_pango_context (widget));
 
   pango_layout_set_ellipsize (layout, ellipsize);
-  pango_layout_set_wrap (layout, wrap_mode);
   pango_layout_set_alignment (layout, alignment);
 
   if (wrap_width != -1)
-    pango_layout_set_width (layout, wrap_width * PANGO_SCALE);
+    {
+      pango_layout_set_width (layout, wrap_width * PANGO_SCALE);
+      pango_layout_set_wrap (layout, wrap_mode);
+    }
+  else
+    {
+      if (cell_area != NULL)
+        pango_layout_set_width (layout, (cell_area->width - 2 * xpad) * PANGO_SCALE);
+      else
+        pango_layout_set_width (layout, -1);
+
+      pango_layout_set_wrap (layout, PANGO_WRAP_CHAR);
+    }
 
   return layout;
 }
 
 static void
 gd_two_lines_renderer_prepare_layouts (GdTwoLinesRenderer *self,
+                                       const GdkRectangle *cell_area,
                                        GtkWidget *widget,
                                        PangoLayout **layout_one,
                                        PangoLayout **layout_two)
@@ -79,7 +93,8 @@ gd_two_lines_renderer_prepare_layouts (GdTwoLinesRenderer *self,
                 "text", &text,
                 NULL);
 
-  line_one = create_layout_with_attrs (widget, self, PANGO_ELLIPSIZE_MIDDLE);
+  line_one = create_layout_with_attrs (widget, cell_area,
+                                       self, PANGO_ELLIPSIZE_MIDDLE);
 
   if (self->priv->line_two == NULL ||
       g_strcmp0 (self->priv->line_two, "") == 0)
@@ -91,7 +106,8 @@ gd_two_lines_renderer_prepare_layouts (GdTwoLinesRenderer *self,
     }
   else
     {
-      line_two = create_layout_with_attrs (widget, self, PANGO_ELLIPSIZE_END);
+      line_two = create_layout_with_attrs (widget, cell_area,
+                                           self, PANGO_ELLIPSIZE_END);
 
       pango_layout_set_height (line_one, - (self->priv->text_lines - 1));
       pango_layout_set_height (line_two, -1);
@@ -128,7 +144,7 @@ gd_two_lines_renderer_get_size (GtkCellRenderer *cell,
 
   if (layout_1 == NULL)
     {
-      gd_two_lines_renderer_prepare_layouts (self, widget, &layout_one, &layout_two);
+      gd_two_lines_renderer_prepare_layouts (self, cell_area, widget, &layout_one, &layout_two);
     }
   else
     {
@@ -232,7 +248,7 @@ gd_two_lines_renderer_render (GtkCellRenderer      *cell,
 
   /* fetch common information */
   context = gtk_widget_get_style_context (widget);
-  gd_two_lines_renderer_prepare_layouts (self, widget, &layout_one, &layout_two);
+  gd_two_lines_renderer_prepare_layouts (self, cell_area, widget, &layout_one, &layout_two);
   gd_two_lines_renderer_get_size (cell, widget,
                                   layout_one, layout_two,
                                   NULL, NULL,
@@ -245,8 +261,6 @@ gd_two_lines_renderer_render (GtkCellRenderer      *cell,
   area.y += ypad;
 
   /* now render the first layout */
-  pango_layout_set_width (layout_one,
-                          (cell_area->width - x_offset_1 - 2 * xpad) * PANGO_SCALE);
   pango_layout_get_pixel_extents (layout_one, NULL, &layout_rect);
 
   render_area = area;
@@ -269,8 +283,6 @@ gd_two_lines_renderer_render (GtkCellRenderer      *cell,
       state = gtk_cell_renderer_get_state (cell, widget, flags);
       gtk_style_context_set_state (context, state);
 
-      pango_layout_set_width (layout_two,
-                              (cell_area->width - x_offset_2 - 2 * xpad) * PANGO_SCALE);
       pango_layout_get_pixel_extents (layout_two, NULL, &layout_rect);
 
       render_area = area;
@@ -360,16 +372,24 @@ gd_two_lines_renderer_get_preferred_height_for_width (GtkCellRenderer *cell,
                                                       gint            *minimum_size,
                                                       gint            *natural_size)
 {
+  GdTwoLinesRenderer *self = GD_TWO_LINES_RENDERER (cell);
+  PangoLayout *layout_one, *layout_two;
   gint text_height;
-  gint ypad;
+  gint xpad, ypad;
+
+  gtk_cell_renderer_get_padding (cell, &xpad, &ypad);
+  gd_two_lines_renderer_prepare_layouts (self, NULL, widget, &layout_one, &layout_two);
+
+  pango_layout_set_width (layout_one, (width - 2 * xpad) * PANGO_SCALE);
+  if (layout_two != NULL)
+    pango_layout_set_width (layout_two, (width - 2 * xpad) * PANGO_SCALE);
 
   gd_two_lines_renderer_get_size (cell, widget,
-                                  NULL, NULL,
+                                  layout_one, layout_two,
                                   NULL, &text_height,
                                   NULL, 
                                   NULL, NULL, NULL);
 
-  gtk_cell_renderer_get_padding (cell, NULL, &ypad);
   text_height += 2 * ypad;
 
   if (minimum_size != NULL)
@@ -377,6 +397,9 @@ gd_two_lines_renderer_get_preferred_height_for_width (GtkCellRenderer *cell,
 
   if (natural_size != NULL)
     *natural_size = text_height;
+
+  g_clear_object (&layout_one);
+  g_clear_object (&layout_two);
 }
 
 static void
@@ -400,33 +423,18 @@ gd_two_lines_renderer_get_aligned_area (GtkCellRenderer      *cell,
                                         GdkRectangle         *aligned_area)
 {
   GdTwoLinesRenderer *self = GD_TWO_LINES_RENDERER (cell);
+  gint x_offset, x_offset_1, x_offset_2, y_offset;
   PangoLayout *layout_one, *layout_two;
-  gint x_offset, x_offset_1, x_offset_2, y_offset, xpad, ypad;
-  PangoRectangle layout_rect;
 
   /* fetch common information */
-  gd_two_lines_renderer_prepare_layouts (self, widget, &layout_one, &layout_two);
+  gd_two_lines_renderer_prepare_layouts (self, cell_area, widget, &layout_one, &layout_two);
   gd_two_lines_renderer_get_size (cell, widget,
                                   layout_one, layout_two,
                                   &aligned_area->width, &aligned_area->height,
                                   cell_area,
                                   &x_offset_1, &x_offset_2, &y_offset);
-  gtk_cell_renderer_get_padding (cell, &xpad, &ypad);
 
-  /* prepare and measure first layout */
-  pango_layout_set_width (layout_one,
-                          (cell_area->width - x_offset_1 - 2 * xpad) * PANGO_SCALE);
-  pango_layout_get_pixel_extents (layout_one, NULL, &layout_rect);
-  x_offset = x_offset_1 - layout_rect.x;
-
-  /* prepare and measure second layout */
-  if (layout_two != NULL)
-    {
-      pango_layout_set_width (layout_two,
-                              (cell_area->width - x_offset_2 - 2 * xpad) * PANGO_SCALE);
-      pango_layout_get_pixel_extents (layout_two, NULL, &layout_rect);
-      x_offset = MIN (x_offset, x_offset_2 - layout_rect.x);
-    }
+  x_offset = MIN (x_offset_1, x_offset_2);
 
   aligned_area->x = cell_area->x + x_offset;
   aligned_area->y = cell_area->y;
