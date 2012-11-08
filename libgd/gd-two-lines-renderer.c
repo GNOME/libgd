@@ -374,15 +374,21 @@ gd_two_lines_renderer_get_preferred_height_for_width (GtkCellRenderer *cell,
 {
   GdTwoLinesRenderer *self = GD_TWO_LINES_RENDERER (cell);
   PangoLayout *layout_one, *layout_two;
-  gint text_height;
+  gint text_height, wrap_width;
   gint xpad, ypad;
 
   gtk_cell_renderer_get_padding (cell, &xpad, &ypad);
+  g_object_get (cell, "wrap-width", &wrap_width, NULL);
   gd_two_lines_renderer_prepare_layouts (self, NULL, widget, &layout_one, &layout_two);
 
-  pango_layout_set_width (layout_one, (width - 2 * xpad) * PANGO_SCALE);
+  if (wrap_width != -1)
+    wrap_width = MIN (width - 2 * xpad, wrap_width);
+  else
+    wrap_width = width - 2 * xpad;
+
+  pango_layout_set_width (layout_one, wrap_width);
   if (layout_two != NULL)
-    pango_layout_set_width (layout_two, (width - 2 * xpad) * PANGO_SCALE);
+    pango_layout_set_width (layout_two, wrap_width);
 
   gd_two_lines_renderer_get_size (cell, widget,
                                   layout_one, layout_two,
