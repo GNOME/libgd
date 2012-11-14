@@ -44,6 +44,8 @@ if LIBGD__VIEW_COMMON
 view_common_sources =				\
 	libgd/gd-main-view-generic.c		\
 	libgd/gd-main-view-generic.h		\
+	libgd/gd-styled-text-renderer.c		\
+	libgd/gd-styled-text-renderer.h		\
 	libgd/gd-two-lines-renderer.c		\
 	libgd/gd-two-lines-renderer.h		\
 	$(NULL)
