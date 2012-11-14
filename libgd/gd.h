@@ -36,7 +36,7 @@ G_BEGIN_DECLS
 #ifdef LIBGD_MAIN_ICON_VIEW
 # include <libgd/gd-main-icon-view.h>
 # include <libgd/gd-main-view-generic.h>
-# include <libgd/gd-style-text-renderer.h>
+# include <libgd/gd-styled-text-renderer.h>
 # include <libgd/gd-toggle-pixbuf-renderer.h>
 # include <libgd/gd-two-lines-renderer.h>
 #endif
