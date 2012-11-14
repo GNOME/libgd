@@ -167,7 +167,7 @@ set_all_selection (GdMainViewGeneric *self,
   GtkTreeModel *actual_model;
 
   if (GTK_IS_TREE_MODEL_FILTER (model))
-    actual_model = gtk_tree_model_filter_get_model (model);
+    actual_model = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (model));
   else
     actual_model = model;
 
