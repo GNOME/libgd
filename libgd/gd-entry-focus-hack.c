@@ -45,6 +45,8 @@ send_focus_change (GtkWidget *widget,
         continue;
 
       window = gtk_widget_get_window (widget);
+      if (!window)
+        continue;
 
       /* Skip non-master keyboards that haven't
        * selected for events from this window
