@@ -105,7 +105,7 @@ gd_main_view_generic_get_model (GdMainViewGeneric *self)
 
   iface = GD_MAIN_VIEW_GENERIC_GET_IFACE (self);
 
-  (* iface->get_model) (self);
+  return (* iface->get_model) (self);
 }
 
 static gboolean
