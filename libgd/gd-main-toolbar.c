@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Red Hat, Inc.
+ * Copyright (c) 2011, 2012 Red Hat, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by 
@@ -41,15 +41,20 @@ struct _GdMainToolbarPrivate {
   GtkToolItem *right_group;
 
   GtkWidget *left_grid;
+  GtkWidget *center_grid;
 
   GtkWidget *labels_grid;
   GtkWidget *title_label;
   GtkWidget *detail_label;
 
+  GtkWidget *modes_box;
+
   GtkWidget *center_menu;
   GtkWidget *center_menu_child;
 
   GtkWidget *right_grid;
+
+  gboolean show_modes;
 };
 
 static void
@@ -206,15 +211,17 @@ gd_main_toolbar_constructed (GObject *obj)
   self->priv->center_group = gtk_tool_item_new ();
   gtk_tool_item_set_expand (self->priv->center_group, TRUE);
   gtk_toolbar_insert (tb, self->priv->center_group, -1);
+  self->priv->center_grid = gtk_grid_new ();
+  gtk_widget_set_halign (self->priv->center_grid, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (self->priv->center_grid, GTK_ALIGN_CENTER);
+  gtk_container_add (GTK_CONTAINER (self->priv->center_group), self->priv->center_grid);
   gtk_size_group_add_widget (self->priv->vertical_size_group,
                              GTK_WIDGET (self->priv->center_group));
 
   /* centered label group */
   self->priv->labels_grid = grid = gtk_grid_new ();
-  gtk_widget_set_halign (grid, GTK_ALIGN_CENTER);
-  gtk_widget_set_valign (grid, GTK_ALIGN_CENTER);
   gtk_grid_set_column_spacing (GTK_GRID (grid), 12);
-  gtk_container_add (GTK_CONTAINER (self->priv->center_group), grid);
+  gtk_container_add (GTK_CONTAINER (self->priv->center_grid), grid);
 
   self->priv->title_label = gtk_label_new (NULL);
   gtk_label_set_ellipsize (GTK_LABEL (self->priv->title_label), PANGO_ELLIPSIZE_END);
@@ -225,6 +232,13 @@ gd_main_toolbar_constructed (GObject *obj)
   gtk_widget_set_no_show_all (self->priv->detail_label, TRUE);
   gtk_style_context_add_class (gtk_widget_get_style_context (self->priv->detail_label), "dim-label");
   gtk_container_add (GTK_CONTAINER (grid), self->priv->detail_label);
+
+  /* centered mode group */
+  self->priv->modes_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_set_homogeneous (GTK_BOX (self->priv->modes_box), TRUE);
+  gtk_widget_set_no_show_all (self->priv->modes_box, TRUE);
+  gtk_style_context_add_class (gtk_widget_get_style_context (self->priv->modes_box), "linked");
+  gtk_container_add (GTK_CONTAINER (self->priv->center_grid), self->priv->modes_box);
 
   /* right section */
   self->priv->right_group = gtk_tool_item_new ();
@@ -270,6 +284,8 @@ gd_main_toolbar_clear (GdMainToolbar *self)
 
   /* clear all added buttons */
   gtk_container_foreach (GTK_CONTAINER (self->priv->left_grid),
+                         (GtkCallback) gtk_widget_destroy, self);
+  gtk_container_foreach (GTK_CONTAINER (self->priv->modes_box),
                          (GtkCallback) gtk_widget_destroy, self);
   gtk_container_foreach (GTK_CONTAINER (self->priv->right_grid), 
                          (GtkCallback) gtk_widget_destroy, self);
@@ -367,14 +383,14 @@ gd_main_toolbar_set_labels_menu (GdMainToolbar *self,
   GtkWidget *button, *grid, *w;
 
   if (menu == NULL &&
-      ((gtk_widget_get_parent (self->priv->labels_grid) == GTK_WIDGET (self->priv->center_group)) ||
+      ((gtk_widget_get_parent (self->priv->labels_grid) == self->priv->center_grid) ||
        self->priv->center_menu_child == NULL))
     return;
 
   if (menu != NULL)
     {
       g_object_ref (self->priv->labels_grid);
-      gtk_container_remove (GTK_CONTAINER (self->priv->center_group),
+      gtk_container_remove (GTK_CONTAINER (self->priv->center_grid),
                             self->priv->labels_grid);
 
       self->priv->center_menu_child = grid = gtk_grid_new ();
@@ -393,7 +409,7 @@ gd_main_toolbar_set_labels_menu (GdMainToolbar *self,
       gtk_menu_button_set_menu_model (GTK_MENU_BUTTON (button), menu);
       gtk_container_add (GTK_CONTAINER (self->priv->center_menu), grid);
 
-      gtk_container_add (GTK_CONTAINER (self->priv->center_group), button);
+      gtk_container_add (GTK_CONTAINER (self->priv->center_grid), button);
     }
   else
     {
@@ -405,12 +421,45 @@ gd_main_toolbar_set_labels_menu (GdMainToolbar *self,
       self->priv->center_menu = NULL;
       self->priv->center_menu_child = NULL;
 
-      gtk_container_add (GTK_CONTAINER (self->priv->center_group),
+      gtk_container_add (GTK_CONTAINER (self->priv->center_grid),
                          self->priv->labels_grid);
       g_object_unref (self->priv->labels_grid);
     }
 
-  gtk_widget_show_all (GTK_WIDGET (self->priv->center_group));
+  gtk_widget_show_all (self->priv->center_grid);
+}
+
+/**
+ * gd_main_toolbar_add_mode:
+ * @self:
+ * @label:
+ *
+ * Returns: (transfer none):
+ */
+GtkWidget *
+gd_main_toolbar_add_mode (GdMainToolbar *self,
+                          const gchar *label)
+{
+  GtkWidget *button;
+  GList *group;
+
+  button = gtk_radio_button_new_with_label (NULL, label);
+  gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (button), FALSE);
+  gtk_widget_set_size_request (button, 100, -1);
+  gtk_widget_set_vexpand (button, TRUE);
+  gtk_style_context_add_class (gtk_widget_get_style_context (button), "raised");
+
+  group = gtk_container_get_children (GTK_CONTAINER (self->priv->modes_box));
+  if (group != NULL)
+    {
+      gtk_radio_button_join_group (GTK_RADIO_BUTTON (button), GTK_RADIO_BUTTON (group->data));
+      g_list_free (group);
+    }
+
+  gtk_container_add (GTK_CONTAINER (self->priv->modes_box), button);
+  gtk_widget_show (button);
+
+  return button;
 }
 
 /**
@@ -483,4 +532,38 @@ gd_main_toolbar_add_widget (GdMainToolbar *self,
     gtk_container_add (GTK_CONTAINER (self->priv->left_grid), widget);
   else
     gtk_container_add (GTK_CONTAINER (self->priv->right_grid), widget);
+}
+
+gboolean
+gd_main_toolbar_get_show_modes (GdMainToolbar *self)
+{
+  return self->priv->show_modes;
+}
+
+void
+gd_main_toolbar_set_show_modes (GdMainToolbar *self,
+                                gboolean show_modes)
+{
+  if (self->priv->show_modes == show_modes)
+    return;
+
+  self->priv->show_modes = show_modes;
+  if (self->priv->show_modes)
+    {
+      gtk_widget_set_no_show_all (self->priv->labels_grid, TRUE);
+      gtk_widget_hide (self->priv->labels_grid);
+
+      gtk_widget_set_valign (self->priv->center_grid, GTK_ALIGN_FILL);
+      gtk_widget_set_no_show_all (self->priv->modes_box, FALSE);
+      gtk_widget_show_all (self->priv->modes_box);
+    }
+  else
+    {
+      gtk_widget_set_no_show_all (self->priv->modes_box, TRUE);
+      gtk_widget_hide (self->priv->modes_box);
+
+      gtk_widget_set_valign (self->priv->center_grid, GTK_ALIGN_CENTER);
+      gtk_widget_set_no_show_all (self->priv->labels_grid, FALSE);
+      gtk_widget_show_all (self->priv->labels_grid);
+    }
 }

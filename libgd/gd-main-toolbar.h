@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Red Hat, Inc.
+ * Copyright (c) 2011, 2012 Red Hat, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by 
@@ -77,6 +77,9 @@ void        gd_main_toolbar_set_labels (GdMainToolbar *self,
 void        gd_main_toolbar_set_labels_menu (GdMainToolbar *self,
                                              GMenuModel    *menu);
 
+GtkWidget * gd_main_toolbar_add_mode (GdMainToolbar *self,
+                                      const gchar *label);
+
 void        gd_main_toolbar_clear (GdMainToolbar *self);
 
 GtkWidget * gd_main_toolbar_add_button (GdMainToolbar *self,
@@ -97,6 +100,11 @@ GtkWidget * gd_main_toolbar_add_menu (GdMainToolbar *self,
 void        gd_main_toolbar_add_widget (GdMainToolbar *self,
                                         GtkWidget *widget,
                                         gboolean pack_start);
+
+gboolean    gd_main_view_get_show_modes (GdMainToolbar *self);
+
+void        gd_main_view_set_show_modes (GdMainToolbar *self,
+                                         gboolean show_modes);
 
 G_END_DECLS
 
