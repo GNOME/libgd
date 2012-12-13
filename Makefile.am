@@ -24,10 +24,6 @@ libgd_la_LDFLAGS = -avoid-version
 libgd_la_SOURCES = libgd/gd.h
 nodist_libgd_la_SOURCES =
 
-if LIBGD_STATIC
-libgd_la_LDFLAGS += -static
-endif
-
 if LIBGD_GTK_HACKS
 gtk_hacks_sources =                             \
         libgd/gd-entry-focus-hack.c             \
