@@ -68,37 +68,6 @@ gd_main_toolbar_dispose (GObject *obj)
   G_OBJECT_CLASS (gd_main_toolbar_parent_class)->dispose (obj);
 }
 
-static gint
-get_icon_margin (void)
-{
-  gint toolbar_size, menu_size;
-
-  gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &menu_size, NULL);
-  gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE_TOOLBAR, &toolbar_size, NULL);
-  return (gint) floor ((toolbar_size - menu_size) / 2.0);
-}
-
-static GtkSizeGroup *
-get_vertical_size_group (void)
-{
-  GtkSizeGroup *retval;
-  GtkWidget *w, *dummy;
-  gint icon_margin;
-
-  icon_margin = get_icon_margin ();
-
-  dummy = gtk_toggle_button_new ();
-  w = gtk_image_new_from_stock (GTK_STOCK_OPEN, GTK_ICON_SIZE_MENU);
-  g_object_set (w, "margin", icon_margin, NULL);
-  gtk_container_add (GTK_CONTAINER (dummy), w);
-  gtk_widget_show_all (dummy);
-
-  retval = gtk_size_group_new (GTK_SIZE_GROUP_VERTICAL);
-  gtk_size_group_add_widget (retval, dummy);
-
-  return retval;
-}
-
 static GtkWidget *
 get_empty_button (ChildType type)
 {
@@ -143,9 +112,9 @@ get_symbolic_button (const gchar *icon_name,
     }
 
   gtk_style_context_add_class (gtk_widget_get_style_context (button), "raised");
+  gtk_style_context_add_class (gtk_widget_get_style_context (button), "image-button");
 
   w = gtk_image_new_from_icon_name (icon_name, GTK_ICON_SIZE_MENU);
-  g_object_set (w, "margin", get_icon_margin (), NULL);
   gtk_widget_show (w);
   gtk_container_add (GTK_CONTAINER (button), w);
 
@@ -179,8 +148,28 @@ get_text_button (const gchar *label,
 
   gtk_widget_set_vexpand (button, TRUE);
   gtk_style_context_add_class (gtk_widget_get_style_context (button), "raised");
+  gtk_style_context_add_class (gtk_widget_get_style_context (button), "text-button");
 
   return button;
+}
+
+static GtkSizeGroup *
+get_vertical_size_group (GdMainToolbar *self)
+{
+  GtkSizeGroup *retval;
+  GtkWidget *dummy;
+  GtkToolItem *container;
+
+  dummy = get_text_button ("Dummy", CHILD_NORMAL);
+  container = gtk_tool_item_new ();
+  gtk_widget_set_no_show_all (GTK_WIDGET (container), TRUE);
+  gtk_container_add (GTK_CONTAINER (container), dummy);
+  gtk_toolbar_insert (GTK_TOOLBAR (self), container, -1);
+
+  retval = gtk_size_group_new (GTK_SIZE_GROUP_VERTICAL);
+  gtk_size_group_add_widget (retval, dummy);
+
+  return retval;
 }
 
 static void
@@ -192,7 +181,7 @@ gd_main_toolbar_constructed (GObject *obj)
 
   G_OBJECT_CLASS (gd_main_toolbar_parent_class)->constructed (obj);
 
-  self->priv->vertical_size_group = get_vertical_size_group ();
+  self->priv->vertical_size_group = get_vertical_size_group (self);
 
   /* left section */
   self->priv->left_group = gtk_tool_item_new ();
@@ -448,6 +437,7 @@ gd_main_toolbar_add_mode (GdMainToolbar *self,
   gtk_widget_set_size_request (button, 100, -1);
   gtk_widget_set_vexpand (button, TRUE);
   gtk_style_context_add_class (gtk_widget_get_style_context (button), "raised");
+  gtk_style_context_add_class (gtk_widget_get_style_context (button), "text-button");
 
   group = gtk_container_get_children (GTK_CONTAINER (self->priv->modes_box));
   if (group != NULL)
