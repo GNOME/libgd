@@ -33,12 +33,15 @@ G_BEGIN_DECLS
 # include <libgd/gd-entry-focus-hack.h>
 #endif
 
-#ifdef LIBGD_MAIN_ICON_VIEW
-# include <libgd/gd-main-icon-view.h>
+#ifdef LIBGD__VIEW_COMMON
 # include <libgd/gd-main-view-generic.h>
 # include <libgd/gd-styled-text-renderer.h>
 # include <libgd/gd-toggle-pixbuf-renderer.h>
 # include <libgd/gd-two-lines-renderer.h>
+#endif
+
+#ifdef LIBGD_MAIN_ICON_VIEW
+# include <libgd/gd-main-icon-view.h>
 #endif
 
 #ifdef LIBGD_MAIN_VIEW
