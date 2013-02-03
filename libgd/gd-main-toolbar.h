@@ -101,10 +101,10 @@ void        gd_main_toolbar_add_widget (GdMainToolbar *self,
                                         GtkWidget *widget,
                                         gboolean pack_start);
 
-gboolean    gd_main_view_get_show_modes (GdMainToolbar *self);
+gboolean    gd_main_toolbar_get_show_modes (GdMainToolbar *self);
 
-void        gd_main_view_set_show_modes (GdMainToolbar *self,
-                                         gboolean show_modes);
+void        gd_main_toolbar_set_show_modes (GdMainToolbar *self,
+                                            gboolean show_modes);
 
 G_END_DECLS
 
