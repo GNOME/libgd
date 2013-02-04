@@ -141,8 +141,9 @@ Gd_1_0_gir_INCLUDES = $(LIBGD_GIR_INCLUDES)
 Gd_1_0_gir_FILES = $(nodist_libgd_la_SOURCES)
 
 if LIBGD_STATIC
-noinst_DATA += $(builddir)/Gd-1.0.gir
-MAINTAINERCLEANFILES += $(builddir)/Gd-1.0.gir
+noinst_DATA += $(srcdir)/Gd-1.0.gir
+EXTRA_DIST += $(srcdir)/Gd-1.0.gir
+MAINTAINERCLEANFILES += $(srcdir)/Gd-1.0.gir
 else
 girdir= $(pkgdatadir)/gir-1.0
 typelibdir= $(pkglibdir)/girepository-1.0
@@ -157,11 +158,10 @@ endif
 if LIBGD_VAPI
 VAPIS = $(srcdir)/gd-1.0.vapi
 
-$(srcdir)/gd-1.0.vapi: $(builddir)/Gd-1.0.gir
+$(srcdir)/gd-1.0.vapi: $(srcdir)/Gd-1.0.gir
 	$(AM_V_GEN)$(VAPIGEN)			\
 		--library gd-1.0		\
 		--pkg gtk+-3.0			\
-                -d $(srcdir)			\
 		$<
 #This 'touch' is a workaround for vapigen not touching the dest file if
 #its content hasn't changed, which causes the rule to generate the .vapi
