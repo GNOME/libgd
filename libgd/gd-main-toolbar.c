@@ -57,6 +57,11 @@ struct _GdMainToolbarPrivate {
   gboolean show_modes;
 };
 
+enum {
+        PROP_0,
+        PROP_SHOW_MODES,
+};
+
 static void
 gd_main_toolbar_dispose (GObject *obj)
 {
@@ -172,6 +177,81 @@ get_vertical_size_group (GdMainToolbar *self)
   return retval;
 }
 
+gboolean
+gd_main_toolbar_get_show_modes (GdMainToolbar *self)
+{
+  return self->priv->show_modes;
+}
+
+void
+gd_main_toolbar_set_show_modes (GdMainToolbar *self,
+                                gboolean show_modes)
+{
+  if (self->priv->show_modes == show_modes)
+    return;
+
+  self->priv->show_modes = show_modes;
+  if (self->priv->show_modes)
+    {
+      gtk_widget_set_no_show_all (self->priv->labels_grid, TRUE);
+      gtk_widget_hide (self->priv->labels_grid);
+
+      gtk_widget_set_valign (self->priv->center_grid, GTK_ALIGN_FILL);
+      gtk_widget_set_no_show_all (self->priv->modes_box, FALSE);
+      gtk_widget_show_all (self->priv->modes_box);
+    }
+  else
+    {
+      gtk_widget_set_no_show_all (self->priv->modes_box, TRUE);
+      gtk_widget_hide (self->priv->modes_box);
+
+      gtk_widget_set_valign (self->priv->center_grid, GTK_ALIGN_CENTER);
+      gtk_widget_set_no_show_all (self->priv->labels_grid, FALSE);
+      gtk_widget_show_all (self->priv->labels_grid);
+    }
+
+  g_object_notify (G_OBJECT (self), "show-modes");
+}
+
+static void
+gd_main_toolbar_set_property (GObject      *object,
+                              guint         prop_id,
+                              const GValue *value,
+                              GParamSpec   *pspec)
+{
+
+  GdMainToolbar *self = GD_MAIN_TOOLBAR (object);
+
+  switch (prop_id)
+    {
+    case PROP_SHOW_MODES:
+      gd_main_toolbar_set_show_modes (GD_MAIN_TOOLBAR (self), g_value_get_boolean (value));
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+gd_main_toolbar_get_property (GObject    *object,
+                              guint       prop_id,
+                              GValue     *value,
+                              GParamSpec *pspec)
+{
+  GdMainToolbar *self = GD_MAIN_TOOLBAR (object);
+
+  switch (prop_id)
+    {
+    case PROP_SHOW_MODES:
+      g_value_set_boolean (value, self->priv->show_modes);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+    }
+}
+
 static void
 gd_main_toolbar_constructed (GObject *obj)
 {
@@ -259,7 +339,17 @@ gd_main_toolbar_class_init (GdMainToolbarClass *klass)
 
   oclass = G_OBJECT_CLASS (klass);
   oclass->constructed = gd_main_toolbar_constructed;
+  oclass->set_property = gd_main_toolbar_set_property;
+  oclass->get_property = gd_main_toolbar_get_property;
   oclass->dispose = gd_main_toolbar_dispose;
+
+  g_object_class_install_property (oclass,
+                                   PROP_SHOW_MODES,
+                                   g_param_spec_boolean ("show-modes",
+                                                         "Show Modes",
+                                                         "Show Modes",
+                                                         FALSE,
+                                                         G_PARAM_READWRITE));
 
   g_type_class_add_private (klass, sizeof (GdMainToolbarPrivate));
 }
@@ -522,38 +612,4 @@ gd_main_toolbar_add_widget (GdMainToolbar *self,
     gtk_container_add (GTK_CONTAINER (self->priv->left_grid), widget);
   else
     gtk_container_add (GTK_CONTAINER (self->priv->right_grid), widget);
-}
-
-gboolean
-gd_main_toolbar_get_show_modes (GdMainToolbar *self)
-{
-  return self->priv->show_modes;
-}
-
-void
-gd_main_toolbar_set_show_modes (GdMainToolbar *self,
-                                gboolean show_modes)
-{
-  if (self->priv->show_modes == show_modes)
-    return;
-
-  self->priv->show_modes = show_modes;
-  if (self->priv->show_modes)
-    {
-      gtk_widget_set_no_show_all (self->priv->labels_grid, TRUE);
-      gtk_widget_hide (self->priv->labels_grid);
-
-      gtk_widget_set_valign (self->priv->center_grid, GTK_ALIGN_FILL);
-      gtk_widget_set_no_show_all (self->priv->modes_box, FALSE);
-      gtk_widget_show_all (self->priv->modes_box);
-    }
-  else
-    {
-      gtk_widget_set_no_show_all (self->priv->modes_box, TRUE);
-      gtk_widget_hide (self->priv->modes_box);
-
-      gtk_widget_set_valign (self->priv->center_grid, GTK_ALIGN_CENTER);
-      gtk_widget_set_no_show_all (self->priv->labels_grid, FALSE);
-      gtk_widget_show_all (self->priv->labels_grid);
-    }
 }
