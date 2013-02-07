@@ -96,6 +96,12 @@ AC_DEFUN([LIBGD_INIT], [
         AC_DEFINE([LIBGD_NOTIFICATION], [1], [Description])
     ])
 
+    # revealer:
+    AM_CONDITIONAL([LIBGD_REVEALER],[_LIBGD_IF_OPTION_SET([revealer],[true],[false])])
+    _LIBGD_IF_OPTION_SET([revealer],[
+        AC_DEFINE([LIBGD_REVEALER], [1], [Description])
+    ])
+
     # tagged-entry: Gtk+ widget
     AM_CONDITIONAL([LIBGD_TAGGED_ENTRY],[_LIBGD_IF_OPTION_SET([tagged-entry],[true],[false])])
     _LIBGD_IF_OPTION_SET([tagged-entry],[

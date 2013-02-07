@@ -112,6 +112,16 @@ nodist_libgd_la_SOURCES += $(notification_sources)
 EXTRA_DIST += $(notification_sources)
 endif
 
+if LIBGD_REVEALER
+revealer_sources =				\
+	libgd/gd-revealer.c			\
+	libgd/gd-revealer.h			\
+	$(NULL)
+
+nodist_libgd_la_SOURCES += $(revealer_sources)
+EXTRA_DIST += $(revealer_sources)
+endif
+
 if LIBGD_TAGGED_ENTRY
 tagged_entry_sources =				\
 	libgd/gd-tagged-entry.c			\

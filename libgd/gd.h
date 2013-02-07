@@ -64,6 +64,10 @@ G_BEGIN_DECLS
 # include <libgd/gd-notification.h>
 #endif
 
+#ifdef LIBGD_REVEALER
+# include <libgd/gd-revealer.h>
+#endif
+
 G_END_DECLS
 
 #endif /* __GD_H__ */
