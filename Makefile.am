@@ -120,6 +120,15 @@ revealer_sources =				\
 
 nodist_libgd_la_SOURCES += $(revealer_sources)
 EXTRA_DIST += $(revealer_sources)
+
+noinst_PROGRAMS = test-revealer
+test_revealer_SOURCES =				\
+	test-revealer.c				\
+	$(NULL)
+test_revealer_LDADD =				\
+	$(LIBGD_LIBS)				\
+	libgd.la				\
+	$(NULL)
 endif
 
 if LIBGD_TAGGED_ENTRY
