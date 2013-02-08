@@ -49,7 +49,7 @@ struct _GdRevealerClass {
 
 
 GType gd_revealer_get_type (void) G_GNUC_CONST;
-GdRevealer*    gd_revealer_new             (void);
+GtkWidget*     gd_revealer_new             (void);
 gboolean       gd_revealer_get_revealed    (GdRevealer     *revealer);
 void           gd_revealer_set_revealed    (GdRevealer     *revealer,
                                             gboolean        setting);

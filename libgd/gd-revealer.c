@@ -229,7 +229,7 @@ gd_revealer_class_init (GdRevealerClass * klass)
 }
 
 
-GdRevealer *
+GtkWidget *
 gd_revealer_new (void)
 {
   return g_object_new (GD_TYPE_REVEALER, NULL);
