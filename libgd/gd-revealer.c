@@ -489,8 +489,8 @@ gd_revealer_start_animation (GdRevealer *revealer,
       priv->end_time = priv->start_time + (priv->duration * 1000);
       if (priv->timeout == 0)
         priv->timeout =
-          gdk_threads_add_timeout ((guint) FRAME_TIME_MSEC,
-                                   (GSourceFunc)gd_revealer_animate_cb, revealer);
+          gdk_threads_add_timeout_full (G_PRIORITY_DEFAULT_IDLE, (guint) FRAME_TIME_MSEC,
+                                        (GSourceFunc)gd_revealer_animate_cb, revealer, NULL);
       gd_revealer_animate_step (revealer, priv->start_time);
     }
   else
