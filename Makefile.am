@@ -13,6 +13,8 @@ AM_CPPFLAGS =					\
         $(LIBGD_CFLAGS)				\
         $(NULL)
 
+noinst_PROGRAMS =
+
 if LIBGD_STATIC
 noinst_LTLIBRARIES = libgd.la
 else
@@ -121,11 +123,30 @@ revealer_sources =				\
 nodist_libgd_la_SOURCES += $(revealer_sources)
 EXTRA_DIST += $(revealer_sources)
 
-noinst_PROGRAMS = test-revealer
+noinst_PROGRAMS += test-revealer
 test_revealer_SOURCES =				\
 	test-revealer.c				\
 	$(NULL)
 test_revealer_LDADD =				\
+	$(LIBGD_LIBS)				\
+	libgd.la				\
+	$(NULL)
+endif
+
+if LIBGD_STACK
+stack_sources =				\
+	libgd/gd-stack.c			\
+	libgd/gd-stack.h			\
+	$(NULL)
+
+nodist_libgd_la_SOURCES += $(stack_sources)
+EXTRA_DIST += $(stack_sources)
+
+noinst_PROGRAMS += test-stack
+test_stack_SOURCES =				\
+	test-stack.c				\
+	$(NULL)
+test_stack_LDADD =				\
 	$(LIBGD_LIBS)				\
 	libgd.la				\
 	$(NULL)

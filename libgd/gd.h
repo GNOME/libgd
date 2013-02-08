@@ -68,6 +68,10 @@ G_BEGIN_DECLS
 # include <libgd/gd-revealer.h>
 #endif
 
+#ifdef LIBGD_STACK
+# include <libgd/gd-stack.h>
+#endif
+
 G_END_DECLS
 
 #endif /* __GD_H__ */
