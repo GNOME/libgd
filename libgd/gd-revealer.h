@@ -50,9 +50,9 @@ struct _GdRevealerClass {
 
 GType gd_revealer_get_type (void) G_GNUC_CONST;
 GdRevealer*    gd_revealer_new             (void);
-void           gd_revealer_reveal          (GdRevealer     *revealer);
-void           gd_revealer_unreveal        (GdRevealer     *revealer);
-gboolean       gd_revealer_get_is_revealed (GdRevealer     *revealer);
+gboolean       gd_revealer_get_revealed    (GdRevealer     *revealer);
+void           gd_revealer_set_revealed    (GdRevealer     *revealer,
+                                            gboolean        setting);
 GtkOrientation gd_revealer_get_orientation (GdRevealer     *revealer);
 void           gd_revealer_set_orientation (GdRevealer     *revealer,
 					    GtkOrientation  value);

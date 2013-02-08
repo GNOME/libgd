@@ -27,7 +27,8 @@
 enum  {
   PROP_0,
   PROP_ORIENTATION,
-  PROP_DURATION
+  PROP_DURATION,
+  PROP_REVEALED
 };
 
 #define FRAME_TIME_MSEC 17 /* 17 msec => 60 fps */
@@ -145,6 +146,9 @@ gd_revealer_get_property (GObject *object,
   case PROP_DURATION:
     g_value_set_int (value, gd_revealer_get_duration (revealer));
     break;
+  case PROP_REVEALED:
+    g_value_set_boolean (value, gd_revealer_get_revealed (revealer));
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     break;
@@ -165,6 +169,9 @@ gd_revealer_set_property (GObject *object,
     break;
   case PROP_DURATION:
     gd_revealer_set_duration (revealer, g_value_get_int (value));
+    break;
+  case PROP_REVEALED:
+    gd_revealer_set_revealed (revealer, g_value_get_boolean (value));
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -211,6 +218,12 @@ gd_revealer_class_init (GdRevealerClass * klass)
                                                      G_MININT, G_MAXINT,
                                                      250,
                                                      GTK_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+  g_object_class_install_property (object_class,
+                                   PROP_REVEALED,
+                                   g_param_spec_boolean ("revealed", "revealed",
+                                                         "Whether the child is revealed",
+                                                         FALSE,
+                                                         GTK_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
   g_type_class_add_private (klass, sizeof (GdRevealerPrivate));
 }
@@ -503,6 +516,8 @@ gd_revealer_start_animation (GdRevealer *revealer,
     }
   else
     gd_revealer_set_position (revealer, target);
+
+  g_object_notify (G_OBJECT (revealer), "revealed");
 }
 
 
@@ -565,21 +580,24 @@ gd_revealer_real_draw (GtkWidget *widget,
 }
 
 void
-gd_revealer_reveal (GdRevealer *revealer)
+gd_revealer_set_revealed (GdRevealer *revealer,
+                          gboolean    setting)
 {
-  g_return_if_fail (revealer != NULL);
+  g_return_if_fail (GD_IS_REVEALER (revealer));
 
-  gd_revealer_start_animation (revealer, 1.0);
+  if (setting)
+    gd_revealer_start_animation (revealer, 1.0);
+  else
+    gd_revealer_start_animation (revealer, 0.0);
 }
 
-void
-gd_revealer_unreveal (GdRevealer *revealer)
+gboolean
+gd_revealer_get_revealed (GdRevealer *revealer)
 {
-  g_return_if_fail (revealer != NULL);
+  g_return_val_if_fail (GD_IS_REVEALER (revealer), FALSE);
 
-  gd_revealer_start_animation (revealer, 0.0);
+  return revealer->priv->target_pos != 0.0;
 }
-
 
 /* These all report only the natural size, ignoring the minimal size,
  * because its not really possible to allocate the right size during
@@ -714,12 +732,4 @@ gd_revealer_set_duration (GdRevealer *revealer,
 
   revealer->priv->duration = value;
   g_object_notify (G_OBJECT (revealer), "duration");
-}
-
-gboolean
-gd_revealer_get_is_revealed (GdRevealer *revealer)
-{
-  g_return_val_if_fail (revealer != NULL, FALSE);
-
-  return revealer->priv->target_pos != 0.0;
 }
