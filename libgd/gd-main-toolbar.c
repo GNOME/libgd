@@ -151,7 +151,6 @@ get_text_button (const gchar *label,
       break;
     }
 
-  gtk_widget_set_vexpand (button, TRUE);
   gtk_style_context_add_class (gtk_widget_get_style_context (button), "raised");
   gtk_style_context_add_class (gtk_widget_get_style_context (button), "text-button");
 
