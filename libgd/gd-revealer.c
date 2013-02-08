@@ -52,9 +52,6 @@ struct _GdRevealerPrivate {
 #define GTK_PARAM_READWRITE G_PARAM_READWRITE|G_PARAM_STATIC_NAME|G_PARAM_STATIC_NICK|G_PARAM_STATIC_BLURB
 #define GD_REVEALER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), GD_TYPE_REVEALER, GdRevealerPrivate))
 
-static void     gd_revealer_get_child_allocation                (GdRevealer    *revealer,
-                                                                 GtkAllocation *allocation,
-                                                                 GtkAllocation *child_allocation);
 static void     gd_revealer_real_realize                        (GtkWidget     *widget);
 static void     gd_revealer_real_unrealize                      (GtkWidget     *widget);
 static void     gd_revealer_real_add                            (GtkContainer  *widget,
@@ -62,15 +59,6 @@ static void     gd_revealer_real_add                            (GtkContainer  *
 static void     gd_revealer_real_style_updated                  (GtkWidget     *widget);
 static void     gd_revealer_real_size_allocate                  (GtkWidget     *widget,
                                                                  GtkAllocation *allocation);
-static void     gd_revealer_set_position                        (GdRevealer    *revealer,
-                                                                 gdouble        amount);
-static void     gd_revealer_animate_step                        (GdRevealer    *revealer,
-                                                                 gint64         now);
-static gboolean gd_revealer_animate_cb                          (GdRevealer    *revealer);
-static void     gd_revealer_start_animation                     (GdRevealer    *revealer,
-                                                                 gdouble        target);
-static gboolean _gd_revealer_animate_cb_gsource_func            (gpointer       revealer);
-static void     gd_revealer_stop_animation                      (GdRevealer    *revealer);
 static void     gd_revealer_real_map                            (GtkWidget     *widget);
 static void     gd_revealer_real_unmap                          (GtkWidget     *widget);
 static gboolean gd_revealer_real_draw                           (GtkWidget     *widget,
@@ -89,15 +77,6 @@ static void     gd_revealer_real_get_preferred_width_for_height (GtkWidget     *
                                                                  gint           height,
                                                                  gint          *minimum_width,
                                                                  gint          *natural_width);
-static void     gd_revealer_finalize                            (GObject       *obj);
-static void     gd_revealer_get_property                        (GObject       *object,
-                                                                 guint          property_id,
-                                                                 GValue        *value,
-                                                                 GParamSpec    *pspec);
-static void     gd_revealer_set_property                        (GObject       *object,
-                                                                 guint          property_id,
-                                                                 const GValue  *value,
-                                                                 GParamSpec    *pspec);
 
 G_DEFINE_TYPE(GdRevealer, gd_revealer, GTK_TYPE_BIN);
 
