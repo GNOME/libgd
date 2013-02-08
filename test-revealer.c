@@ -6,7 +6,6 @@ main (gint argc,
       gchar ** argv)
 {
   GtkWidget *window, *revealer, *box, *widget, *entry;
-  guint i;
 
   gtk_init (&argc, &argv);
 
