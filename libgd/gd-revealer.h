@@ -60,6 +60,8 @@ gint           gd_revealer_get_duration       (GdRevealer     *revealer);
 void           gd_revealer_set_duration       (GdRevealer     *revealer,
 					       gint            duration_msec);
 
+gboolean       gd_revealer_get_child_revealed (GdRevealer     *revealer);
+
 G_END_DECLS
 
 #endif

@@ -29,6 +29,7 @@ enum  {
   PROP_ORIENTATION,
   PROP_DURATION,
   PROP_REVEAL_CHILD,
+  PROP_CHILD_REVEALED
 };
 
 #define FRAME_TIME_MSEC 17 /* 17 msec => 60 fps */
@@ -128,6 +129,9 @@ gd_revealer_get_property (GObject *object,
   case PROP_REVEAL_CHILD:
     g_value_set_boolean (value, gd_revealer_get_reveal_child (revealer));
     break;
+  case PROP_CHILD_REVEALED:
+    g_value_set_boolean (value, gd_revealer_get_child_revealed (revealer));
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     break;
@@ -203,6 +207,13 @@ gd_revealer_class_init (GdRevealerClass * klass)
                                                          "Whether the container should reveal the child",
                                                          FALSE,
                                                          GTK_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+  g_object_class_install_property (object_class,
+                                   PROP_CHILD_REVEALED,
+                                   g_param_spec_boolean ("child-revealed", "Child Revealed",
+                                                         "Whether the child is revealed and the animation target reached",
+                                                         FALSE,
+                                                         G_PARAM_READABLE));
 
   g_type_class_add_private (klass, sizeof (GdRevealerPrivate));
 }
@@ -430,6 +441,9 @@ gd_revealer_set_position (GdRevealer *revealer,
     gtk_widget_set_child_visible (child, new_visible);
 
   gtk_widget_queue_resize (GTK_WIDGET (revealer));
+
+  if (priv->current_pos == priv->target_pos)
+    g_object_notify (G_OBJECT (revealer), "child-revealed");
 }
 
 static gdouble
@@ -578,6 +592,18 @@ gd_revealer_get_reveal_child (GdRevealer *revealer)
   g_return_val_if_fail (GD_IS_REVEALER (revealer), FALSE);
 
   return revealer->priv->target_pos != 0.0;
+}
+
+gboolean
+gd_revealer_get_child_revealed (GdRevealer *revealer)
+{
+  gboolean animation_finished = (revealer->priv->target_pos == revealer->priv->current_pos);
+  gboolean reveal_child = gd_revealer_get_reveal_child (revealer);
+
+  if (animation_finished)
+    return reveal_child;
+  else
+    return !reveal_child;
 }
 
 /* These all report only the natural size, ignoring the minimal size,
