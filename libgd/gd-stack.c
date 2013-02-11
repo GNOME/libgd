@@ -24,11 +24,14 @@
 #include "gd-stack.h"
 #include <math.h>
 
+#define FRAME_TIME_MSEC 17 /* 17 msec => 60 fps */
+
 enum  {
   PROP_0,
   PROP_HOMOGENOUS,
   PROP_VISIBLE_CHILD,
-  PROP_VISIBLE_CHILD_NAME
+  PROP_VISIBLE_CHILD_NAME,
+  PROP_DURATION
 };
 
 enum
@@ -50,6 +53,14 @@ struct _GdStackPrivate {
   GdStackChildInfo *visible_child;
 
   gboolean homogenous;
+  gint duration;
+
+  cairo_surface_t *xfade_surface;
+  gdouble xfade_pos;
+
+  guint timeout_tag;
+  gint64 start_time;
+  gint64 end_time;
 };
 
 #define GTK_PARAM_READWRITE G_PARAM_READWRITE|G_PARAM_STATIC_NAME|G_PARAM_STATIC_NICK|G_PARAM_STATIC_BLURB
@@ -113,6 +124,7 @@ gd_stack_init (GdStack *stack)
 
   priv = GD_STACK_GET_PRIVATE (stack);
   stack->priv = priv;
+  priv->duration = 250;
 
   gtk_widget_set_has_window ((GtkWidget*) stack, FALSE);
   gtk_widget_set_redraw_on_allocate ((GtkWidget*) stack, TRUE);
@@ -123,6 +135,13 @@ gd_stack_finalize (GObject* obj)
 {
   GdStack *stack = GD_STACK (obj);
   GdStackPrivate *priv = stack->priv;
+
+  if (priv->timeout_tag != 0)
+    g_source_remove (priv->timeout_tag);
+  priv->timeout_tag = 0;
+
+  if (priv->xfade_surface != NULL)
+    cairo_surface_destroy (priv->xfade_surface);
 
   G_OBJECT_CLASS (gd_stack_parent_class)->finalize (obj);
 }
@@ -136,7 +155,8 @@ gd_stack_get_property (GObject *object,
   GdStack *stack = GD_STACK (object);
   GdStackPrivate *priv = stack->priv;
 
-  switch (property_id) {
+  switch (property_id)
+    {
     case PROP_HOMOGENOUS:
       g_value_set_boolean (value, priv->homogenous);
       break;
@@ -146,10 +166,13 @@ gd_stack_get_property (GObject *object,
     case PROP_VISIBLE_CHILD_NAME:
       g_value_set_string (value, gd_stack_get_visible_child_name (stack));
       break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-    break;
-  }
+    case PROP_DURATION:
+      g_value_set_int (value, gd_stack_get_duration (stack));
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+    }
 }
 
 static void
@@ -160,7 +183,8 @@ gd_stack_set_property (GObject *object,
 {
   GdStack *stack = GD_STACK (object);
 
-  switch (property_id) {
+  switch (property_id)
+    {
     case PROP_HOMOGENOUS:
       gd_stack_set_homogenous (stack, g_value_get_boolean (value));
       break;
@@ -170,10 +194,13 @@ gd_stack_set_property (GObject *object,
     case PROP_VISIBLE_CHILD_NAME:
       gd_stack_set_visible_child_name (stack, g_value_get_string (value));
       break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-    break;
-  }
+    case PROP_DURATION:
+      gd_stack_set_duration (stack, g_value_get_int (value));
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+    }
 }
 
 static void
@@ -224,6 +251,13 @@ gd_stack_class_init (GdStackClass * klass)
 							"The name of the widget currently visible in the stack",
 							NULL,
 							GTK_PARAM_READWRITE));
+  g_object_class_install_property (object_class,
+                                   PROP_DURATION,
+                                   g_param_spec_int ("duration", "duration",
+                                                     "The animation duration, in milliseconds",
+                                                     G_MININT, G_MAXINT,
+                                                     250,
+                                                     GTK_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
   gtk_container_class_install_child_property (container_class, CHILD_PROP_NAME,
     g_param_spec_string ("name",
@@ -325,13 +359,90 @@ gd_stack_set_child_property (GtkContainer *container,
 }
 
 static void
+gd_stack_set_xfade_position (GdStack *stack,
+                             gdouble pos)
+{
+  GdStackPrivate *priv = stack->priv;
+  gboolean new_visible;
+  GtkWidget *child;
+
+  priv->xfade_pos = pos;
+
+  if (priv->visible_child)
+    gtk_widget_queue_draw (GTK_WIDGET (stack));
+
+  if (pos >= 1.0 && priv->xfade_surface != NULL)
+    {
+      cairo_surface_destroy (priv->xfade_surface);
+      priv->xfade_surface = NULL;
+    }
+}
+
+static gboolean
+gd_stack_xfade_cb (GdStack *stack)
+{
+  GdStackPrivate *priv = stack->priv;
+  gint64 now;
+
+  now = g_get_monotonic_time ();
+
+  gdouble t;
+
+  t = 1.0;
+  if (now < priv->end_time)
+    t = (now - priv->start_time) / (double) (priv->end_time - priv->start_time);
+
+  /* Finish animation early if not mapped anymore */
+  if (!gtk_widget_get_mapped (GTK_WIDGET (stack)))
+    t = 1.0;
+
+  gd_stack_set_xfade_position (stack, t);
+
+  if (t >= 1.0)
+    {
+      gtk_widget_set_opacity (GTK_WIDGET (stack), 1.0);
+      priv->timeout_tag = 0;
+
+      return FALSE;
+    }
+
+  return TRUE;
+}
+
+static void
+gd_stack_start_xfade (GdStack *stack)
+{
+  GdStackPrivate *priv = stack->priv;
+
+  if (gtk_widget_get_mapped (GTK_WIDGET (stack)) &&
+      priv->xfade_surface != NULL)
+    {
+      gtk_widget_set_opacity (GTK_WIDGET (stack), 0.999);
+
+      priv->xfade_pos = 0.0;
+      priv->start_time = g_get_monotonic_time ();
+      priv->end_time = priv->start_time + (priv->duration * 1000);
+      if (priv->timeout_tag == 0)
+        priv->timeout_tag =
+          gdk_threads_add_timeout ((guint) FRAME_TIME_MSEC,
+                                   (GSourceFunc)gd_stack_xfade_cb, stack);
+    }
+  else
+    gd_stack_set_xfade_position (stack, 1.0);
+}
+
+static void
 set_visible_child (GdStack *stack,
 		   GdStackChildInfo *child_info)
 {
   GdStackPrivate *priv = stack->priv;
   GdStackChildInfo *info;
+  GtkWidget *widget = GTK_WIDGET (stack);
   GtkWidget *w;
   GList *l;
+  cairo_surface_t *surface;
+  int surface_w, surface_h;
+  cairo_t *cr;
 
   /* If none, pick first visible */
   if (child_info == NULL)
@@ -347,18 +458,44 @@ set_visible_child (GdStack *stack,
 	}
     }
 
+  surface = NULL;
   if (priv->visible_child)
-    gtk_widget_set_child_visible (priv->visible_child->widget, FALSE);
+    {
+      if (gtk_widget_is_visible (widget) &&
+          /* Only crossfade in homogenous mode */
+          priv->homogenous)
+        {
+          surface_w = gtk_widget_get_allocated_width (widget);
+          surface_h = gtk_widget_get_allocated_height (widget);
+          surface =
+            gdk_window_create_similar_surface (gtk_widget_get_window (widget),
+                                               CAIRO_CONTENT_COLOR_ALPHA,
+                                               surface_w, surface_h);
+          cr = cairo_create (surface);
+          gtk_widget_draw (priv->visible_child->widget, cr);
+          cairo_destroy (cr);
+        }
+
+      gtk_widget_set_child_visible (priv->visible_child->widget, FALSE);
+    }
 
   priv->visible_child = child_info;
 
   if (child_info)
     gtk_widget_set_child_visible (child_info->widget, TRUE);
 
+  if (priv->xfade_surface)
+    cairo_surface_destroy (priv->xfade_surface);
+
+  priv->xfade_surface = surface;
+
   gtk_widget_queue_resize (GTK_WIDGET (stack));
 
   g_object_notify (G_OBJECT (stack), "visible-child");
   g_object_notify (G_OBJECT (stack), "visible-child-name");
+
+  gd_stack_start_xfade (stack);
+
 }
 
 static void
@@ -481,6 +618,24 @@ gd_stack_get_homogenous (GdStack *stack)
   g_return_if_fail (stack != NULL);
 
   return stack->priv->homogenous;
+}
+
+gint
+gd_stack_get_duration (GdStack *stack)
+{
+  g_return_val_if_fail (stack != NULL, 0);
+
+  return stack->priv->duration;
+}
+
+void
+gd_stack_set_duration (GdStack *stack,
+                       gint value)
+{
+  g_return_if_fail (stack != NULL);
+
+  stack->priv->duration = value;
+  g_object_notify (G_OBJECT (stack), "duration");
 }
 
 /**
@@ -626,9 +781,30 @@ gd_stack_draw (GtkWidget *widget,
   GdStackPrivate *priv = stack->priv;
 
   if (priv->visible_child)
-    gtk_container_propagate_draw (GTK_CONTAINER (stack),
-				  priv->visible_child->widget,
-				  cr);
+    {
+      if (priv->xfade_pos != 1.0)
+        {
+          if (priv->xfade_surface)
+            {
+              cairo_set_source_surface (cr, priv->xfade_surface, 0, 0);
+              cairo_set_operator (cr, CAIRO_OPERATOR_ADD);
+              cairo_paint_with_alpha (cr, MAX (1.0 - priv->xfade_pos, 0));
+            }
+
+          cairo_push_group (cr);
+          cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
+          gtk_container_propagate_draw (GTK_CONTAINER (stack),
+                                        priv->visible_child->widget,
+                                        cr);
+          cairo_pop_group_to_source (cr);
+          cairo_set_operator (cr, CAIRO_OPERATOR_ADD);
+          cairo_paint_with_alpha (cr, priv->xfade_pos);
+        }
+      else
+        gtk_container_propagate_draw (GTK_CONTAINER (stack),
+                                      priv->visible_child->widget,
+                                      cr);
+    }
 
   return TRUE;
 }
