@@ -28,7 +28,7 @@ enum  {
   PROP_0,
   PROP_ORIENTATION,
   PROP_DURATION,
-  PROP_REVEALED
+  PROP_REVEAL_CHILD,
 };
 
 #define FRAME_TIME_MSEC 17 /* 17 msec => 60 fps */
@@ -125,8 +125,8 @@ gd_revealer_get_property (GObject *object,
   case PROP_DURATION:
     g_value_set_int (value, gd_revealer_get_duration (revealer));
     break;
-  case PROP_REVEALED:
-    g_value_set_boolean (value, gd_revealer_get_revealed (revealer));
+  case PROP_REVEAL_CHILD:
+    g_value_set_boolean (value, gd_revealer_get_reveal_child (revealer));
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -149,8 +149,8 @@ gd_revealer_set_property (GObject *object,
   case PROP_DURATION:
     gd_revealer_set_duration (revealer, g_value_get_int (value));
     break;
-  case PROP_REVEALED:
-    gd_revealer_set_revealed (revealer, g_value_get_boolean (value));
+  case PROP_REVEAL_CHILD:
+    gd_revealer_set_reveal_child (revealer, g_value_get_boolean (value));
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -198,9 +198,9 @@ gd_revealer_class_init (GdRevealerClass * klass)
                                                      250,
                                                      GTK_PARAM_READWRITE | G_PARAM_CONSTRUCT));
   g_object_class_install_property (object_class,
-                                   PROP_REVEALED,
-                                   g_param_spec_boolean ("revealed", "revealed",
-                                                         "Whether the child is revealed",
+                                   PROP_REVEAL_CHILD,
+                                   g_param_spec_boolean ("reveal-child", "Reveal Child",
+                                                         "Whether the container should reveal the child",
                                                          FALSE,
                                                          GTK_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
@@ -482,6 +482,8 @@ gd_revealer_start_animation (GdRevealer *revealer,
     return;
 
   priv->target_pos = target;
+  g_object_notify (G_OBJECT (revealer), "reveal-child");
+
   if (gtk_widget_get_mapped (GTK_WIDGET (revealer)))
     {
       priv->source_pos = priv->current_pos;
@@ -494,9 +496,9 @@ gd_revealer_start_animation (GdRevealer *revealer,
       gd_revealer_animate_step (revealer, priv->start_time);
     }
   else
-    gd_revealer_set_position (revealer, target);
-
-  g_object_notify (G_OBJECT (revealer), "revealed");
+    {
+      gd_revealer_set_position (revealer, target);
+    }
 }
 
 
@@ -559,8 +561,8 @@ gd_revealer_real_draw (GtkWidget *widget,
 }
 
 void
-gd_revealer_set_revealed (GdRevealer *revealer,
-                          gboolean    setting)
+gd_revealer_set_reveal_child (GdRevealer *revealer,
+                              gboolean    setting)
 {
   g_return_if_fail (GD_IS_REVEALER (revealer));
 
@@ -571,7 +573,7 @@ gd_revealer_set_revealed (GdRevealer *revealer,
 }
 
 gboolean
-gd_revealer_get_revealed (GdRevealer *revealer)
+gd_revealer_get_reveal_child (GdRevealer *revealer)
 {
   g_return_val_if_fail (GD_IS_REVEALER (revealer), FALSE);
 

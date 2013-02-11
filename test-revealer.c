@@ -22,7 +22,7 @@ main (gint argc,
   gtk_container_add (GTK_CONTAINER (revealer), entry);
   gtk_container_add (GTK_CONTAINER (box), revealer);
 
-  g_object_bind_property (widget, "active", revealer, "revealed", 0);
+  g_object_bind_property (widget, "active", revealer, "reveal-child", 0);
 
   gtk_widget_show_all (window);
   gtk_main ();
