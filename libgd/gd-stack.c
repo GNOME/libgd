@@ -28,7 +28,7 @@
 
 enum  {
   PROP_0,
-  PROP_HOMOGENOUS,
+  PROP_HOMOGENEOUS,
   PROP_VISIBLE_CHILD,
   PROP_VISIBLE_CHILD_NAME,
   PROP_DURATION
@@ -52,7 +52,7 @@ struct _GdStackPrivate {
 
   GdStackChildInfo *visible_child;
 
-  gboolean homogenous;
+  gboolean homogeneous;
   gint duration;
 
   cairo_surface_t *xfade_surface;
@@ -157,8 +157,8 @@ gd_stack_get_property (GObject *object,
 
   switch (property_id)
     {
-    case PROP_HOMOGENOUS:
-      g_value_set_boolean (value, priv->homogenous);
+    case PROP_HOMOGENEOUS:
+      g_value_set_boolean (value, priv->homogeneous);
       break;
     case PROP_VISIBLE_CHILD:
       g_value_set_object (value, priv->visible_child);
@@ -185,8 +185,8 @@ gd_stack_set_property (GObject *object,
 
   switch (property_id)
     {
-    case PROP_HOMOGENOUS:
-      gd_stack_set_homogenous (stack, g_value_get_boolean (value));
+    case PROP_HOMOGENEOUS:
+      gd_stack_set_homogeneous (stack, g_value_get_boolean (value));
       break;
     case PROP_VISIBLE_CHILD:
       gd_stack_set_visible_child (stack, g_value_get_object (value));
@@ -231,10 +231,10 @@ gd_stack_class_init (GdStackClass * klass)
   gtk_container_class_handle_border_width (container_class);
 
   g_object_class_install_property (object_class,
-				   PROP_HOMOGENOUS,
-				   g_param_spec_boolean ("homogenous",
-							 "Homogenous",
-							 "Homogenous sizing",
+				   PROP_HOMOGENEOUS,
+				   g_param_spec_boolean ("homogeneous",
+							 "Homogeneous",
+							 "Homogeneous sizing",
 							 FALSE,
 							 GTK_PARAM_READWRITE | G_PARAM_CONSTRUCT));
   g_object_class_install_property (object_class,
@@ -462,8 +462,8 @@ set_visible_child (GdStack *stack,
   if (priv->visible_child)
     {
       if (gtk_widget_is_visible (widget) &&
-          /* Only crossfade in homogenous mode */
-          priv->homogenous)
+          /* Only crossfade in homogeneous mode */
+          priv->homogeneous)
         {
           surface_w = gtk_widget_get_allocated_width (widget);
           surface_h = gtk_widget_get_allocated_height (widget);
@@ -545,7 +545,7 @@ gd_stack_add_named (GdStack    *stack,
   else
     gtk_widget_set_child_visible (child, FALSE);
 
-  if (priv->homogenous)
+  if (priv->homogeneous)
     gtk_widget_queue_resize (GTK_WIDGET (stack));
 }
 
@@ -584,13 +584,13 @@ gd_stack_remove (GtkContainer *container,
 
   g_slice_free (GdStackChildInfo, child_info);
 
-  if (priv->homogenous && was_visible)
+  if (priv->homogeneous && was_visible)
     gtk_widget_queue_resize (GTK_WIDGET (stack));
 }
 
 void
-gd_stack_set_homogenous (GdStack *stack,
-			 gboolean homogenous)
+gd_stack_set_homogeneous (GdStack *stack,
+			 gboolean homogeneous)
 {
   GdStackPrivate *priv;
 
@@ -598,26 +598,26 @@ gd_stack_set_homogenous (GdStack *stack,
 
   priv = stack->priv;
 
-  homogenous = !!homogenous;
+  homogeneous = !!homogeneous;
 
-  if (priv->homogenous == homogenous)
+  if (priv->homogeneous == homogeneous)
     return;
 
-  priv->homogenous = homogenous;
+  priv->homogeneous = homogeneous;
 
   gtk_widget_queue_resize (GTK_WIDGET (stack));
 
-  g_object_notify (G_OBJECT (stack), "homogenous");
+  g_object_notify (G_OBJECT (stack), "homogeneous");
 }
 
 gboolean
-gd_stack_get_homogenous (GdStack *stack)
+gd_stack_get_homogeneous (GdStack *stack)
 {
   GdStackPrivate *priv;
 
   g_return_if_fail (stack != NULL);
 
-  return stack->priv->homogenous;
+  return stack->priv->homogeneous;
 }
 
 gint
@@ -851,7 +851,7 @@ gd_stack_get_preferred_height (GtkWidget *widget,
       child_info = l->data;
       child = child_info->widget;
 
-      if (!priv->homogenous &&
+      if (!priv->homogeneous &&
 	  priv->visible_child != child_info)
 	continue;
       if (gtk_widget_get_visible (child))
@@ -885,7 +885,7 @@ gd_stack_get_preferred_height_for_width (GtkWidget* widget,
       child_info = l->data;
       child = child_info->widget;
 
-      if (!priv->homogenous &&
+      if (!priv->homogeneous &&
 	  priv->visible_child != child_info)
 	continue;
       if (gtk_widget_get_visible (child))
@@ -918,7 +918,7 @@ gd_stack_get_preferred_width (GtkWidget *widget,
       child_info = l->data;
       child = child_info->widget;
 
-      if (!priv->homogenous &&
+      if (!priv->homogeneous &&
 	  priv->visible_child != child_info)
 	continue;
       if (gtk_widget_get_visible (child))
@@ -952,7 +952,7 @@ gd_stack_get_preferred_width_for_height (GtkWidget* widget,
       child_info = l->data;
       child = child_info->widget;
 
-      if (!priv->homogenous &&
+      if (!priv->homogeneous &&
 	  priv->visible_child != child_info)
 	continue;
       if (gtk_widget_get_visible (child))

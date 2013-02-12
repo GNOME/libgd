@@ -20,7 +20,7 @@ toggle_homogenous (GtkWidget *button, gpointer data)
 {
   gboolean active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button));
   g_print ("active %d\n", active);
-  gd_stack_set_homogenous (GD_STACK (stack), active);
+  gd_stack_set_homogeneous (GD_STACK (stack), active);
 }
 
 gint

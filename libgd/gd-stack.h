@@ -59,9 +59,9 @@ GtkWidget * gd_stack_get_visible_child      (GdStack    *stack);
 void        gd_stack_set_visible_child_name (GdStack    *stack,
 					     const char *name);
 const char *gd_stack_get_visible_child_name (GdStack    *stack);
-void        gd_stack_set_homogenous         (GdStack    *stack,
-					     gboolean    homogenous);
-gboolean    gd_stack_get_homogenous         (GdStack    *stack);
+void        gd_stack_set_homogeneous        (GdStack    *stack,
+					     gboolean    homogeneous);
+gboolean    gd_stack_get_homogeneous        (GdStack    *stack);
 void        gd_stack_set_duration           (GdStack    *stack,
 					     gint        duration);
 gint        gd_stack_get_duration           (GdStack    *stack);
