@@ -43,16 +43,18 @@ main (gint argc,
   gtk_container_add (GTK_CONTAINER (box), stack);
 
   b1 = gtk_button_new_with_label ("Blah");
-  gtk_container_add (GTK_CONTAINER (stack), b1);
-  gtk_widget_set_name (b1, "1");
+  gtk_container_add_with_properties (GTK_CONTAINER (stack), b1,
+				     "name", "1",
+				     NULL);
 
   b2 = gtk_button_new_with_label ("Gazoooooooooooooooonk");
   gtk_container_add (GTK_CONTAINER (stack), b2);
-  gtk_widget_set_name (b2, "2");
+  gtk_container_child_set (GTK_CONTAINER (stack), b2,
+			   "name", "2",
+			   NULL);
 
   b3 = gtk_button_new_with_label ("Foo\nBar");
-  gtk_container_add (GTK_CONTAINER (stack), b3);
-  gtk_widget_set_name (b3, "3");
+  gd_stack_add_named (GD_STACK (stack), b3, "3");
 
   hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_container_add (GTK_CONTAINER (box), hbox);

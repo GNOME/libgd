@@ -31,10 +31,23 @@ enum  {
   PROP_VISIBLE_CHILD_NAME
 };
 
+enum
+{
+  CHILD_PROP_0,
+  CHILD_PROP_NAME
+};
+
+typedef struct _GdStackChildInfo GdStackChildInfo;
+
+struct _GdStackChildInfo {
+  GtkWidget *widget;
+  char *name;
+};
+
 struct _GdStackPrivate {
   GList *children;
 
-  GtkWidget *visible_child;
+  GdStackChildInfo *visible_child;
 
   gboolean homogenous;
 };
@@ -80,6 +93,16 @@ static void     gd_stack_set_property                   (GObject       *object,
 							 guint          property_id,
 							 const GValue  *value,
 							 GParamSpec    *pspec);
+static void     gd_stack_get_child_property             (GtkContainer *container,
+                                                         GtkWidget    *child,
+                                                         guint         property_id,
+                                                         GValue       *value,
+                                                         GParamSpec   *pspec);
+static void     gd_stack_set_child_property             (GtkContainer *container,
+                                                         GtkWidget    *child,
+                                                         guint         property_id,
+                                                         const GValue *value,
+                                                         GParamSpec   *pspec);
 
 G_DEFINE_TYPE(GdStack, gd_stack, GTK_TYPE_BIN);
 
@@ -175,6 +198,8 @@ gd_stack_class_init (GdStackClass * klass)
   container_class->add = gd_stack_add;
   container_class->remove = gd_stack_remove;
   container_class->forall = gd_stack_forall;
+  container_class->set_child_property = gd_stack_set_child_property;
+  container_class->get_child_property = gd_stack_get_child_property;
   /*container_class->get_path_for_child = gd_stack_get_path_for_child; */
   gtk_container_class_handle_border_width (container_class);
 
@@ -200,6 +225,13 @@ gd_stack_class_init (GdStackClass * klass)
 							NULL,
 							GTK_PARAM_READWRITE));
 
+  gtk_container_class_install_child_property (container_class, CHILD_PROP_NAME,
+    g_param_spec_string ("name",
+                         "Name",
+                         "The name of the child page",
+                         NULL,
+                         GTK_PARAM_READWRITE));
+
   g_type_class_add_private (klass, sizeof (GdStackPrivate));
 }
 
@@ -210,35 +242,118 @@ gd_stack_new (void)
   return g_object_new (GD_TYPE_STACK, NULL);
 }
 
-static void
-set_visible_child (GdStack *stack,
-		   GtkWidget *child)
+static GdStackChildInfo *
+find_child_info_for_widget (GdStack *stack,
+                            GtkWidget *child)
 {
   GdStackPrivate *priv = stack->priv;
+  GdStackChildInfo *info;
+  GList *l;
+
+  for (l = priv->children; l != NULL; l = l->next)
+    {
+      info = l->data;
+      if (info->widget == child)
+        return info;
+    }
+
+  return NULL;
+}
+
+static void
+gd_stack_get_child_property (GtkContainer *container,
+                             GtkWidget    *child,
+                             guint         property_id,
+                             GValue       *value,
+                             GParamSpec   *pspec)
+{
+  GdStack *stack = GD_STACK (container);
+  GdStackPrivate *priv = stack->priv;
+  GdStackChildInfo *info;
+
+  info = find_child_info_for_widget (stack, child);
+  if (info == NULL)
+    {
+      GTK_CONTAINER_WARN_INVALID_CHILD_PROPERTY_ID (container, property_id, pspec);
+      return;
+    }
+
+  switch (property_id)
+    {
+    case CHILD_PROP_NAME:
+      g_value_set_string (value, info->name);
+      break;
+
+    default:
+      GTK_CONTAINER_WARN_INVALID_CHILD_PROPERTY_ID (container, property_id, pspec);
+      break;
+    }
+}
+
+static void
+gd_stack_set_child_property (GtkContainer *container,
+                             GtkWidget    *child,
+                             guint         property_id,
+                             const GValue *value,
+                             GParamSpec   *pspec)
+{
+  GdStack *stack = GD_STACK (container);
+  GdStackPrivate *priv = stack->priv;
+  GdStackChildInfo *info;
+
+  info = find_child_info_for_widget (stack, child);
+  if (info == NULL)
+    {
+      GTK_CONTAINER_WARN_INVALID_CHILD_PROPERTY_ID (container, property_id, pspec);
+      return;
+    }
+
+  switch (property_id)
+    {
+    case CHILD_PROP_NAME:
+      info->name = g_value_dup_string (value);
+
+      if (priv->visible_child == info)
+        g_object_notify (G_OBJECT (stack), "visible-child-name");
+
+      break;
+
+    default:
+      GTK_CONTAINER_WARN_INVALID_CHILD_PROPERTY_ID (container, property_id, pspec);
+      break;
+    }
+}
+
+static void
+set_visible_child (GdStack *stack,
+		   GdStackChildInfo *child_info)
+{
+  GdStackPrivate *priv = stack->priv;
+  GdStackChildInfo *info;
   GtkWidget *w;
   GList *l;
 
   /* If none, pick first visible */
-  if (child == NULL)
+  if (child_info == NULL)
     {
       for (l = priv->children; l != NULL; l = l->next)
 	{
-	  w = l->data;
-	  if (gtk_widget_get_visible (w))
+          info = l->data;
+	  if (gtk_widget_get_visible (info->widget))
 	    {
-	      child = w;
+	      child_info = info;
 	      break;
 	    }
 	}
     }
 
   if (priv->visible_child)
-    gtk_widget_set_child_visible (priv->visible_child, FALSE);
+    gtk_widget_set_child_visible (priv->visible_child->widget, FALSE);
 
-  priv->visible_child = child;
+  priv->visible_child = child_info;
 
-  if (child)
-    gtk_widget_set_child_visible (child, TRUE);
+  if (child_info)
+    gtk_widget_set_child_visible (child_info->widget, TRUE);
 
   gtk_widget_queue_resize (GTK_WIDGET (stack));
 
@@ -254,25 +369,33 @@ stack_child_visibility_notify_cb (GObject *obj,
   GdStack *stack = GD_STACK (user_data);
   GdStackPrivate *priv = stack->priv;
   GtkWidget *child = GTK_WIDGET (obj);
+  GdStackChildInfo *child_info;
+
+  child_info = find_child_info_for_widget (stack, child);
 
   if (priv->visible_child == NULL &&
       gtk_widget_get_visible (child))
-    set_visible_child (stack, child);
-  else if (priv->visible_child == child &&
-	   gtk_widget_get_visible (child))
+    set_visible_child (stack, child_info);
+  else if (priv->visible_child == child_info &&
+	   !gtk_widget_get_visible (child))
     set_visible_child (stack, NULL);
 }
 
-static void
-gd_stack_add (GtkContainer *container,
-	      GtkWidget *child)
+void
+gd_stack_add_named (GdStack    *stack,
+                    GtkWidget  *child,
+                    const char *name)
 {
-  GdStack *stack = GD_STACK (container);
   GdStackPrivate *priv = stack->priv;
+  GdStackChildInfo *child_info;
 
   g_return_if_fail (child != NULL);
 
-  priv->children = g_list_append (priv->children, child);
+  child_info = g_slice_new (GdStackChildInfo);
+  child_info->widget = child;
+  child_info->name = g_strdup (name);
+
+  priv->children = g_list_append (priv->children, child_info);
 
   gtk_widget_set_parent (child, GTK_WIDGET (stack));
 
@@ -281,7 +404,7 @@ gd_stack_add (GtkContainer *container,
 
   if (priv->visible_child == NULL &&
       gtk_widget_get_visible (child))
-    set_visible_child (stack, child);
+    set_visible_child (stack, child_info);
   else
     gtk_widget_set_child_visible (child, FALSE);
 
@@ -290,31 +413,41 @@ gd_stack_add (GtkContainer *container,
 }
 
 static void
+gd_stack_add (GtkContainer *container,
+	      GtkWidget *child)
+{
+  gd_stack_add_named (GD_STACK (container), child, NULL);
+}
+static void
 gd_stack_remove (GtkContainer *container,
 		 GtkWidget    *child)
 {
   GdStack *stack = GD_STACK (container);
   GdStackPrivate *priv = stack->priv;
+  GdStackChildInfo *child_info;
   gboolean was_visible;
   GList *l;
 
-  l = g_list_find (priv->children, child);
-  if (l == NULL)
+  child_info = find_child_info_for_widget (stack, child);
+  if (child_info == NULL)
     return;
 
-  priv->children = g_list_delete_link (priv->children, l);
+  priv->children = g_list_remove (priv->children, child_info);
 
   g_signal_handlers_disconnect_by_func (child,
 					stack_child_visibility_notify_cb,
 					stack);
 
   was_visible = gtk_widget_get_visible (child);
-  gtk_widget_unparent (child);
 
-  if (priv->visible_child == child)
+  if (priv->visible_child == child_info)
     set_visible_child (stack, NULL);
 
-  if (priv->homogenous)
+  gtk_widget_unparent (child);
+
+  g_slice_free (GdStackChildInfo, child_info);
+
+  if (priv->homogenous && was_visible)
     gtk_widget_queue_resize (GTK_WIDGET (stack));
 }
 
@@ -367,7 +500,7 @@ gd_stack_get_visible_child (GdStack *stack)
 
   g_return_if_fail (stack != NULL);
 
-  return stack->priv->visible_child;
+  return stack->priv->visible_child->widget;
 }
 
 const char *
@@ -378,7 +511,7 @@ gd_stack_get_visible_child_name (GdStack *stack)
   g_return_val_if_fail (stack != NULL, NULL);
 
   if (stack->priv->visible_child)
-    return gtk_widget_get_name (stack->priv->visible_child);
+    return stack->priv->visible_child->name;
 
   return NULL;
 }
@@ -388,17 +521,19 @@ gd_stack_set_visible_child (GdStack    *stack,
 			    GtkWidget  *child)
 {
   GdStackPrivate *priv;
+  GdStackChildInfo *child_info;
 
   g_return_if_fail (stack != NULL);
   g_return_if_fail (child != NULL);
 
   priv = stack->priv;
 
-  if (g_list_find (priv->children, child) == NULL)
+  child_info = find_child_info_for_widget (stack, child);
+  if (child_info == NULL)
     return;
 
-  if (gtk_widget_get_visible (child))
-    set_visible_child (stack, child);
+  if (gtk_widget_get_visible (child_info->widget))
+    set_visible_child (stack, child_info);
 }
 
 void
@@ -406,7 +541,7 @@ gd_stack_set_visible_child_name (GdStack    *stack,
 				 const char *name)
 {
   GdStackPrivate *priv;
-  GtkWidget *child;
+  GdStackChildInfo *child_info, *info;
   GList *l;
 
   g_return_if_fail (stack != NULL);
@@ -414,21 +549,20 @@ gd_stack_set_visible_child_name (GdStack    *stack,
 
   priv = stack->priv;
 
-  child = NULL;
+  child_info = NULL;
   for (l = priv->children; l != NULL; l = l->next)
     {
-      GtkWidget *w = l->data;
-      const char *child_name = gtk_widget_get_name (w);
-      if (child_name != NULL &&
-	  strcmp (child_name, name) == 0)
+      info = l->data;
+      if (info->name != NULL &&
+	  strcmp (info->name, name) == 0)
 	{
-	  child = w;
+	  child_info = info;
 	  break;
 	}
     }
 
-  if (child != NULL && gtk_widget_get_visible (child))
-    set_visible_child (stack, child);
+  if (child_info != NULL && gtk_widget_get_visible (child_info->widget))
+    set_visible_child (stack, child_info);
 }
 
 static void
@@ -439,10 +573,14 @@ gd_stack_forall (GtkContainer *container,
 {
   GdStack *stack = GD_STACK (container);
   GdStackPrivate *priv = stack->priv;
+  GdStackChildInfo *child_info;
   GList *l;
 
   for (l = priv->children; l != NULL; l = l->next)
-    (* callback) (l->data, callback_data);
+    {
+      child_info = l->data;
+      (* callback) (child_info->widget, callback_data);
+    }
 }
 
 static void
@@ -453,13 +591,16 @@ gd_stack_compute_expand (GtkWidget      *widget,
   GdStack *stack = GD_STACK (widget);
   GdStackPrivate *priv = stack->priv;
   gboolean hexpand, vexpand;
+  GdStackChildInfo *child_info;
+  GtkWidget *child;
   GList *l;
 
   hexpand = FALSE;
   vexpand = FALSE;
   for (l = priv->children; l != NULL; l = l->next)
     {
-      GtkWidget *child = l->data;
+      child_info = l->data;
+      child = child_info->widget;
 
       if (!hexpand &&
 	  gtk_widget_compute_expand (child, GTK_ORIENTATION_HORIZONTAL))
@@ -486,7 +627,7 @@ gd_stack_draw (GtkWidget *widget,
 
   if (priv->visible_child)
     gtk_container_propagate_draw (GTK_CONTAINER (stack),
-				  priv->visible_child,
+				  priv->visible_child->widget,
 				  cr);
 
   return TRUE;
@@ -510,7 +651,7 @@ gd_stack_size_allocate (GtkWidget *widget,
   if (priv->visible_child)
     {
       GtkAllocation child_allocation = *allocation;
-      gtk_widget_size_allocate (priv->visible_child, &child_allocation);
+      gtk_widget_size_allocate (priv->visible_child->widget, &child_allocation);
     }
 }
 
@@ -521,6 +662,7 @@ gd_stack_get_preferred_height (GtkWidget *widget,
 {
   GdStack *stack = GD_STACK (widget);
   GdStackPrivate *priv = stack->priv;
+  GdStackChildInfo *child_info;
   GtkWidget *child;
   gint child_min, child_nat;
   GList *l;
@@ -530,9 +672,11 @@ gd_stack_get_preferred_height (GtkWidget *widget,
 
   for (l = priv->children; l != NULL; l = l->next)
     {
-      child = l->data;
+      child_info = l->data;
+      child = child_info->widget;
+
       if (!priv->homogenous &&
-	  priv->visible_child != child)
+	  priv->visible_child != child_info)
 	continue;
       if (gtk_widget_get_visible (child))
 	{
@@ -552,6 +696,7 @@ gd_stack_get_preferred_height_for_width (GtkWidget* widget,
 {
   GdStack *stack = GD_STACK (widget);
   GdStackPrivate *priv = stack->priv;
+  GdStackChildInfo *child_info;
   GtkWidget *child;
   gint child_min, child_nat;
   GList *l;
@@ -561,9 +706,11 @@ gd_stack_get_preferred_height_for_width (GtkWidget* widget,
 
   for (l = priv->children; l != NULL; l = l->next)
     {
-      child = l->data;
+      child_info = l->data;
+      child = child_info->widget;
+
       if (!priv->homogenous &&
-	  priv->visible_child != child)
+	  priv->visible_child != child_info)
 	continue;
       if (gtk_widget_get_visible (child))
 	{
@@ -582,6 +729,7 @@ gd_stack_get_preferred_width (GtkWidget *widget,
 {
   GdStack *stack = GD_STACK (widget);
   GdStackPrivate *priv = stack->priv;
+  GdStackChildInfo *child_info;
   GtkWidget *child;
   gint child_min, child_nat;
   GList *l;
@@ -591,9 +739,11 @@ gd_stack_get_preferred_width (GtkWidget *widget,
 
   for (l = priv->children; l != NULL; l = l->next)
     {
-      child = l->data;
+      child_info = l->data;
+      child = child_info->widget;
+
       if (!priv->homogenous &&
-	  priv->visible_child != child)
+	  priv->visible_child != child_info)
 	continue;
       if (gtk_widget_get_visible (child))
 	{
@@ -613,6 +763,7 @@ gd_stack_get_preferred_width_for_height (GtkWidget* widget,
 {
   GdStack *stack = GD_STACK (widget);
   GdStackPrivate *priv = stack->priv;
+  GdStackChildInfo *child_info;
   GtkWidget *child;
   gint child_min, child_nat;
   GList *l;
@@ -622,9 +773,11 @@ gd_stack_get_preferred_width_for_height (GtkWidget* widget,
 
   for (l = priv->children; l != NULL; l = l->next)
     {
-      child = l->data;
+      child_info = l->data;
+      child = child_info->widget;
+
       if (!priv->homogenous &&
-	  priv->visible_child != child)
+	  priv->visible_child != child_info)
 	continue;
       if (gtk_widget_get_visible (child))
 	{
