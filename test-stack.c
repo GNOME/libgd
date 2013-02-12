@@ -16,7 +16,7 @@ set_visible_child_name (GtkWidget *button, gpointer data)
 }
 
 static void
-toggle_homogenous (GtkWidget *button, gpointer data)
+toggle_homogeneous (GtkWidget *button, gpointer data)
 {
   gboolean active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button));
   g_print ("active %d\n", active);
@@ -85,7 +85,7 @@ main (gint argc,
 
   button = gtk_check_button_new_with_label ("humongous");
   gtk_container_add (GTK_CONTAINER (hbox), button);
-  g_signal_connect (button, "clicked", (GCallback) toggle_homogenous, NULL);
+  g_signal_connect (button, "clicked", (GCallback) toggle_homogeneous, NULL);
 
   gtk_widget_show_all (window);
   gtk_main ();
