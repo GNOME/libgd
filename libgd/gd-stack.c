@@ -380,10 +380,9 @@ gd_stack_xfade_cb (GdStack *stack)
 {
   GdStackPrivate *priv = stack->priv;
   gint64 now;
+  gdouble t;
 
   now = g_get_monotonic_time ();
-
-  gdouble t;
 
   t = 1.0;
   if (now < priv->end_time)
