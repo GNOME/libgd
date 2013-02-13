@@ -81,7 +81,7 @@ gd_main_icon_view_constructed (GObject *obj)
   GdMainIconView *self = GD_MAIN_ICON_VIEW (obj);
   GtkCellRenderer *cell;
   const GtkTargetEntry targets[] = {
-    { "text/uri-list", GTK_TARGET_OTHER_APP, 0 }
+    { (char *) "text/uri-list", GTK_TARGET_OTHER_APP, 0 }
   };
 
   G_OBJECT_CLASS (gd_main_icon_view_parent_class)->constructed (obj);
