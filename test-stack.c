@@ -27,7 +27,7 @@ gint
 main (gint argc,
       gchar ** argv)
 {
-  GtkWidget *window, *revealer, *box, *widget, *entry, *button, *hbox;
+  GtkWidget *window, *box, *button, *hbox;
   GtkWidget *b1, *b2, *b3;
 
   gtk_init (&argc, &argv);
@@ -73,15 +73,15 @@ main (gint argc,
 
   button = gtk_button_new_with_label ("1");
   gtk_container_add (GTK_CONTAINER (hbox), button);
-  g_signal_connect (button, "clicked", (GCallback) set_visible_child_name, "1");
+  g_signal_connect (button, "clicked", (GCallback) set_visible_child_name, (gpointer) "1");
 
   button = gtk_button_new_with_label ("2");
   gtk_container_add (GTK_CONTAINER (hbox), button);
-  g_signal_connect (button, "clicked", (GCallback) set_visible_child_name, "2");
+  g_signal_connect (button, "clicked", (GCallback) set_visible_child_name, (gpointer) "2");
 
   button = gtk_button_new_with_label ("3");
   gtk_container_add (GTK_CONTAINER (hbox), button);
-  g_signal_connect (button, "clicked", (GCallback) set_visible_child_name, "3");
+  g_signal_connect (button, "clicked", (GCallback) set_visible_child_name, (gpointer) "3");
 
   button = gtk_check_button_new_with_label ("humongous");
   gtk_container_add (GTK_CONTAINER (hbox), button);
