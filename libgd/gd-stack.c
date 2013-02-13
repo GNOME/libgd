@@ -768,7 +768,7 @@ gd_stack_draw (GtkWidget *widget,
 
   if (priv->visible_child)
     {
-      if (priv->xfade_pos != 1.0)
+      if (priv->xfade_pos < 1.0)
         {
           if (priv->xfade_surface)
             {
