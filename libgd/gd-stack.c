@@ -302,7 +302,6 @@ gd_stack_get_child_property (GtkContainer *container,
                              GParamSpec   *pspec)
 {
   GdStack *stack = GD_STACK (container);
-  GdStackPrivate *priv = stack->priv;
   GdStackChildInfo *info;
 
   info = find_child_info_for_widget (stack, child);
@@ -363,8 +362,6 @@ gd_stack_set_xfade_position (GdStack *stack,
                              gdouble pos)
 {
   GdStackPrivate *priv = stack->priv;
-  gboolean new_visible;
-  GtkWidget *child;
 
   priv->xfade_pos = pos;
 
@@ -438,7 +435,6 @@ set_visible_child (GdStack *stack,
   GdStackPrivate *priv = stack->priv;
   GdStackChildInfo *info;
   GtkWidget *widget = GTK_WIDGET (stack);
-  GtkWidget *w;
   GList *l;
   cairo_surface_t *surface;
   int surface_w, surface_h;
@@ -563,7 +559,6 @@ gd_stack_remove (GtkContainer *container,
   GdStackPrivate *priv = stack->priv;
   GdStackChildInfo *child_info;
   gboolean was_visible;
-  GList *l;
 
   child_info = find_child_info_for_widget (stack, child);
   if (child_info == NULL)
@@ -613,8 +608,6 @@ gd_stack_set_homogeneous (GdStack *stack,
 gboolean
 gd_stack_get_homogeneous (GdStack *stack)
 {
-  GdStackPrivate *priv;
-
   g_return_if_fail (stack != NULL);
 
   return stack->priv->homogeneous;
@@ -651,8 +644,6 @@ gd_stack_set_duration (GdStack *stack,
 GtkWidget *
 gd_stack_get_visible_child (GdStack *stack)
 {
-  GdStackPrivate *priv;
-
   g_return_if_fail (stack != NULL);
 
   return stack->priv->visible_child->widget;
@@ -661,8 +652,6 @@ gd_stack_get_visible_child (GdStack *stack)
 const char *
 gd_stack_get_visible_child_name (GdStack *stack)
 {
-  GdStackPrivate *priv;
-
   g_return_val_if_fail (stack != NULL, NULL);
 
   if (stack->priv->visible_child)
@@ -675,13 +664,10 @@ void
 gd_stack_set_visible_child (GdStack    *stack,
 			    GtkWidget  *child)
 {
-  GdStackPrivate *priv;
   GdStackChildInfo *child_info;
 
   g_return_if_fail (stack != NULL);
   g_return_if_fail (child != NULL);
-
-  priv = stack->priv;
 
   child_info = find_child_info_for_widget (stack, child);
   if (child_info == NULL)
@@ -815,10 +801,6 @@ gd_stack_size_allocate (GtkWidget *widget,
 {
   GdStack *stack = GD_STACK (widget);
   GdStackPrivate *priv = stack->priv;
-  GtkAllocation child_allocation;
-  GtkWidget *child;
-  gboolean window_visible;
-  int bin_x, bin_y;
 
   g_return_if_fail (allocation != NULL);
 
