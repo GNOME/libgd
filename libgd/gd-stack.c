@@ -607,7 +607,7 @@ gd_stack_set_homogeneous (GdStack *stack,
 gboolean
 gd_stack_get_homogeneous (GdStack *stack)
 {
-  g_return_if_fail (stack != NULL);
+  g_return_val_if_fail (stack != NULL, FALSE);
 
   return stack->priv->homogeneous;
 }
@@ -643,7 +643,7 @@ gd_stack_set_duration (GdStack *stack,
 GtkWidget *
 gd_stack_get_visible_child (GdStack *stack)
 {
-  g_return_if_fail (stack != NULL);
+  g_return_val_if_fail (stack != NULL, NULL);
 
   return stack->priv->visible_child->widget;
 }
