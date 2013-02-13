@@ -23,6 +23,7 @@
 #include <gtk/gtk.h>
 #include "gd-stack.h"
 #include <math.h>
+#include <string.h>
 
 #define FRAME_TIME_MSEC 17 /* 17 msec => 60 fps */
 
