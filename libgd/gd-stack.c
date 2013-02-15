@@ -25,8 +25,6 @@
 #include <math.h>
 #include <string.h>
 
-#define FRAME_TIME_MSEC 17 /* 17 msec => 60 fps */
-
 enum  {
   PROP_0,
   PROP_HOMOGENEOUS,
@@ -59,7 +57,7 @@ struct _GdStackPrivate {
   cairo_surface_t *xfade_surface;
   gdouble xfade_pos;
 
-  guint timeout_tag;
+  guint tick_id;
   gint64 start_time;
   gint64 end_time;
 };
@@ -137,9 +135,9 @@ gd_stack_finalize (GObject* obj)
   GdStack *stack = GD_STACK (obj);
   GdStackPrivate *priv = stack->priv;
 
-  if (priv->timeout_tag != 0)
-    g_source_remove (priv->timeout_tag);
-  priv->timeout_tag = 0;
+  if (priv->tick_id != 0)
+    gtk_widget_remove_tick_callback (GTK_WIDGET (stack), priv->tick_id);
+  priv->tick_id = 0;
 
   if (priv->xfade_surface != NULL)
     cairo_surface_destroy (priv->xfade_surface);
@@ -377,13 +375,15 @@ gd_stack_set_xfade_position (GdStack *stack,
 }
 
 static gboolean
-gd_stack_xfade_cb (GdStack *stack)
+gd_stack_xfade_cb (GdStack *stack,
+                   GdkFrameClock *frame_clock,
+                   gpointer user_data)
 {
   GdStackPrivate *priv = stack->priv;
   gint64 now;
   gdouble t;
 
-  now = g_get_monotonic_time ();
+  now = gdk_frame_clock_get_frame_time (frame_clock);
 
   t = 1.0;
   if (now < priv->end_time)
@@ -398,7 +398,7 @@ gd_stack_xfade_cb (GdStack *stack)
   if (t >= 1.0)
     {
       gtk_widget_set_opacity (GTK_WIDGET (stack), 1.0);
-      priv->timeout_tag = 0;
+      priv->tick_id = 0;
 
       return FALSE;
     }
@@ -410,19 +410,19 @@ static void
 gd_stack_start_xfade (GdStack *stack)
 {
   GdStackPrivate *priv = stack->priv;
+  GtkWidget *widget = GTK_WIDGET (stack);
 
-  if (gtk_widget_get_mapped (GTK_WIDGET (stack)) &&
+  if (gtk_widget_get_mapped (widget) &&
       priv->xfade_surface != NULL)
     {
-      gtk_widget_set_opacity (GTK_WIDGET (stack), 0.999);
+      gtk_widget_set_opacity (widget, 0.999);
 
       priv->xfade_pos = 0.0;
-      priv->start_time = g_get_monotonic_time ();
+      priv->start_time = gdk_frame_clock_get_frame_time (gtk_widget_get_frame_clock (widget));
       priv->end_time = priv->start_time + (priv->duration * 1000);
-      if (priv->timeout_tag == 0)
-        priv->timeout_tag =
-          gdk_threads_add_timeout ((guint) FRAME_TIME_MSEC,
-                                   (GSourceFunc)gd_stack_xfade_cb, stack);
+      if (priv->tick_id == 0)
+        priv->tick_id =
+          gtk_widget_add_tick_callback (widget, (GtkTickCallback)gd_stack_xfade_cb, stack, NULL);
     }
   else
     gd_stack_set_xfade_position (stack, 1.0);
