@@ -454,6 +454,9 @@ set_visible_child (GdStack *stack,
 	}
     }
 
+  if (child_info == priv->visible_child)
+    return;
+
   surface = NULL;
   if (priv->visible_child)
     {
