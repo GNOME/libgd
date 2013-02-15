@@ -25,6 +25,12 @@
 #include <math.h>
 #include <string.h>
 
+/* TODO:
+ *  more transiton types (slides)
+ *  filter events out events to the last_child widget during transitions
+ *  add way to disable transitions
+ */
+
 enum  {
   PROP_0,
   PROP_HOMOGENEOUS,
