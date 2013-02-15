@@ -45,7 +45,7 @@ struct _GdRevealerPrivate {
   gdouble source_pos;
   gdouble target_pos;
 
-  guint timeout;
+  guint tick_id;
   gint64 start_time;
   gint64 end_time;
 };
@@ -104,9 +104,9 @@ gd_revealer_finalize (GObject* obj)
   GdRevealer *revealer = GD_REVEALER (obj);
   GdRevealerPrivate *priv = revealer->priv;
 
-  if (priv->timeout != 0)
-    g_source_remove (priv->timeout);
-  priv->timeout = 0;
+  if (priv->tick_id != 0)
+    gtk_widget_remove_tick_callback (GTK_WIDGET (revealer), priv->tick_id);
+  priv->tick_id = 0;
 
   G_OBJECT_CLASS (gd_revealer_parent_class)->finalize (obj);
 }
@@ -470,16 +470,18 @@ gd_revealer_animate_step (GdRevealer *revealer,
 }
 
 static gboolean
-gd_revealer_animate_cb (GdRevealer *revealer)
+gd_revealer_animate_cb (GdRevealer *revealer,
+                        GdkFrameClock *frame_clock,
+                        gpointer user_data)
 {
   GdRevealerPrivate *priv = revealer->priv;
   gint64 now;
 
-  now = g_get_monotonic_time ();
+  now = gdk_frame_clock_get_frame_time (frame_clock);
   gd_revealer_animate_step (revealer, now);
   if (priv->current_pos == priv->target_pos)
     {
-      priv->timeout = (guint) 0;
+      priv->tick_id = 0;
       return FALSE;
     }
 
@@ -491,6 +493,7 @@ gd_revealer_start_animation (GdRevealer *revealer,
                              gdouble target)
 {
   GdRevealerPrivate *priv = revealer->priv;
+  GtkWidget *widget = GTK_WIDGET (revealer);
 
   if (priv->target_pos == target)
     return;
@@ -498,15 +501,14 @@ gd_revealer_start_animation (GdRevealer *revealer,
   priv->target_pos = target;
   g_object_notify (G_OBJECT (revealer), "reveal-child");
 
-  if (gtk_widget_get_mapped (GTK_WIDGET (revealer)))
+  if (gtk_widget_get_mapped (widget))
     {
       priv->source_pos = priv->current_pos;
-      priv->start_time = g_get_monotonic_time ();
+      priv->start_time = gdk_frame_clock_get_frame_time (gtk_widget_get_frame_clock (widget));
       priv->end_time = priv->start_time + (priv->duration * 1000);
-      if (priv->timeout == 0)
-        priv->timeout =
-          gdk_threads_add_timeout ((guint) FRAME_TIME_MSEC,
-                                   (GSourceFunc)gd_revealer_animate_cb, revealer);
+      if (priv->tick_id == 0)
+        priv->tick_id =
+          gtk_widget_add_tick_callback (widget, (GtkTickCallback)gd_revealer_animate_cb, revealer, NULL);
       gd_revealer_animate_step (revealer, priv->start_time);
     }
   else
@@ -522,10 +524,10 @@ gd_revealer_stop_animation (GdRevealer *revealer)
   GdRevealerPrivate *priv = revealer->priv;
 
   priv->current_pos = priv->target_pos;
-  if (priv->timeout != 0)
+  if (priv->tick_id != 0)
     {
-      g_source_remove (priv->timeout);
-      priv->timeout = 0;
+      gtk_widget_remove_tick_callback (GTK_WIDGET (revealer), priv->tick_id);
+      priv->tick_id = 0;
     }
 }
 
