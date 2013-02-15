@@ -488,7 +488,10 @@ set_visible_child (GdStack *stack,
 
   priv->xfade_surface = surface;
 
-  gtk_widget_queue_resize (GTK_WIDGET (stack));
+  if (priv->homogeneous)
+    gtk_widget_queue_draw (GTK_WIDGET (stack));
+  else
+    gtk_widget_queue_resize (GTK_WIDGET (stack));
 
   g_object_notify (G_OBJECT (stack), "visible-child");
   g_object_notify (G_OBJECT (stack), "visible-child-name");
@@ -603,7 +606,8 @@ gd_stack_set_homogeneous (GdStack *stack,
 
   priv->homogeneous = homogeneous;
 
-  gtk_widget_queue_resize (GTK_WIDGET (stack));
+  if (gtk_widget_get_visible (GTK_WIDGET(stack)))
+    gtk_widget_queue_resize (GTK_WIDGET (stack));
 
   g_object_notify (G_OBJECT (stack), "homogeneous");
 }
