@@ -773,9 +773,12 @@ gd_stack_forall (GtkContainer *container,
   GdStackChildInfo *child_info;
   GList *l;
 
-  for (l = priv->children; l != NULL; l = l->next)
+  l = priv->children;
+  while (l)
     {
       child_info = l->data;
+      l = l->next;
+
       (* callback) (child_info->widget, callback_data);
     }
 }
