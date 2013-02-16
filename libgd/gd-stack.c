@@ -394,7 +394,7 @@ gd_stack_set_transition_position (GdStack *stack,
           priv->last_visible_pattern = NULL;
         }
 
-      gtk_widget_queue_resize (stack);
+      gtk_widget_queue_resize (GTK_WIDGET (stack));
     }
 
   return done;
