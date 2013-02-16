@@ -600,6 +600,7 @@ gd_stack_add (GtkContainer *container,
 {
   gd_stack_add_named (GD_STACK (container), child, NULL);
 }
+
 static void
 gd_stack_remove (GtkContainer *container,
 		 GtkWidget    *child)
@@ -701,7 +702,7 @@ gd_stack_get_visible_child (GdStack *stack)
 {
   g_return_val_if_fail (stack != NULL, NULL);
 
-  return stack->priv->visible_child->widget;
+  return stack->priv->visible_child ? stack->priv->visible_child->widget : NULL;
 }
 
 const char *
