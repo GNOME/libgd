@@ -104,8 +104,7 @@ gd_header_bar_init (GdHeaderBar *bar)
   priv->vpadding = DEFAULT_VPADDING;
 
   context = gtk_widget_get_style_context (GTK_WIDGET (bar));
-  gtk_style_context_add_class (context, GTK_STYLE_CLASS_TOOLBAR);
-  gtk_style_context_add_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
+  gtk_style_context_add_class (context, "header-bar");
   gtk_style_context_add_class (context, GTK_STYLE_CLASS_HORIZONTAL);
 }
 
