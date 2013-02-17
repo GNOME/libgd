@@ -64,6 +64,16 @@ enum {
 G_DEFINE_TYPE (GdHeaderBar, gd_header_bar, GTK_TYPE_CONTAINER);
 
 static void
+boldify_label (GtkWidget *label)
+{
+  PangoAttrList *attrs;
+  attrs = pango_attr_list_new ();
+  pango_attr_list_insert (attrs, pango_attr_weight_new (PANGO_WEIGHT_BOLD));
+  gtk_label_set_attributes (GTK_LABEL (label), attrs);
+  pango_attr_list_unref (attrs);
+}
+
+static void
 gd_header_bar_init (GdHeaderBar *bar)
 {
   GtkStyleContext *context;
@@ -76,6 +86,7 @@ gd_header_bar_init (GdHeaderBar *bar)
   gtk_widget_set_redraw_on_allocate (GTK_WIDGET (bar), FALSE);
 
   priv->label = gtk_label_new ("");
+  boldify_label (priv->label);
   gtk_widget_set_parent (priv->label, GTK_WIDGET (bar));
   gtk_widget_set_valign (priv->label, GTK_ALIGN_CENTER);
   gtk_label_set_line_wrap (GTK_LABEL (priv->label), FALSE);
