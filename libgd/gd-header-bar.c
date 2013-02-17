@@ -245,18 +245,15 @@ gd_header_bar_compute_size_for_opposing_orientation (GtkWidget *widget,
   Child *child;
   GList *children;
   gint nvis_children;
-  gint nexpand_children;
   gint computed_minimum = 0;
   gint computed_natural = 0;
   GtkRequestedSize *sizes;
   GtkPackType packing;
   gint size;
-  gint extra;
   gint i;
   gint child_size;
   gint child_minimum;
   gint child_natural;
-  gint n_extra_widgets = 0;
 
   nvis_children = count_visible_children (bar);
 
@@ -829,8 +826,6 @@ static gint
 gd_header_bar_draw (GtkWidget *widget,
                     cairo_t   *cr)
 {
-  GdHeaderBar *bar = GD_HEADER_BAR (widget);
-  GdHeaderBarPrivate *priv = bar->priv;
   GtkStyleContext *context;
 
   context = gtk_widget_get_style_context (widget);
