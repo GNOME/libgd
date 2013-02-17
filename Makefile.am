@@ -94,6 +94,25 @@ nodist_libgd_la_SOURCES += $(main_toolbar_sources)
 EXTRA_DIST += $(main_toolbar_sources)
 endif
 
+if LIBGD_HEADER_BAR
+header_bar_sources =				\
+	libgd/gd-header-bar.c			\
+	libgd/gd-header-bar.h			\
+	$(NULL)
+
+nodist_libgd_la_SOURCES += $(header_bar_sources)
+EXTRA_DIST += $(header_bar_sources)
+
+noinst_PROGRAMS += test-header-bar
+test_header_bar_SOURCES =			\
+	test-header-bar.c			\
+	$(NULL)
+test_header_bar_LDADD =				\
+	$(LIBGD_LIBS)				\
+	libgd.la				\
+	$(NULL)
+endif
+
 if LIBGD_MARGIN_CONTAINER
 margin_container_sources =			\
 	libgd/gd-margin-container.c		\

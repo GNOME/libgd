@@ -84,6 +84,12 @@ AC_DEFUN([LIBGD_INIT], [
         AC_DEFINE([LIBGD_MAIN_TOOLBAR], [1], [Description])
     ])
 
+    # header-bar:
+    AM_CONDITIONAL([LIBGD_HEADER_BAR],[_LIBGD_IF_OPTION_SET([header-bar],[true],[false])])
+    _LIBGD_IF_OPTION_SET([header-bar],[
+        AC_DEFINE([LIBGD_HEADER_BAR], [1], [Description])
+    ])
+
     # margin-container:
     AM_CONDITIONAL([LIBGD_MARGIN_CONTAINER],[_LIBGD_IF_OPTION_SET([margin-container],[true],[false])])
     _LIBGD_IF_OPTION_SET([margin-container],[
