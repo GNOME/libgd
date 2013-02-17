@@ -79,7 +79,7 @@ gd_header_bar_init (GdHeaderBar *bar)
   GtkStyleContext *context;
   GdHeaderBarPrivate *priv;
 
-  priv = G_TYPE_INSTANCE_GET_PRIVATE (bar, GTK_TYPE_HEADER_BAR, GdHeaderBarPrivate);
+  priv = G_TYPE_INSTANCE_GET_PRIVATE (bar, GD_TYPE_HEADER_BAR, GdHeaderBarPrivate);
   bar->priv = priv;
 
   gtk_widget_set_has_window (GTK_WIDGET (bar), FALSE);
@@ -497,6 +497,55 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
   gtk_widget_size_allocate (priv->label, &child_allocation);
 }
 
+/**
+ * gd_header_bar_set_title:
+ * @bar: a #GdHeaderBar
+ * @title: a title
+ *
+ * Sets the title of the #GdHeaderBar. The title should help a user
+ * identify the current view. A good title should not include the
+ * application name.
+ *
+ **/
+void
+gd_header_bar_set_title (GdHeaderBar *bar,
+                         const gchar *title)
+{
+  GdHeaderBarPrivate *priv;
+  char *new_title;
+
+  g_return_if_fail (GD_IS_HEADER_BAR (bar));
+
+  priv = bar->priv;
+
+  new_title = g_strdup (title);
+  g_free (priv->title);
+  priv->title = new_title;
+
+  gtk_label_set_label (GTK_LABEL (priv->label), priv->title);
+  gtk_widget_queue_resize (GTK_WIDGET (bar));
+
+  g_object_notify (G_OBJECT (bar), "title");
+}
+
+/**
+ * gd_header_bar_get_title:
+ * @bar: a #GdHeaderBar
+ *
+ * Retrieves the title of the header. See gd_header_bar_set_title().
+ *
+ * Return value: the title of the header, or %NULL if none has
+ *    been set explicitely. The returned string is owned by the widget
+ *    and must not be modified or freed.
+ **/
+const gchar *
+gd_header_bar_get_title (GdHeaderBar *bar)
+{
+  g_return_val_if_fail (GD_IS_HEADER_BAR (bar), NULL);
+
+  return bar->priv->title;
+}
+
 static void
 gd_header_bar_get_property (GObject      *object,
                             guint         prop_id,
@@ -530,7 +579,6 @@ gd_header_bar_get_property (GObject      *object,
     }
 }
 
-
 static void
 gd_header_bar_set_property (GObject      *object,
                             guint         prop_id,
@@ -543,10 +591,7 @@ gd_header_bar_set_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_TITLE:
-      g_free (priv->title);
-      priv->title = g_value_dup_string (value);
-      gtk_label_set_label (GTK_LABEL (priv->label), priv->title);
-      gtk_widget_queue_resize (GTK_WIDGET (bar));
+      gd_header_bar_set_title (bar, g_value_get_string (value));
       break;
 
     case PROP_SPACING:
@@ -952,7 +997,7 @@ gd_header_bar_pack_end (GdHeaderBar *bar,
 }
 
 GtkWidget *
-gd_header_bar_new (const gchar *title)
+gd_header_bar_new (void)
 {
-  return GTK_WIDGET (g_object_new (GTK_TYPE_HEADER_BAR, "title", title, NULL));
+  return GTK_WIDGET (g_object_new (GD_TYPE_HEADER_BAR, NULL));
 }

@@ -24,12 +24,12 @@
 
 G_BEGIN_DECLS
 
-#define GTK_TYPE_HEADER_BAR            (gd_header_bar_get_type ())
-#define GD_HEADER_BAR(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), GTK_TYPE_HEADER_BAR, GdHeaderBar))
-#define GD_HEADER_BAR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), GTK_TYPE_HEADER_BAR, GdHeaderBarClass))
-#define GTK_IS_HEADER_BAR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GTK_TYPE_HEADER_BAR))
-#define GTK_IS_HEADER_BAR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GTK_TYPE_HEADER_BAR))
-#define GD_HEADER_BAR_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), GTK_TYPE_HEADER_BAR, GdHeaderBarClass))
+#define GD_TYPE_HEADER_BAR            (gd_header_bar_get_type ())
+#define GD_HEADER_BAR(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), GD_TYPE_HEADER_BAR, GdHeaderBar))
+#define GD_HEADER_BAR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), GD_TYPE_HEADER_BAR, GdHeaderBarClass))
+#define GD_IS_HEADER_BAR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GD_TYPE_HEADER_BAR))
+#define GD_IS_HEADER_BAR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GD_TYPE_HEADER_BAR))
+#define GD_HEADER_BAR_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), GD_TYPE_HEADER_BAR, GdHeaderBarClass))
 
 typedef struct _GdHeaderBar              GdHeaderBar;
 typedef struct _GdHeaderBarPrivate       GdHeaderBarPrivate;
@@ -55,7 +55,10 @@ struct _GdHeaderBarClass
 };
 
 GType        gd_header_bar_get_type   (void) G_GNUC_CONST;
-GtkWidget   *gd_header_bar_new        (const gchar *title);
+GtkWidget   *gd_header_bar_new        (void);
+void         gd_header_bar_set_title  (GdHeaderBar *bar,
+                                       const char  *title);
+const char * gd_header_bar_get_title  (GdHeaderBar *bar);
 void         gd_header_bar_pack_start (GdHeaderBar *bar,
                                        GtkWidget   *child);
 void         gd_header_bar_pack_end   (GdHeaderBar *bar,

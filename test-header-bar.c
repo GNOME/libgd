@@ -20,9 +20,10 @@ main (gint argc,
   box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add (GTK_CONTAINER (window), box);
 
-  bar = gd_header_bar_new ("Shells Shells Shells Shells Shells");
+  bar = gd_header_bar_new ();
   gtk_box_pack_start (GTK_BOX (box), bar, FALSE, TRUE, 0);
 
+  gd_header_bar_set_title (GD_HEADER_BAR (bar), "Title Title Title Title Title Title");
   button = gtk_button_new_with_label ("Forget");
   gtk_widget_set_valign (button, GTK_ALIGN_CENTER);
   gtk_style_context_add_class (gtk_widget_get_style_context (button), GTK_STYLE_CLASS_RAISED);
