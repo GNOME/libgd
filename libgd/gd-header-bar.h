@@ -54,15 +54,18 @@ struct _GdHeaderBarClass
   void (*_gd_reserved4) (void);
 };
 
-GType        gd_header_bar_get_type   (void) G_GNUC_CONST;
-GtkWidget   *gd_header_bar_new        (void);
-void         gd_header_bar_set_title  (GdHeaderBar *bar,
-                                       const char  *title);
-const char * gd_header_bar_get_title  (GdHeaderBar *bar);
-void         gd_header_bar_pack_start (GdHeaderBar *bar,
-                                       GtkWidget   *child);
-void         gd_header_bar_pack_end   (GdHeaderBar *bar,
-                                       GtkWidget   *child);
+GType        gd_header_bar_get_type          (void) G_GNUC_CONST;
+GtkWidget   *gd_header_bar_new               (void);
+void         gd_header_bar_set_title         (GdHeaderBar *bar,
+                                              const char  *title);
+const char * gd_header_bar_get_title         (GdHeaderBar *bar);
+void         gd_header_bar_set_custom_title  (GdHeaderBar *bar,
+                                              GtkWidget   *custom_title);
+GtkWidget *  gd_header_bar_get_custom_title  (GdHeaderBar *bar);
+void         gd_header_bar_pack_start        (GdHeaderBar *bar,
+                                              GtkWidget   *child);
+void         gd_header_bar_pack_end          (GdHeaderBar *bar,
+                                              GtkWidget   *child);
 
 G_END_DECLS
 

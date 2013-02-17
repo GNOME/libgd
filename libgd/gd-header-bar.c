@@ -32,6 +32,7 @@ struct _GdHeaderBarPrivate
 {
   gchar *title;
   GtkWidget *label;
+  GtkWidget *custom_title;
   GdkWindow *event_window;
   gint spacing;
   gint hpadding;
@@ -50,6 +51,7 @@ struct _Child
 enum {
   PROP_0,
   PROP_TITLE,
+  PROP_CUSTOM_TITLE,
   PROP_SPACING,
   PROP_HPADDING,
   PROP_VPADDING
@@ -95,6 +97,7 @@ gd_header_bar_init (GdHeaderBar *bar)
   gtk_widget_show (priv->label);
 
   priv->title = NULL;
+  priv->custom_title = NULL;
   priv->children = NULL;
   priv->spacing = DEFAULT_SPACING;
   priv->hpadding = DEFAULT_HPADDING;
@@ -379,8 +382,8 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
   GtkRequestedSize *sizes;
   gint size;
   gint nvis_children;
-  gint label_minimum_size;
-  gint label_natural_size;
+  gint title_minimum_size;
+  gint title_natural_size;
   gint side[2];
   GList *l;
   gint i;
@@ -413,11 +416,21 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
       i++;
     }
 
-  gtk_widget_get_preferred_width_for_height (priv->label,
-                                             allocation->height - 2 * priv->vpadding,
-                                             &label_minimum_size,
-                                             &label_natural_size);
-  size -= label_natural_size;
+  if (priv->custom_title)
+    {
+      gtk_widget_get_preferred_width_for_height (priv->custom_title,
+                                                 allocation->height - 2 * priv->vpadding,
+                                                 &title_minimum_size,
+                                                 &title_natural_size);
+    }
+  else
+    {
+      gtk_widget_get_preferred_width_for_height (priv->label,
+                                                 allocation->height - 2 * priv->vpadding,
+                                                 &title_minimum_size,
+                                                 &title_natural_size);
+    }
+  size -= title_natural_size;
 
   size = gtk_distribute_natural_allocation (MAX (0, size), nvis_children, sizes);
 
@@ -465,7 +478,7 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
 
           if (direction == GTK_TEXT_DIR_RTL)
             child_allocation.x = allocation->x + allocation->width - (child_allocation.x - allocation->x) - child_allocation.width;
- 
+
           gtk_widget_size_allocate (child->widget, &child_allocation);
           i++;
         }
@@ -476,10 +489,10 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
 
   size = MAX(side[0], side[1]);
 
-  if (allocation->width - 2 * size >= label_natural_size)
-    child_size = MIN (label_natural_size, allocation->width - 2 * size);
-  else if (allocation->width - side[0] - side[1] >= label_natural_size)
-    child_size = MIN (label_natural_size, allocation->width - side[0] - side[1]);
+  if (allocation->width - 2 * size >= title_natural_size)
+    child_size = MIN (title_natural_size, allocation->width - 2 * size);
+  else if (allocation->width - side[0] - side[1] >= title_natural_size)
+    child_size = MIN (title_natural_size, allocation->width - side[0] - side[1]);
   else
     child_size = allocation->width - side[0] - side[1];
 
@@ -494,7 +507,10 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
   if (direction == GTK_TEXT_DIR_RTL)
     child_allocation.x = allocation->x + allocation->width - (child_allocation.x - allocation->x) - child_allocation.width;
 
-  gtk_widget_size_allocate (priv->label, &child_allocation);
+  if (priv->custom_title)
+    gtk_widget_size_allocate (priv->custom_title, &child_allocation);
+  else
+    gtk_widget_size_allocate (priv->label, &child_allocation);
 }
 
 /**
@@ -546,6 +562,83 @@ gd_header_bar_get_title (GdHeaderBar *bar)
   return bar->priv->title;
 }
 
+/**
+ * gd_header_bar_set_custom_title:
+ * @bar: a #GdHeaderBar
+ * @title_widget: a custom widget to use for a title
+ *
+ * Sets a custom title for the #GdHeaderBar. The title should help a
+ * user identify the current view. This supercedes any title set by
+ * gd_header_bar_set_title()
+ *
+ **/
+void
+gd_header_bar_set_custom_title (GdHeaderBar *bar,
+                                GtkWidget   *title_widget)
+{
+  GdHeaderBarPrivate *priv;
+
+  g_return_if_fail (GD_IS_HEADER_BAR (bar));
+  if (title_widget)
+    g_return_if_fail (GTK_IS_WIDGET (title_widget));
+
+  priv = bar->priv;
+
+  /* No need to do anything if the custom widget stays the same */
+  if (priv->custom_title == title_widget)
+    return;
+
+  if (priv->custom_title)
+    {
+      GtkWidget *custom = priv->custom_title;
+      /* Note: We must reset tooltip->custom_widget first,
+       * since gtk_container_remove() will recurse into
+       * gtk_tooltip_set_custom()
+       */
+      priv->custom_title = NULL;
+      gtk_container_remove (GTK_CONTAINER (bar), custom);
+      g_object_unref (custom);
+    }
+
+  if (title_widget)
+    {
+      priv->custom_title = g_object_ref (title_widget);
+
+      gtk_widget_hide (priv->label);
+
+      gtk_widget_set_parent (priv->custom_title, GTK_WIDGET (bar));
+      gtk_widget_set_valign (priv->custom_title, GTK_ALIGN_CENTER);
+
+      gtk_widget_show (title_widget);
+    }
+  else
+    {
+      gtk_widget_show (priv->label);
+    }
+
+  gtk_widget_queue_resize (GTK_WIDGET (bar));
+
+  g_object_notify (G_OBJECT (bar), "custom-title");
+}
+
+/**
+ * gd_header_bar_get_custom_title:
+ * @bar: a #GdHeaderBar
+ *
+ * Retrieves the custom title widget of the header. See
+ * gd_header_bar_set_custom_title().
+ *
+ * Return value: the custom title widget of the header, or %NULL if
+ *    none has been set explicitely.
+ **/
+GtkWidget *
+gd_header_bar_get_custom_title (GdHeaderBar *bar)
+{
+  g_return_val_if_fail (GD_IS_HEADER_BAR (bar), NULL);
+
+  return bar->priv->custom_title;
+}
+
 static void
 gd_header_bar_get_property (GObject      *object,
                             guint         prop_id,
@@ -559,6 +652,10 @@ gd_header_bar_get_property (GObject      *object,
     {
     case PROP_TITLE:
       g_value_set_string (value, priv->title);
+      break;
+
+    case PROP_CUSTOM_TITLE:
+      g_value_set_object (value, priv->custom_title);
       break;
 
     case PROP_SPACING:
@@ -592,6 +689,10 @@ gd_header_bar_set_property (GObject      *object,
     {
     case PROP_TITLE:
       gd_header_bar_set_title (bar, g_value_get_string (value));
+      break;
+
+    case PROP_CUSTOM_TITLE:
+      gd_header_bar_set_custom_title (bar, g_value_get_object (value));
       break;
 
     case PROP_SPACING:
@@ -701,7 +802,12 @@ gd_header_bar_forall (GtkContainer *container,
     }
 
   if (include_internals)
-    (* callback) (priv->label, callback_data);
+    {
+      if (priv->custom_title)
+        (* callback) (priv->custom_title, callback_data);
+      else
+        (* callback) (priv->label, callback_data);
+    }
 
   children = g_list_last (priv->children);
   while (children)
@@ -951,6 +1057,16 @@ gd_header_bar_class_init (GdHeaderBarClass *class)
                                                         P_("The title to display"),
                                                         NULL,
                                                         G_PARAM_READWRITE));
+
+  g_object_class_install_property (object_class,
+                                   PROP_CUSTOM_TITLE,
+                                   g_param_spec_object ("custom-title",
+                                                        P_("Custom Title"),
+                                                        P_("Custom title widget to display"),
+                                                        GTK_TYPE_WIDGET,
+                                                        G_PARAM_READWRITE |
+                                                        G_PARAM_CONSTRUCT |
+                                                        G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class,
                                    PROP_SPACING,
