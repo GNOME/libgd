@@ -591,12 +591,9 @@ gd_header_bar_set_custom_title (GdHeaderBar *bar,
   if (priv->custom_title)
     {
       GtkWidget *custom = priv->custom_title;
-      /* Note: We must reset tooltip->custom_widget first,
-       * since gtk_container_remove() will recurse into
-       * gtk_tooltip_set_custom()
-       */
+
       priv->custom_title = NULL;
-      gtk_container_remove (GTK_CONTAINER (bar), custom);
+      gtk_widget_unparent (custom);
       g_object_unref (custom);
     }
 
