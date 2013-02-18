@@ -156,6 +156,8 @@ if LIBGD_STACK
 stack_sources =				\
 	libgd/gd-stack.c			\
 	libgd/gd-stack.h			\
+	libgd/gd-stack-switcher.c		\
+	libgd/gd-stack-switcher.h		\
 	$(NULL)
 
 nodist_libgd_la_SOURCES += $(stack_sources)

@@ -1,7 +1,9 @@
 #include <gtk/gtk.h>
 #include <libgd/gd-stack.h>
+#include <libgd/gd-stack-switcher.h>
 
 GtkWidget *stack;
+GtkWidget *switcher;
 
 static void
 set_visible_child (GtkWidget *button, gpointer data)
@@ -38,23 +40,30 @@ main (gint argc,
   box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add (GTK_CONTAINER (window), box);
 
+  switcher = gd_stack_switcher_new ();
+  gtk_box_pack_start (GTK_BOX (box), switcher, FALSE, FALSE, 0);
+
   stack = gd_stack_new ();
   gtk_widget_set_halign (stack, GTK_ALIGN_START);
   gtk_container_add (GTK_CONTAINER (box), stack);
 
+  gd_stack_switcher_set_stack (GD_STACK_SWITCHER (switcher), GD_STACK (stack));
+
   b1 = gtk_button_new_with_label ("Blah");
   gtk_container_add_with_properties (GTK_CONTAINER (stack), b1,
 				     "name", "1",
+				     "title", "1",
 				     NULL);
 
   b2 = gtk_button_new_with_label ("Gazoooooooooooooooonk");
   gtk_container_add (GTK_CONTAINER (stack), b2);
   gtk_container_child_set (GTK_CONTAINER (stack), b2,
 			   "name", "2",
+			   "title", "2",
 			   NULL);
 
   b3 = gtk_button_new_with_label ("Foo\nBar");
-  gd_stack_add_named (GD_STACK (stack), b3, "3");
+  gd_stack_add_titled (GD_STACK (stack), b3, "3", "3");
 
   hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_container_add (GTK_CONTAINER (box), hbox);
