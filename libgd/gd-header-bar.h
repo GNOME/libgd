@@ -60,7 +60,7 @@ void         gd_header_bar_set_title         (GdHeaderBar *bar,
                                               const char  *title);
 const char * gd_header_bar_get_title         (GdHeaderBar *bar);
 void         gd_header_bar_set_custom_title  (GdHeaderBar *bar,
-                                              GtkWidget   *custom_title);
+                                              GtkWidget   *title_widget);
 GtkWidget *  gd_header_bar_get_custom_title  (GdHeaderBar *bar);
 void         gd_header_bar_pack_start        (GdHeaderBar *bar,
                                               GtkWidget   *child);

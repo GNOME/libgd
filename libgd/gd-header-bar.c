@@ -624,7 +624,7 @@ gd_header_bar_set_custom_title (GdHeaderBar *bar,
  * Retrieves the custom title widget of the header. See
  * gd_header_bar_set_custom_title().
  *
- * Return value: the custom title widget of the header, or %NULL if
+ * Return value: (transfer none): the custom title widget of the header, or %NULL if
  *    none has been set explicitely.
  **/
 GtkWidget *
