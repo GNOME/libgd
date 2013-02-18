@@ -93,11 +93,19 @@ LIBGD_INIT options
 
 - gtk-hacks
 
+- header-bar
+
 - main-icon-view
 
 - main-toolbar
 
 - margin-container
+
+- notification
+
+- revealer
+
+- stack
 
 - static
 
