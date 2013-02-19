@@ -25,6 +25,10 @@ struct _GdStackSwitcherPrivate
 {
   GdStack *stack;
   GHashTable *buttons;
+
+  guint add_id;
+  guint remove_id;
+  guint visible_child_id;
 };
 
 enum {
@@ -174,19 +178,40 @@ on_stack_child_removed (GtkContainer    *container,
 }
 
 static void
-disconnect_stack_signals (GdStackSwitcher *self)
+disconnect_stack_signals (GdStackSwitcher *switcher)
 {
-  g_signal_handlers_disconnect_by_func (self->priv->stack, G_CALLBACK (on_stack_child_added), self);
-  g_signal_handlers_disconnect_by_func (self->priv->stack, G_CALLBACK (on_stack_child_removed), self);
-  g_signal_handlers_disconnect_by_func (self->priv->stack, G_CALLBACK (on_child_changed), self);
+  GdStackSwitcherPrivate *priv = switcher->priv;
+
+  if (priv->add_id != 0)
+    {
+      g_signal_handler_disconnect (priv->stack, priv->add_id);
+      priv->add_id = 0;
+    }
+
+  if (priv->remove_id != 0)
+    {
+      g_signal_handler_disconnect (priv->stack, priv->remove_id);
+      priv->remove_id = 0;
+    }
+
+  if (priv->visible_child_id != 0)
+    {
+      g_signal_handler_disconnect (priv->stack, priv->visible_child_id);
+      priv->visible_child_id = 0;
+    }
 }
 
 static void
-connect_stack_signals (GdStackSwitcher *self)
+connect_stack_signals (GdStackSwitcher *switcher)
 {
-  g_signal_connect_after (self->priv->stack, "add", G_CALLBACK (on_stack_child_added), self);
-  g_signal_connect_after (self->priv->stack, "remove", G_CALLBACK (on_stack_child_removed), self);
-  g_signal_connect (self->priv->stack, "notify::visible-child", G_CALLBACK (on_child_changed), self);
+  GdStackSwitcherPrivate *priv = switcher->priv;
+
+  priv->add_id = g_signal_connect_after (priv->stack, "add",
+                                         G_CALLBACK (on_stack_child_added), switcher);
+  priv->remove_id = g_signal_connect_after (priv->stack, "remove",
+                                            G_CALLBACK (on_stack_child_removed), switcher);
+  priv->visible_child_id = g_signal_connect (priv->stack, "notify::visible-child",
+                                             G_CALLBACK (on_child_changed), switcher);
 }
 
 /**
@@ -292,6 +317,16 @@ gd_stack_switcher_set_property (GObject      *object,
 }
 
 static void
+gd_stack_switcher_dispose (GObject *object)
+{
+  GdStackSwitcher *switcher = GD_STACK_SWITCHER (object);
+
+  disconnect_stack_signals (switcher);
+
+  G_OBJECT_CLASS (gd_stack_switcher_parent_class)->dispose (object);
+}
+
+static void
 gd_stack_switcher_finalize (GObject *object)
 {
   GdStackSwitcher *self = GD_STACK_SWITCHER (object);
@@ -312,6 +347,7 @@ gd_stack_switcher_class_init (GdStackSwitcherClass *class)
 
   object_class->get_property = gd_stack_switcher_get_property;
   object_class->set_property = gd_stack_switcher_set_property;
+  object_class->dispose = gd_stack_switcher_dispose;
   object_class->finalize = gd_stack_switcher_finalize;
 
   g_object_class_install_property (object_class,
