@@ -519,7 +519,7 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
 /**
  * gd_header_bar_set_title:
  * @bar: a #GdHeaderBar
- * @title: a title
+ * @title: (allow-none): a title
  *
  * Sets the title of the #GdHeaderBar. The title should help a user
  * identify the current view. A good title should not include the
@@ -568,7 +568,7 @@ gd_header_bar_get_title (GdHeaderBar *bar)
 /**
  * gd_header_bar_set_custom_title:
  * @bar: a #GdHeaderBar
- * @title_widget: a custom widget to use for a title
+ * @title_widget: (allow-none): a custom widget to use for a title
  *
  * Sets a custom title for the #GdHeaderBar. The title should help a
  * user identify the current view. This supercedes any title set by
