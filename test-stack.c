@@ -93,6 +93,8 @@ main (gint argc,
   g_signal_connect (button, "clicked", (GCallback) set_visible_child_name, (gpointer) "3");
 
   button = gtk_check_button_new_with_label ("humongous");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button),
+				gd_stack_get_homogeneous (GD_STACK (stack)));
   gtk_container_add (GTK_CONTAINER (hbox), button);
   g_signal_connect (button, "clicked", (GCallback) toggle_homogeneous, NULL);
 

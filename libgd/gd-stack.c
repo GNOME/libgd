@@ -136,6 +136,7 @@ gd_stack_init (GdStack *stack)
   priv = GD_STACK_GET_PRIVATE (stack);
   stack->priv = priv;
   priv->duration = 200;
+  priv->homogeneous = TRUE;
 
   gtk_widget_set_has_window ((GtkWidget*) stack, FALSE);
   gtk_widget_set_redraw_on_allocate ((GtkWidget*) stack, TRUE);
@@ -244,7 +245,7 @@ gd_stack_class_init (GdStackClass * klass)
 				   g_param_spec_boolean ("homogeneous",
 							 "Homogeneous",
 							 "Homogeneous sizing",
-							 FALSE,
+							 TRUE,
 							 GTK_PARAM_READWRITE | G_PARAM_CONSTRUCT));
   g_object_class_install_property (object_class,
 				   PROP_VISIBLE_CHILD,
