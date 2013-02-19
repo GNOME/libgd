@@ -327,7 +327,7 @@ gd_stack_switcher_dispose (GObject *object)
   if (priv->buttons != NULL)
     {
       g_hash_table_unref (priv->buttons);
-      priv->buttons = 0;
+      priv->buttons = NULL;
     }
 
   g_clear_object (&priv->stack);
