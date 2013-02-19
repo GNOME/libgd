@@ -56,6 +56,10 @@ G_BEGIN_DECLS
 # include <libgd/gd-header-bar.h>
 #endif
 
+#ifdef LIBGD__HEADER_BUTTON
+# include <libgd/gd-header-button.h>
+#endif
+
 #ifdef LIBGD_MARGIN_CONTAINER
 # include <libgd/gd-margin-container.h>
 #endif

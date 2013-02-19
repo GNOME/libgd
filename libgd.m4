@@ -81,13 +81,21 @@ AC_DEFUN([LIBGD_INIT], [
     # main-toolbar:
     AM_CONDITIONAL([LIBGD_MAIN_TOOLBAR],[_LIBGD_IF_OPTION_SET([main-toolbar],[true],[false])])
     _LIBGD_IF_OPTION_SET([main-toolbar],[
+        _LIBGD_SET_OPTION([_header-button])
         AC_DEFINE([LIBGD_MAIN_TOOLBAR], [1], [Description])
     ])
 
     # header-bar:
     AM_CONDITIONAL([LIBGD_HEADER_BAR],[_LIBGD_IF_OPTION_SET([header-bar],[true],[false])])
     _LIBGD_IF_OPTION_SET([header-bar],[
+        _LIBGD_SET_OPTION([_header-button])
         AC_DEFINE([LIBGD_HEADER_BAR], [1], [Description])
+    ])
+
+    # _header-button:
+    AM_CONDITIONAL([LIBGD__HEADER_BUTTON],[_LIBGD_IF_OPTION_SET([_header-button],[true],[false])])
+    _LIBGD_IF_OPTION_SET([_header-button],[
+        AC_DEFINE([LIBGD__HEADER_BUTTON], [1], [Description])
     ])
 
     # margin-container:
