@@ -320,22 +320,19 @@ static void
 gd_stack_switcher_dispose (GObject *object)
 {
   GdStackSwitcher *switcher = GD_STACK_SWITCHER (object);
+  GdStackSwitcherPrivate *priv = switcher->priv;
 
   disconnect_stack_signals (switcher);
 
-  G_OBJECT_CLASS (gd_stack_switcher_parent_class)->dispose (object);
-}
+  if (priv->buttons != NULL)
+    {
+      g_hash_table_unref (priv->buttons);
+      priv->buttons = 0;
+    }
 
-static void
-gd_stack_switcher_finalize (GObject *object)
-{
-  GdStackSwitcher *self = GD_STACK_SWITCHER (object);
-  GdStackSwitcherPrivate *priv = self->priv;
-
-  g_hash_table_destroy (priv->buttons);
   g_clear_object (&priv->stack);
 
-  G_OBJECT_CLASS (gd_stack_switcher_parent_class)->finalize (object);
+  G_OBJECT_CLASS (gd_stack_switcher_parent_class)->dispose (object);
 }
 
 static void
@@ -348,7 +345,6 @@ gd_stack_switcher_class_init (GdStackSwitcherClass *class)
   object_class->get_property = gd_stack_switcher_get_property;
   object_class->set_property = gd_stack_switcher_set_property;
   object_class->dispose = gd_stack_switcher_dispose;
-  object_class->finalize = gd_stack_switcher_finalize;
 
   g_object_class_install_property (object_class,
                                    PROP_STACK,
