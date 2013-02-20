@@ -40,14 +40,17 @@ gchar * gd_header_button_get_label              (GdHeaderButton *self);
 gchar * gd_header_button_get_symbolic_icon_name (GdHeaderButton *self);
 
 #define GD_TYPE_HEADER_SIMPLE_BUTTON (gd_header_simple_button_get_type ())
+typedef GtkButton GdHeaderSimpleButton;
 GType       gd_header_simple_button_get_type (void) G_GNUC_CONST;
 GtkWidget * gd_header_simple_button_new      (void);
 
 #define GD_TYPE_HEADER_TOGGLE_BUTTON (gd_header_toggle_button_get_type ())
+typedef GtkToggleButton GdHeaderToggleButton;
 GType       gd_header_toggle_button_get_type (void) G_GNUC_CONST;
 GtkWidget * gd_header_toggle_button_new      (void);
 
 #define GD_TYPE_HEADER_MENU_BUTTON   (gd_header_menu_button_get_type ())
+typedef GtkMenuButton GdHeaderMenuButton;
 GType       gd_header_menu_button_get_type   (void) G_GNUC_CONST;
 GtkWidget * gd_header_menu_button_new        (void);
 

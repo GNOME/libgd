@@ -382,7 +382,6 @@ gd_header_button_generic_class_init (gpointer klass)
 }
 
 /* private subclasses */
-typedef GtkButton GdHeaderSimpleButton;
 typedef GtkButtonClass GdHeaderSimpleButtonClass;
 G_DEFINE_TYPE_WITH_CODE (GdHeaderSimpleButton, gd_header_simple_button, GTK_TYPE_BUTTON,
                          G_IMPLEMENT_INTERFACE (GD_TYPE_HEADER_BUTTON, gd_header_button_generic_iface_init))
@@ -398,7 +397,6 @@ gd_header_simple_button_init (GdHeaderSimpleButton *self)
 {
 }
 
-typedef GtkToggleButton GdHeaderToggleButton;
 typedef GtkToggleButtonClass GdHeaderToggleButtonClass;
 G_DEFINE_TYPE_WITH_CODE (GdHeaderToggleButton, gd_header_toggle_button, GTK_TYPE_TOGGLE_BUTTON,
                          G_IMPLEMENT_INTERFACE (GD_TYPE_HEADER_BUTTON, gd_header_button_generic_iface_init))
@@ -414,7 +412,6 @@ gd_header_toggle_button_init (GdHeaderToggleButton *self)
 {
 }
 
-typedef GtkMenuButton GdHeaderMenuButton;
 typedef GtkMenuButtonClass GdHeaderMenuButtonClass;
 G_DEFINE_TYPE_WITH_CODE (GdHeaderMenuButton, gd_header_menu_button, GTK_TYPE_MENU_BUTTON,
                          G_IMPLEMENT_INTERFACE (GD_TYPE_HEADER_BUTTON, gd_header_button_generic_iface_init))
