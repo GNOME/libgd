@@ -482,18 +482,21 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
       else
         x = allocation->x + allocation->width - priv->hpadding;
 
-      i = 0;
-      for (l = priv->children; l; l = l->next)
+      if (packing == GTK_PACK_START)
+        l = priv->children;
+      else
+        l = g_list_last (priv->children);
+
+      i = g_list_position (priv->children, l);
+
+      for (l; l != NULL; (packing == GTK_PACK_START) ? (l = l->next) : (l = l->prev))
         {
           child = l->data;
           if (!gtk_widget_get_visible (child->widget))
             continue;
 
           if (child->pack_type != packing)
-            {
-              i++;
-              continue;
-            }
+            goto next;
 
           child_size = sizes[i].minimum_size;
 
@@ -518,7 +521,12 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
             child_allocation.x = allocation->x + allocation->width - (child_allocation.x - allocation->x) - child_allocation.width;
 
           gtk_widget_size_allocate (child->widget, &child_allocation);
-          i++;
+
+        next:
+          if (packing == GTK_PACK_START)
+            i++;
+          else
+            i--;
         }
     }
 
