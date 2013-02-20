@@ -27,7 +27,7 @@
 enum  {
   PROP_0,
   PROP_ORIENTATION,
-  PROP_DURATION,
+  PROP_TRANSITION_DURATION,
   PROP_REVEAL_CHILD,
   PROP_CHILD_REVEALED
 };
@@ -36,7 +36,7 @@ enum  {
 
 struct _GdRevealerPrivate {
   GtkOrientation orientation;
-  gint duration;
+  gint transition_duration;
 
   GdkWindow* bin_window;
   GdkWindow* view_window;
@@ -90,7 +90,7 @@ gd_revealer_init (GdRevealer *revealer)
   revealer->priv = priv;
 
   priv->orientation = GTK_ORIENTATION_HORIZONTAL;
-  priv->duration = 250;
+  priv->transition_duration = 250;
   priv->current_pos = 0.0;
   priv->target_pos = 0.0;
 
@@ -123,8 +123,8 @@ gd_revealer_get_property (GObject *object,
   case PROP_ORIENTATION:
     g_value_set_enum (value, gd_revealer_get_orientation (revealer));
     break;
-  case PROP_DURATION:
-    g_value_set_int (value, gd_revealer_get_duration (revealer));
+  case PROP_TRANSITION_DURATION:
+    g_value_set_int (value, gd_revealer_get_transition_duration (revealer));
     break;
   case PROP_REVEAL_CHILD:
     g_value_set_boolean (value, gd_revealer_get_reveal_child (revealer));
@@ -150,8 +150,8 @@ gd_revealer_set_property (GObject *object,
   case PROP_ORIENTATION:
     gd_revealer_set_orientation (revealer, g_value_get_enum (value));
     break;
-  case PROP_DURATION:
-    gd_revealer_set_duration (revealer, g_value_get_int (value));
+  case PROP_TRANSITION_DURATION:
+    gd_revealer_set_transition_duration (revealer, g_value_get_int (value));
     break;
   case PROP_REVEAL_CHILD:
     gd_revealer_set_reveal_child (revealer, g_value_get_boolean (value));
@@ -195,8 +195,8 @@ gd_revealer_class_init (GdRevealerClass * klass)
                                                       GTK_ORIENTATION_HORIZONTAL,
                                                       GTK_PARAM_READWRITE | G_PARAM_CONSTRUCT));
   g_object_class_install_property (object_class,
-                                   PROP_DURATION,
-                                   g_param_spec_int ("duration", "duration",
+                                   PROP_TRANSITION_DURATION,
+                                   g_param_spec_int ("transition-duration", "Transition duration",
                                                      "The animation duration, in milliseconds",
                                                      G_MININT, G_MAXINT,
                                                      250,
@@ -505,7 +505,7 @@ gd_revealer_start_animation (GdRevealer *revealer,
     {
       priv->source_pos = priv->current_pos;
       priv->start_time = gdk_frame_clock_get_frame_time (gtk_widget_get_frame_clock (widget));
-      priv->end_time = priv->start_time + (priv->duration * 1000);
+      priv->end_time = priv->start_time + (priv->transition_duration * 1000);
       if (priv->tick_id == 0)
         priv->tick_id =
           gtk_widget_add_tick_callback (widget, (GtkTickCallback)gd_revealer_animate_cb, revealer, NULL);
@@ -726,19 +726,19 @@ gd_revealer_set_orientation (GdRevealer *revealer,
 }
 
 gint
-gd_revealer_get_duration (GdRevealer *revealer)
+gd_revealer_get_transition_duration (GdRevealer *revealer)
 {
   g_return_val_if_fail (revealer != NULL, 0);
 
-  return revealer->priv->duration;
+  return revealer->priv->transition_duration;
 }
 
 void
-gd_revealer_set_duration (GdRevealer *revealer,
-                          gint value)
+gd_revealer_set_transition_duration (GdRevealer *revealer,
+                                     gint value)
 {
   g_return_if_fail (revealer != NULL);
 
-  revealer->priv->duration = value;
-  g_object_notify (G_OBJECT (revealer), "duration");
+  revealer->priv->transition_duration = value;
+  g_object_notify (G_OBJECT (revealer), "transition-duration");
 }

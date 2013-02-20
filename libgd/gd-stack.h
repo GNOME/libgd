@@ -66,9 +66,9 @@ const char *gd_stack_get_visible_child_name (GdStack    *stack);
 void        gd_stack_set_homogeneous        (GdStack    *stack,
 					     gboolean    homogeneous);
 gboolean    gd_stack_get_homogeneous        (GdStack    *stack);
-void        gd_stack_set_duration           (GdStack    *stack,
-					     gint        duration);
-gint        gd_stack_get_duration           (GdStack    *stack);
+void        gd_stack_set_transition_duration(GdStack    *stack,
+					     gint        transition_duration);
+gint        gd_stack_get_transition_duration(GdStack    *stack);
 
 
 G_END_DECLS

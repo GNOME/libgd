@@ -36,7 +36,7 @@ enum  {
   PROP_HOMOGENEOUS,
   PROP_VISIBLE_CHILD,
   PROP_VISIBLE_CHILD_NAME,
-  PROP_DURATION
+  PROP_TRANSITION_DURATION,
 };
 
 enum
@@ -62,7 +62,7 @@ struct _GdStackPrivate {
   GdStackChildInfo *visible_child;
 
   gboolean homogeneous;
-  gint duration;
+  gint transition_duration;
 
   GdStackChildInfo *last_visible_child;
   cairo_pattern_t *last_visible_pattern;
@@ -137,7 +137,7 @@ gd_stack_init (GdStack *stack)
 
   priv = GD_STACK_GET_PRIVATE (stack);
   stack->priv = priv;
-  priv->duration = 200;
+  priv->transition_duration = 200;
   priv->homogeneous = TRUE;
 
   gtk_widget_set_has_window ((GtkWidget*) stack, FALSE);
@@ -178,8 +178,8 @@ gd_stack_get_property (GObject *object,
     case PROP_VISIBLE_CHILD_NAME:
       g_value_set_string (value, gd_stack_get_visible_child_name (stack));
       break;
-    case PROP_DURATION:
-      g_value_set_int (value, gd_stack_get_duration (stack));
+    case PROP_TRANSITION_DURATION:
+      g_value_set_int (value, gd_stack_get_transition_duration (stack));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -206,8 +206,8 @@ gd_stack_set_property (GObject *object,
     case PROP_VISIBLE_CHILD_NAME:
       gd_stack_set_visible_child_name (stack, g_value_get_string (value));
       break;
-    case PROP_DURATION:
-      gd_stack_set_duration (stack, g_value_get_int (value));
+    case PROP_TRANSITION_DURATION:
+      gd_stack_set_transition_duration (stack, g_value_get_int (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -264,8 +264,9 @@ gd_stack_class_init (GdStackClass * klass)
 							NULL,
 							GTK_PARAM_READWRITE));
   g_object_class_install_property (object_class,
-                                   PROP_DURATION,
-                                   g_param_spec_int ("duration", "duration",
+                                   PROP_TRANSITION_DURATION,
+                                   g_param_spec_int ("transition-duration",
+                                                     "Transition duration",
                                                      "The animation duration, in milliseconds",
                                                      G_MININT, G_MAXINT,
                                                      200,
@@ -508,7 +509,7 @@ gd_stack_start_transition (GdStack *stack)
 
       priv->transition_pos = 0.0;
       priv->start_time = gdk_frame_clock_get_frame_time (gtk_widget_get_frame_clock (widget));
-      priv->end_time = priv->start_time + (priv->duration * 1000);
+      priv->end_time = priv->start_time + (priv->transition_duration * 1000);
       gd_stack_schedule_ticks (stack);
     }
   else
@@ -729,21 +730,21 @@ gd_stack_get_homogeneous (GdStack *stack)
 }
 
 gint
-gd_stack_get_duration (GdStack *stack)
+gd_stack_get_transition_duration (GdStack *stack)
 {
   g_return_val_if_fail (stack != NULL, 0);
 
-  return stack->priv->duration;
+  return stack->priv->transition_duration;
 }
 
 void
-gd_stack_set_duration (GdStack *stack,
-                       gint value)
+gd_stack_set_transition_duration (GdStack *stack,
+                                  gint value)
 {
   g_return_if_fail (stack != NULL);
 
-  stack->priv->duration = value;
-  g_object_notify (G_OBJECT (stack), "duration");
+  stack->priv->transition_duration = value;
+  g_object_notify (G_OBJECT (stack), "transition-duration");
 }
 
 /**

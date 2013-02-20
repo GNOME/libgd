@@ -48,19 +48,20 @@ struct _GdRevealerClass {
 };
 
 
-GType          gd_revealer_get_type           (void) G_GNUC_CONST;
-GtkWidget*     gd_revealer_new                (void);
-gboolean       gd_revealer_get_reveal_child   (GdRevealer     *revealer);
-void           gd_revealer_set_reveal_child   (GdRevealer     *revealer,
-                                               gboolean        setting);
-GtkOrientation gd_revealer_get_orientation    (GdRevealer     *revealer);
-void           gd_revealer_set_orientation    (GdRevealer     *revealer,
-					       GtkOrientation  value);
-gint           gd_revealer_get_duration       (GdRevealer     *revealer);
-void           gd_revealer_set_duration       (GdRevealer     *revealer,
-					       gint            duration_msec);
+GType          gd_revealer_get_type                (void) G_GNUC_CONST;
+GtkWidget*     gd_revealer_new                     (void);
+gboolean       gd_revealer_get_reveal_child        (GdRevealer     *revealer);
+void           gd_revealer_set_reveal_child        (GdRevealer     *revealer,
+						    gboolean        setting);
+GtkOrientation gd_revealer_get_orientation         (GdRevealer     *revealer);
+void           gd_revealer_set_orientation         (GdRevealer     *revealer,
+						    GtkOrientation  value);
+gint           gd_revealer_get_transition_duration (GdRevealer     *revealer);
+void           gd_revealer_set_transition_duration (GdRevealer     *revealer,
+						    gint            duration_msec);
 
-gboolean       gd_revealer_get_child_revealed (GdRevealer     *revealer);
+gboolean       gd_revealer_get_child_revealed      (GdRevealer     *revealer);
+
 
 G_END_DECLS
 
