@@ -21,7 +21,7 @@
 #define __GD_STACK_SWITCHER_H__
 
 #include <gtk/gtk.h>
-#include <libgd/gd-stack.h>
+#include "gd-stack.h"
 
 G_BEGIN_DECLS
 
