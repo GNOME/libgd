@@ -84,7 +84,7 @@ static void     gd_stack_forall                         (GtkContainer *container
 							 gboolean      include_internals,
 							 GtkCallback   callback,
 							 gpointer      callback_data);
-static void    gd_stack_compute_expand                  (GtkWidget      *widget,
+static void     gd_stack_compute_expand                 (GtkWidget      *widget,
 							 gboolean       *hexpand,
 							 gboolean       *vexpand);
 static void     gd_stack_size_allocate                  (GtkWidget     *widget,
