@@ -35,7 +35,7 @@ GType   gd_header_button_get_type               (void) G_GNUC_CONST;
 void    gd_header_button_set_label              (GdHeaderButton *self,
                                                  const gchar    *label);
 void    gd_header_button_set_symbolic_icon_name (GdHeaderButton *self,
-                                                 const gchar    *icon_name);
+                                                 const gchar    *symbolic_icon_name);
 gchar * gd_header_button_get_label              (GdHeaderButton *self);
 gchar * gd_header_button_get_symbolic_icon_name (GdHeaderButton *self);
 
