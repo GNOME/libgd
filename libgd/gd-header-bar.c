@@ -572,7 +572,8 @@ gd_header_bar_get_title (GdHeaderBar *bar)
  *
  * Sets a custom title for the #GdHeaderBar. The title should help a
  * user identify the current view. This supercedes any title set by
- * gd_header_bar_set_title()
+ * gd_header_bar_set_title(). You should set the custom title to %NULL,
+ * for the header title label to be visible again.
  *
  **/
 void
