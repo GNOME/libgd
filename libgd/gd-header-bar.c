@@ -80,6 +80,25 @@ boldify_label (GtkWidget *label)
 }
 
 static void
+get_css_padding_and_border (GtkWidget *widget,
+                            GtkBorder *border)
+{
+  GtkStyleContext *context;
+  GtkStateFlags state;
+  GtkBorder tmp;
+
+  context = gtk_widget_get_style_context (widget);
+  state = gtk_widget_get_state_flags (widget);
+
+  gtk_style_context_get_padding (context, state, border);
+  gtk_style_context_get_border (context, state, &tmp);
+  border->top += tmp.top;
+  border->right += tmp.right;
+  border->bottom += tmp.bottom;
+  border->left += tmp.left;
+}
+
+static void
 gd_header_bar_init (GdHeaderBar *bar)
 {
   GtkStyleContext *context;
@@ -142,6 +161,7 @@ gd_header_bar_get_size (GtkWidget      *widget,
   gint nvis_children;
   gint minimum, natural;
   gint padding;
+  GtkBorder css_borders;
 
   minimum = natural = 0;
   nvis_children = 0;
@@ -183,13 +203,18 @@ gd_header_bar_get_size (GtkWidget      *widget,
       natural += nvis_children * priv->spacing;
     }
 
-  if (GTK_ORIENTATION_HORIZONTAL == orientation)
-    padding = priv->hpadding;
-  else
-    padding = priv->vpadding;
+  get_css_padding_and_border (widget, &css_borders);
 
-  minimum += 2 * padding;
-  natural += 2 * padding;
+  if (GTK_ORIENTATION_HORIZONTAL == orientation)
+    {
+      minimum += 2 * priv->hpadding + css_borders.left + css_borders.right;
+      natural += 2 * priv->hpadding + css_borders.left + css_borders.right;
+    }
+  else
+    {
+      minimum += 2 * priv->vpadding + css_borders.top + css_borders.bottom;
+      natural += 2 * priv->vpadding + css_borders.top + css_borders.bottom;
+    }
 
   if (minimum_size)
     *minimum_size = minimum;
@@ -212,6 +237,7 @@ gd_header_bar_compute_size_for_orientation (GtkWidget *widget,
   gint child_size;
   gint child_natural;
   gint nvis_children;
+  GtkBorder css_borders;
 
   avail_size -= 2 * priv->vpadding;
 
@@ -241,8 +267,10 @@ gd_header_bar_compute_size_for_orientation (GtkWidget *widget,
       required_natural += nvis_children * priv->spacing;
     }
 
-  required_size += 2 * priv->hpadding;
-  required_natural += 2 * priv->hpadding;
+  get_css_padding_and_border (widget, &css_borders);
+
+  required_size += 2 * priv->hpadding + css_borders.left + css_borders.right;
+  required_natural += 2 * priv->hpadding + css_borders.left + css_borders.right;
 
   if (minimum_size)
     *minimum_size = required_size;
@@ -271,6 +299,7 @@ gd_header_bar_compute_size_for_opposing_orientation (GtkWidget *widget,
   gint child_size;
   gint child_minimum;
   gint child_natural;
+  GtkBorder css_borders;
 
   nvis_children = count_visible_children (bar);
 
@@ -332,8 +361,10 @@ gd_header_bar_compute_size_for_opposing_orientation (GtkWidget *widget,
       i += 1;
     }
 
-  computed_minimum += 2 * priv->vpadding;
-  computed_natural += 2 * priv->vpadding;
+  get_css_padding_and_border (widget, &css_borders);
+
+  computed_minimum += 2 * priv->vpadding + css_borders.top + css_borders.bottom;
+  computed_natural += 2 * priv->vpadding + css_borders.top + css_borders.bottom;
 
   if (minimum_size)
     *minimum_size = computed_minimum;
@@ -383,7 +414,7 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
   GdHeaderBar *bar = GD_HEADER_BAR (widget);
   GdHeaderBarPrivate *priv = bar->priv;
   GtkRequestedSize *sizes;
-  gint size;
+  gint width, height;
   gint nvis_children;
   gint title_minimum_size;
   gint title_natural_size;
@@ -396,6 +427,7 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
   gint x;
   gint child_size;
   GtkTextDirection direction;
+  GtkBorder css_borders;
 
   gtk_widget_set_allocation (widget, allocation);
 
@@ -403,7 +435,11 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
   nvis_children = count_visible_children (bar);
   sizes = g_newa (GtkRequestedSize, nvis_children);
 
-  size = allocation->width - nvis_children * priv->spacing - 2 * priv->hpadding;
+  get_css_padding_and_border (widget, &css_borders);
+  width = allocation->width - nvis_children * priv->spacing -
+    2 * priv->hpadding - css_borders.left - css_borders.right;
+  height = allocation->height - 2 * priv->vpadding - css_borders.top - css_borders.bottom;
+
   i = 0;
   for (l = priv->children; l; l = l->next)
     {
@@ -412,36 +448,36 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
         continue;
 
       gtk_widget_get_preferred_width_for_height (child->widget,
-                                                 allocation->height - 2 * priv->vpadding,
+                                                 height,
                                                  &sizes[i].minimum_size,
                                                  &sizes[i].natural_size);
-      size -= sizes[i].minimum_size;
+      width -= sizes[i].minimum_size;
       i++;
     }
 
   if (priv->custom_title)
     {
       gtk_widget_get_preferred_width_for_height (priv->custom_title,
-                                                 allocation->height - 2 * priv->vpadding,
+                                                 height,
                                                  &title_minimum_size,
                                                  &title_natural_size);
     }
   else
     {
       gtk_widget_get_preferred_width_for_height (priv->label,
-                                                 allocation->height - 2 * priv->vpadding,
+                                                 height,
                                                  &title_minimum_size,
                                                  &title_natural_size);
     }
-  size -= title_natural_size;
+  width -= title_natural_size;
 
-  size = gtk_distribute_natural_allocation (MAX (0, size), nvis_children, sizes);
+  width = gtk_distribute_natural_allocation (MAX (0, width), nvis_children, sizes);
 
   side[0] = side[1] = 0;
   for (packing = GTK_PACK_START; packing <= GTK_PACK_END; packing++)
     {
       child_allocation.y = allocation->y + priv->vpadding;
-      child_allocation.height = allocation->height - 2 * priv->vpadding;
+      child_allocation.height = height;
       if (packing == GTK_PACK_START)
         x = allocation->x + priv->hpadding;
       else
@@ -488,12 +524,12 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
     }
 
   child_allocation.y = allocation->y + priv->vpadding;
-  child_allocation.height = allocation->height - 2 * priv->vpadding;
+  child_allocation.height = height;
 
-  size = MAX(side[0], side[1]);
+  width = MAX(side[0], side[1]);
 
-  if (allocation->width - 2 * size >= title_natural_size)
-    child_size = MIN (title_natural_size, allocation->width - 2 * size);
+  if (allocation->width - 2 * width >= title_natural_size)
+    child_size = MIN (title_natural_size, allocation->width - 2 * width);
   else if (allocation->width - side[0] - side[1] >= title_natural_size)
     child_size = MIN (title_natural_size, allocation->width - side[0] - side[1]);
   else
