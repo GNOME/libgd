@@ -19,8 +19,6 @@
 
 #include "gd-stack-switcher.h"
 
-#define P_(s) s
-
 struct _GdStackSwitcherPrivate
 {
   GdStack *stack;
@@ -349,8 +347,8 @@ gd_stack_switcher_class_init (GdStackSwitcherClass *class)
   g_object_class_install_property (object_class,
                                    PROP_STACK,
                                    g_param_spec_object ("stack",
-                                                        P_("Stack"),
-                                                        P_("Stack"),
+                                                        "Stack",
+                                                        "Stack",
                                                         GD_TYPE_STACK,
                                                         G_PARAM_READWRITE |
                                                         G_PARAM_CONSTRUCT |

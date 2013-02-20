@@ -22,7 +22,6 @@
 /* TODO
  * - wm communication
  */
-#define P_(s) s
 
 #define DEFAULT_SPACING 6
 #define DEFAULT_HPADDING 6
@@ -1075,31 +1074,31 @@ gd_header_bar_class_init (GdHeaderBarClass *class)
   gtk_container_class_install_child_property (container_class,
                                               CHILD_PROP_PACK_TYPE,
                                               g_param_spec_enum ("pack-type",
-                                                                 P_("Pack type"),
-                                                                 P_("A GtkPackType indicating whether the child is packed with reference to the start or end of the parent"),
+                                                                 "Pack type",
+                                                                 "A GtkPackType indicating whether the child is packed with reference to the start or end of the parent",
                                                                  GTK_TYPE_PACK_TYPE, GTK_PACK_START,
                                                                  G_PARAM_READWRITE));
   gtk_container_class_install_child_property (container_class,
                                               CHILD_PROP_POSITION,
                                               g_param_spec_int ("position",
-                                                                P_("Position"),
-                                                                P_("The index of the child in the parent"),
+                                                                "Position",
+                                                                "The index of the child in the parent",
                                                                 -1, G_MAXINT, 0,
                                                                 G_PARAM_READABLE));
 
   g_object_class_install_property (object_class,
                                    PROP_TITLE,
                                    g_param_spec_string ("title",
-                                                        P_("Title"),
-                                                        P_("The title to display"),
+                                                        "Title",
+                                                        "The title to display",
                                                         NULL,
                                                         G_PARAM_READWRITE));
 
   g_object_class_install_property (object_class,
                                    PROP_CUSTOM_TITLE,
                                    g_param_spec_object ("custom-title",
-                                                        P_("Custom Title"),
-                                                        P_("Custom title widget to display"),
+                                                        "Custom Title",
+                                                        "Custom title widget to display",
                                                         GTK_TYPE_WIDGET,
                                                         G_PARAM_READWRITE |
                                                         G_PARAM_CONSTRUCT |
@@ -1108,8 +1107,8 @@ gd_header_bar_class_init (GdHeaderBarClass *class)
   g_object_class_install_property (object_class,
                                    PROP_SPACING,
                                    g_param_spec_int ("spacing",
-                                                     P_("Spacing"),
-                                                     P_("The amount of space between children"),
+                                                     "Spacing",
+                                                     "The amount of space between children",
                                                      0, G_MAXINT,
                                                      DEFAULT_SPACING,
                                                      G_PARAM_READWRITE));
@@ -1117,8 +1116,8 @@ gd_header_bar_class_init (GdHeaderBarClass *class)
   g_object_class_install_property (object_class,
                                    PROP_HPADDING,
                                    g_param_spec_int ("hpadding",
-                                                     P_("Horizontal padding"),
-                                                     P_("The amount of space to the left and right of children"),
+                                                     "Horizontal padding",
+                                                     "The amount of space to the left and right of children",
                                                      0, G_MAXINT,
                                                      DEFAULT_HPADDING,
                                                      G_PARAM_READWRITE));
@@ -1126,8 +1125,8 @@ gd_header_bar_class_init (GdHeaderBarClass *class)
   g_object_class_install_property (object_class,
                                    PROP_VPADDING,
                                    g_param_spec_int ("vpadding",
-                                                     P_("Vertical padding"),
-                                                     P_("The amount of space to the above and below children"),
+                                                     "Vertical padding",
+                                                     "The amount of space to the above and below children",
                                                      0, G_MAXINT,
                                                      DEFAULT_VPADDING,
                                                      G_PARAM_READWRITE));

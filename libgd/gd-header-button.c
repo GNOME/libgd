@@ -25,7 +25,6 @@ typedef GdHeaderButtonIface GdHeaderButtonInterface;
 
 G_DEFINE_INTERFACE (GdHeaderButton, gd_header_button, GTK_TYPE_BUTTON)
 
-#define P_(s) s
 enum {
   PROP_0,
   PROP_LABEL,
@@ -44,8 +43,8 @@ gd_header_button_default_init (GdHeaderButtonIface *iface)
    * The label of the #GdHeaderButton object.
    */
   pspec = g_param_spec_string ("label",
-                               P_("Text label"),
-                               P_("Label displayed by the button"),
+                               "Text label",
+                               "Label displayed by the button",
                                NULL,
                                G_PARAM_READWRITE |
                                G_PARAM_STATIC_STRINGS);
@@ -57,8 +56,8 @@ gd_header_button_default_init (GdHeaderButtonIface *iface)
    * Whether the label of the #GdHeaderButton object should use markup.
    */
   pspec = g_param_spec_boolean ("use-markup",
-                                P_("Use markup"),
-                                P_("Whether the label should use markup"),
+                                "Use markup",
+                                "Whether the label should use markup",
                                 FALSE,
                                 G_PARAM_READWRITE |
                                 G_PARAM_STATIC_STRINGS);
@@ -70,8 +69,8 @@ gd_header_button_default_init (GdHeaderButtonIface *iface)
    * The symbolic icon name of the #GdHeaderButton object.
    */
   pspec = g_param_spec_string ("symbolic-icon-name",
-                               P_("Symbolic icon name"),
-                               P_("The name of the symbolic icon displayed by the button"),
+                               "Symbolic icon name",
+                               "The name of the symbolic icon displayed by the button",
                                NULL,
                                G_PARAM_READWRITE |
                                G_PARAM_STATIC_STRINGS);
