@@ -35,6 +35,13 @@ toggle_icon_name (GtkWidget *button, gpointer data)
 			   NULL);
 }
 
+static void
+toggle_transitions (GtkWidget *button, gpointer data)
+{
+  gboolean active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button));
+  gd_stack_set_transition_type (GD_STACK (stack), active ? GD_STACK_TRANSITION_TYPE_CROSSFADE : GD_STACK_TRANSITION_TYPE_NONE);
+}
+
 gint
 main (gint argc,
       gchar ** argv)
@@ -111,6 +118,11 @@ main (gint argc,
   button = gtk_toggle_button_new_with_label ("Add symbolic icon");
   g_signal_connect (button, "toggled", (GCallback) toggle_icon_name, NULL);
   gtk_container_add (GTK_CONTAINER (hbox), button);
+
+  button = gtk_check_button_new_with_label ("transitions");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
+  gtk_container_add (GTK_CONTAINER (hbox), button);
+  g_signal_connect (button, "clicked", (GCallback) toggle_transitions, NULL);
 
   gtk_widget_show_all (window);
   gtk_main ();

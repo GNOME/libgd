@@ -28,7 +28,6 @@
 /* TODO:
  *  more transiton types (slides)
  *  filter events out events to the last_child widget during transitions
- *  add way to disable transitions
  */
 
 enum  {
@@ -37,6 +36,7 @@ enum  {
   PROP_VISIBLE_CHILD,
   PROP_VISIBLE_CHILD_NAME,
   PROP_TRANSITION_DURATION,
+  PROP_TRANSITION_TYPE,
 };
 
 enum
@@ -62,6 +62,8 @@ struct _GdStackPrivate {
   GdStackChildInfo *visible_child;
 
   gboolean homogeneous;
+
+  GdStackTransitionType transition_type;
   gint transition_duration;
 
   GdStackChildInfo *last_visible_child;
@@ -181,6 +183,9 @@ gd_stack_get_property (GObject *object,
     case PROP_TRANSITION_DURATION:
       g_value_set_int (value, gd_stack_get_transition_duration (stack));
       break;
+    case PROP_TRANSITION_TYPE:
+      g_value_set_int (value, gd_stack_get_transition_type (stack));
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -208,6 +213,9 @@ gd_stack_set_property (GObject *object,
       break;
     case PROP_TRANSITION_DURATION:
       gd_stack_set_transition_duration (stack, g_value_get_int (value));
+      break;
+    case PROP_TRANSITION_TYPE:
+      gd_stack_set_transition_type (stack, g_value_get_int (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -270,6 +278,15 @@ gd_stack_class_init (GdStackClass * klass)
                                                      "The animation duration, in milliseconds",
                                                      G_MININT, G_MAXINT,
                                                      200,
+                                                     GTK_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+  g_object_class_install_property (object_class,
+                                   PROP_TRANSITION_TYPE,
+                                   g_param_spec_int ("transition-type",
+                                                     "Transition type",
+                                                     "The type of animation used to transition",
+                                                     GD_STACK_TRANSITION_TYPE_NONE,
+                                                     G_MAXINT,
+                                                     GD_STACK_TRANSITION_TYPE_NONE,
                                                      GTK_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
   gtk_container_class_install_child_property (container_class, CHILD_PROP_NAME,
@@ -503,6 +520,7 @@ gd_stack_start_transition (GdStack *stack)
   GtkWidget *widget = GTK_WIDGET (stack);
 
   if (gtk_widget_get_mapped (widget) &&
+      priv->transition_type != GD_STACK_TRANSITION_TYPE_NONE &&
       priv->last_visible_child != NULL)
     {
       gtk_widget_set_opacity (widget, 0.999);
@@ -745,6 +763,24 @@ gd_stack_set_transition_duration (GdStack *stack,
 
   stack->priv->transition_duration = value;
   g_object_notify (G_OBJECT (stack), "transition-duration");
+}
+
+GdStackTransitionType
+gd_stack_get_transition_type (GdStack *stack)
+{
+  g_return_val_if_fail (stack != NULL, GD_STACK_TRANSITION_TYPE_NONE);
+
+  return stack->priv->transition_type;
+}
+
+void
+gd_stack_set_transition_type (GdStack *stack,
+                              GdStackTransitionType value)
+{
+  g_return_if_fail (stack != NULL);
+
+  stack->priv->transition_type = value;
+  g_object_notify (G_OBJECT (stack), "transition-type");
 }
 
 /**

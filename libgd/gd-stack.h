@@ -38,6 +38,11 @@ typedef struct _GdStack GdStack;
 typedef struct _GdStackClass GdStackClass;
 typedef struct _GdStackPrivate GdStackPrivate;
 
+typedef enum {
+  GD_STACK_TRANSITION_TYPE_NONE,
+  GD_STACK_TRANSITION_TYPE_CROSSFADE
+} GdStackTransitionType;
+
 struct _GdStack {
   GtkContainer parent_instance;
   GdStackPrivate *priv;
@@ -49,26 +54,30 @@ struct _GdStackClass {
 
 GType gd_stack_get_type (void) G_GNUC_CONST;
 
-GtkWidget  *gd_stack_new                    (void);
-void        gd_stack_add_named              (GdStack    *stack,
-					     GtkWidget  *child,
-					     const char *name);
-void        gd_stack_add_titled             (GdStack    *stack,
-					     GtkWidget  *child,
-					     const char *name,
-					     const char *title);
-void        gd_stack_set_visible_child      (GdStack    *stack,
-					     GtkWidget  *child);
-GtkWidget * gd_stack_get_visible_child      (GdStack    *stack);
-void        gd_stack_set_visible_child_name (GdStack    *stack,
-					     const char *name);
-const char *gd_stack_get_visible_child_name (GdStack    *stack);
-void        gd_stack_set_homogeneous        (GdStack    *stack,
-					     gboolean    homogeneous);
-gboolean    gd_stack_get_homogeneous        (GdStack    *stack);
-void        gd_stack_set_transition_duration(GdStack    *stack,
-					     gint        transition_duration);
-gint        gd_stack_get_transition_duration(GdStack    *stack);
+GtkWidget  *          gd_stack_new                     (void);
+void                  gd_stack_add_named               (GdStack               *stack,
+							GtkWidget             *child,
+							const char            *name);
+void                  gd_stack_add_titled              (GdStack               *stack,
+							GtkWidget             *child,
+							const char            *name,
+							const char            *title);
+void                  gd_stack_set_visible_child       (GdStack               *stack,
+							GtkWidget             *child);
+GtkWidget *           gd_stack_get_visible_child       (GdStack               *stack);
+void                  gd_stack_set_visible_child_name  (GdStack               *stack,
+							const char            *name);
+const char *          gd_stack_get_visible_child_name  (GdStack               *stack);
+void                  gd_stack_set_homogeneous         (GdStack               *stack,
+							gboolean               homogeneous);
+gboolean              gd_stack_get_homogeneous         (GdStack               *stack);
+void                  gd_stack_set_transition_duration (GdStack               *stack,
+							gint                   transition_duration);
+gint                  gd_stack_get_transition_duration (GdStack               *stack);
+void                  gd_stack_set_transition_type     (GdStack               *stack,
+							GdStackTransitionType  type);
+GdStackTransitionType gd_stack_get_transition_type     (GdStack               *stack);
+
 
 
 G_END_DECLS
