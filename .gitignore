@@ -1,0 +1,9 @@
+.deps/
+.libs/
+Gd-1.0.gir
+Makefile
+Makefile.in
+gd-1.0.vapi
+*.lo
+*.o
+*.la
