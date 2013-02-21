@@ -392,7 +392,6 @@ gd_stack_set_transition_position (GdStack *stack,
                                   gdouble pos)
 {
   GdStackPrivate *priv = stack->priv;
-  GtkWidget *child;
   gboolean done;
 
   priv->transition_pos = pos;
@@ -508,9 +507,6 @@ set_visible_child (GdStack *stack,
   GdStackChildInfo *info;
   GtkWidget *widget = GTK_WIDGET (stack);
   GList *l;
-  cairo_surface_t *surface;
-  int surface_w, surface_h;
-  cairo_t *cr;
 
   /* If none, pick first visible */
   if (child_info == NULL)
@@ -537,7 +533,6 @@ set_visible_child (GdStack *stack,
     cairo_pattern_destroy (priv->last_visible_pattern);
   priv->last_visible_pattern = NULL;
 
-  surface = NULL;
   if (priv->visible_child && priv->visible_child->widget)
     {
       if (gtk_widget_is_visible (widget))
