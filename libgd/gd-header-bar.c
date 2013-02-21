@@ -483,11 +483,15 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
         x = allocation->x + allocation->width - priv->hpadding;
 
       if (packing == GTK_PACK_START)
-        l = priv->children;
+	{
+	  l = priv->children;
+	  i = 0;
+	}
       else
-        l = g_list_last (priv->children);
-
-      i = g_list_position (priv->children, l);
+	{
+	  l = g_list_last (priv->children);
+	  i = nvis_children - 1;
+	}
 
       for (l; l != NULL; (packing == GTK_PACK_START) ? (l = l->next) : (l = l->prev))
         {
