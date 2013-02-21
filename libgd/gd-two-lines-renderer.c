@@ -309,7 +309,7 @@ gd_two_lines_renderer_get_preferred_width (GtkCellRenderer *cell,
 {
   PangoContext *context;
   PangoFontMetrics *metrics;
-  const PangoFontDescription *font_desc;
+  PangoFontDescription *font_desc;
   GtkStyleContext *style_context;
   gint nat_width, min_width;
   gint xpad, char_width, wrap_width, text_width;
@@ -331,13 +331,14 @@ gd_two_lines_renderer_get_preferred_width (GtkCellRenderer *cell,
 
   /* Fetch the average size of a charachter */
   context = gtk_widget_get_pango_context (widget);
-  font_desc = gtk_style_context_get_font (style_context, 0);
+  gtk_style_context_get (style_context, 0, "font", &font_desc, NULL);
   metrics = pango_context_get_metrics (context, font_desc,
                                        pango_context_get_language (context));
 
   char_width = pango_font_metrics_get_approximate_char_width (metrics);
 
   pango_font_metrics_unref (metrics);
+  pango_font_description_free (font_desc);
 
   /* enforce minimum width for ellipsized labels at ~3 chars */
   ellipsize_chars = 3;
