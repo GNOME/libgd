@@ -53,6 +53,10 @@ GtkWidget  *gd_stack_new                    (void);
 void        gd_stack_add_named              (GdStack    *stack,
 					     GtkWidget  *child,
 					     const char *name);
+void        gd_stack_add_titled             (GdStack    *stack,
+					     GtkWidget  *child,
+					     const char *name,
+					     const char *title);
 void        gd_stack_set_visible_child      (GdStack    *stack,
 					     GtkWidget  *child);
 GtkWidget * gd_stack_get_visible_child      (GdStack    *stack);
