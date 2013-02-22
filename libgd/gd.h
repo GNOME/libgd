@@ -78,6 +78,7 @@ G_BEGIN_DECLS
 
 #ifdef LIBGD_STACK
 # include <libgd/gd-stack.h>
+# include <libgd/gd-stack-switcher.h>
 #endif
 
 G_END_DECLS
