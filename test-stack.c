@@ -4,6 +4,7 @@
 
 GtkWidget *stack;
 GtkWidget *switcher;
+GtkWidget *b1;
 
 static void
 set_visible_child (GtkWidget *button, gpointer data)
@@ -25,12 +26,21 @@ toggle_homogeneous (GtkWidget *button, gpointer data)
   gd_stack_set_homogeneous (GD_STACK (stack), active);
 }
 
+static void
+toggle_icon_name (GtkWidget *button, gpointer data)
+{
+  gboolean active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button));
+  gtk_container_child_set (GTK_CONTAINER (stack), b1,
+			   "symbolic-icon-name", active ? "edit-find-symbolic" : NULL,
+			   NULL);
+}
+
 gint
 main (gint argc,
       gchar ** argv)
 {
   GtkWidget *window, *box, *button, *hbox;
-  GtkWidget *b1, *b2, *b3;
+  GtkWidget *b2, *b3;
 
   gtk_init (&argc, &argv);
 
@@ -97,6 +107,10 @@ main (gint argc,
 				gd_stack_get_homogeneous (GD_STACK (stack)));
   gtk_container_add (GTK_CONTAINER (hbox), button);
   g_signal_connect (button, "clicked", (GCallback) toggle_homogeneous, NULL);
+
+  button = gtk_toggle_button_new_with_label ("Add symbolic icon");
+  g_signal_connect (button, "toggled", (GCallback) toggle_icon_name, NULL);
+  gtk_container_add (GTK_CONTAINER (hbox), button);
 
   gtk_widget_show_all (window);
   gtk_main ();

@@ -43,7 +43,8 @@ enum
 {
   CHILD_PROP_0,
   CHILD_PROP_NAME,
-  CHILD_PROP_TITLE
+  CHILD_PROP_TITLE,
+  CHILD_PROP_SYMBOLIC_ICON_NAME
 };
 
 typedef struct _GdStackChildInfo GdStackChildInfo;
@@ -52,6 +53,7 @@ struct _GdStackChildInfo {
   GtkWidget *widget;
   char *name;
   char *title;
+  char *symbolic_icon_name;
 };
 
 struct _GdStackPrivate {
@@ -283,6 +285,13 @@ gd_stack_class_init (GdStackClass * klass)
                          NULL,
                          GTK_PARAM_READWRITE));
 
+  gtk_container_class_install_child_property (container_class, CHILD_PROP_SYMBOLIC_ICON_NAME,
+    g_param_spec_string ("symbolic-icon-name",
+                         "Symbolic icon name",
+                         "The symbolic icon name of the child page",
+                         NULL,
+                         GTK_PARAM_READWRITE));
+
   g_type_class_add_private (klass, sizeof (GdStackPrivate));
 }
 
@@ -338,6 +347,10 @@ gd_stack_get_child_property (GtkContainer *container,
       g_value_set_string (value, info->title);
       break;
 
+    case CHILD_PROP_SYMBOLIC_ICON_NAME:
+      g_value_set_string (value, info->symbolic_icon_name);
+      break;
+
     default:
       GTK_CONTAINER_WARN_INVALID_CHILD_PROPERTY_ID (container, property_id, pspec);
       break;
@@ -379,6 +392,12 @@ gd_stack_set_child_property (GtkContainer *container,
       g_free (info->title);
       info->title = g_value_dup_string (value);
       gtk_container_child_notify (container, child, "title");
+      break;
+
+    case CHILD_PROP_SYMBOLIC_ICON_NAME:
+      g_free (info->symbolic_icon_name);
+      info->symbolic_icon_name = g_value_dup_string (value);
+      gtk_container_child_notify (container, child, "symbolic-icon-name");
       break;
 
     default:
@@ -424,8 +443,8 @@ gd_stack_set_transition_position (GdStack *stack,
 
 static gboolean
 gd_stack_transition_cb (GdStack *stack,
-                   GdkFrameClock *frame_clock,
-                   gpointer user_data)
+                        GdkFrameClock *frame_clock,
+                        gpointer user_data)
 {
   GdStackPrivate *priv = stack->priv;
   gint64 now;
@@ -619,6 +638,7 @@ gd_stack_add (GtkContainer *container,
   child_info->widget = child;
   child_info->name = NULL;
   child_info->title = NULL;
+  child_info->symbolic_icon_name = NULL;
 
   priv->children = g_list_append (priv->children, child_info);
 
@@ -668,7 +688,9 @@ gd_stack_remove (GtkContainer *container,
 
   gtk_widget_unparent (child);
 
+  g_free (child_info->name);
   g_free (child_info->title);
+  g_free (child_info->symbolic_icon_name);
   g_slice_free (GdStackChildInfo, child_info);
 
   if (priv->homogeneous && was_visible)

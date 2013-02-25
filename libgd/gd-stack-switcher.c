@@ -71,20 +71,76 @@ on_button_clicked (GtkWidget       *widget,
 }
 
 static void
-on_title_updated (GtkWidget       *widget,
-                  GParamSpec      *pspec,
-                  GdStackSwitcher *self)
-
+update_button (GdStackSwitcher *self,
+               GtkWidget       *widget,
+               GtkWidget       *button)
 {
   char *title;
-  GtkWidget *button;
+  char *symbolic_icon_name;
+  GtkStyleContext *context;
+  GtkWidget *button_child;
 
   gtk_container_child_get (GTK_CONTAINER (self->priv->stack), widget,
                            "title", &title,
+                           "symbolic-icon-name", &symbolic_icon_name,
                            NULL);
-  button = g_hash_table_lookup (self->priv->buttons, widget);
-  gtk_button_set_label (GTK_BUTTON (button), title);
+
+  context = gtk_widget_get_style_context (button);
+  button_child = gtk_bin_get_child (GTK_BIN (button));
+
+  if (symbolic_icon_name != NULL && symbolic_icon_name[0] != '\0')
+    {
+      if (button_child != NULL && !GTK_IS_IMAGE (button_child))
+        {
+          gtk_widget_destroy (button_child);
+          button_child = NULL;
+        }
+
+      if (button_child == NULL)
+        {
+          button_child = gtk_image_new ();
+          gtk_container_add (GTK_CONTAINER (button), button_child);
+          gtk_widget_show (button_child);
+        }
+
+      gtk_image_set_from_icon_name (GTK_IMAGE (button_child), symbolic_icon_name, GTK_ICON_SIZE_MENU);
+      gtk_widget_set_tooltip_text (button, title);
+
+      gtk_style_context_add_class (context, "image-button");
+      gtk_style_context_remove_class (context, "text-button");
+    }
+  else
+    {
+      if (button_child != NULL && GTK_IS_LABEL (button_child))
+        gtk_label_set_text (GTK_LABEL (button_child), title);
+      else
+        {
+          if (button_child)
+            gtk_widget_destroy (button_child);
+          button_child = gtk_label_new (title);
+          gtk_widget_show (button_child);
+          gtk_container_add (GTK_CONTAINER (button), button_child);
+          gtk_widget_set_size_request (button, 100, -1);
+
+          gtk_style_context_add_class (context, "text-button");
+          gtk_style_context_remove_class (context, "image-button");
+        }
+    }
+
   g_free (title);
+  g_free (symbolic_icon_name);
+}
+
+static void
+on_title_icon_updated (GtkWidget       *widget,
+                       GParamSpec      *pspec,
+                       GdStackSwitcher *self)
+
+{
+  GtkWidget *button;
+
+  button = g_hash_table_lookup (self->priv->buttons, widget);
+  update_button (self, widget, button);
 }
 
 static void
@@ -92,24 +148,20 @@ add_child (GdStackSwitcher *self,
            GtkWidget       *widget)
 {
   GtkWidget *button;
+  GtkWidget *button_child = NULL;
   GList *group;
+  GtkStyleContext *context;
   char *title = NULL;
-
-  gtk_container_child_get (GTK_CONTAINER (self->priv->stack), widget,
-                           "title", &title,
-                           NULL);
+  char *symbolic_icon_name = NULL;
 
   button = gtk_radio_button_new (NULL);
-  if (title != NULL && title[0] != '\0')
-    gtk_button_set_label (GTK_BUTTON (button), title);
+  context = gtk_widget_get_style_context (button);
+  gtk_style_context_add_class (context, "raised");
 
-  g_free (title);
+  update_button (self, widget, button);
 
   gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (button), FALSE);
-  gtk_widget_set_size_request (button, 100, -1);
   gtk_widget_set_vexpand (button, TRUE);
-  gtk_style_context_add_class (gtk_widget_get_style_context (button), "raised");
-  gtk_style_context_add_class (gtk_widget_get_style_context (button), "text-button");
 
   group = gtk_container_get_children (GTK_CONTAINER (self));
   if (group != NULL)
@@ -123,7 +175,8 @@ add_child (GdStackSwitcher *self,
 
   g_object_set_data (G_OBJECT (button), "stack-child", widget);
   g_signal_connect (button, "clicked", G_CALLBACK (on_button_clicked), self);
-  g_signal_connect (widget, "child-notify::title", G_CALLBACK (on_title_updated), self);
+  g_signal_connect (widget, "child-notify::title", G_CALLBACK (on_title_icon_updated), self);
+  g_signal_connect (widget, "child-notify::symbolic-icon-name", G_CALLBACK (on_title_icon_updated), self);
 
   g_hash_table_insert (self->priv->buttons, widget, button);
 }
