@@ -92,6 +92,7 @@ update_button (GdStackSwitcher *self,
     {
       if (button_child != NULL && !GTK_IS_IMAGE (button_child))
         {
+          gtk_widget_set_size_request (button, -1, -1);
           gtk_widget_destroy (button_child);
           button_child = NULL;
         }
