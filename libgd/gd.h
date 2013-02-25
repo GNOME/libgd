@@ -44,6 +44,10 @@ G_BEGIN_DECLS
 # include <libgd/gd-main-icon-view.h>
 #endif
 
+#ifdef LIBGD_MAIN_LIST_VIEW
+# include <libgd/gd-main-list-view.h>
+#endif
+
 #ifdef LIBGD_MAIN_VIEW
 # include <libgd/gd-main-view.h>
 #endif
