@@ -44,7 +44,7 @@ struct _GdStack {
 };
 
 struct _GdStackClass {
-  GtkBinClass parent_class;
+  GtkContainerClass parent_class;
 };
 
 GType gd_stack_get_type (void) G_GNUC_CONST;

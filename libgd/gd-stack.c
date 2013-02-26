@@ -128,7 +128,7 @@ static void     gd_stack_set_child_property             (GtkContainer *container
                                                          GParamSpec   *pspec);
 static void     gd_stack_unschedule_ticks               (GdStack *stack);
 
-G_DEFINE_TYPE(GdStack, gd_stack, GTK_TYPE_BIN);
+G_DEFINE_TYPE(GdStack, gd_stack, GTK_TYPE_CONTAINER);
 
 static void
 gd_stack_init (GdStack *stack)
