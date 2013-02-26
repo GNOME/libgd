@@ -135,12 +135,7 @@ G_DEFINE_TYPE(GdStack, gd_stack, GTK_TYPE_CONTAINER);
 static void
 gd_stack_init (GdStack *stack)
 {
-  GdStackPrivate *priv;
-
-  priv = GD_STACK_GET_PRIVATE (stack);
-  stack->priv = priv;
-  priv->transition_duration = 200;
-  priv->homogeneous = TRUE;
+  stack->priv = GD_STACK_GET_PRIVATE (stack);
 
   gtk_widget_set_has_window ((GtkWidget*) stack, FALSE);
   gtk_widget_set_redraw_on_allocate ((GtkWidget*) stack, TRUE);
