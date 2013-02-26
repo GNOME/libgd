@@ -513,8 +513,14 @@ gd_stack_start_transition (GdStack *stack)
 {
   GdStackPrivate *priv = stack->priv;
   GtkWidget *widget = GTK_WIDGET (stack);
+  gdouble animations_enabled;
+
+  g_object_get (gtk_widget_get_settings (widget),
+                "gtk-enable-animations", &animations_enabled,
+                NULL);
 
   if (gtk_widget_get_mapped (widget) &&
+      animations_enabled &&
       priv->transition_type != GD_STACK_TRANSITION_TYPE_NONE &&
       priv->last_visible_child != NULL)
     {
