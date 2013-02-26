@@ -23,10 +23,6 @@ struct _GdStackSwitcherPrivate
 {
   GdStack *stack;
   GHashTable *buttons;
-
-  guint add_id;
-  guint remove_id;
-  guint visible_child_id;
 };
 
 enum {
@@ -234,23 +230,11 @@ disconnect_stack_signals (GdStackSwitcher *switcher)
 {
   GdStackSwitcherPrivate *priv = switcher->priv;
 
-  if (priv->add_id != 0)
-    {
-      g_signal_handler_disconnect (priv->stack, priv->add_id);
-      priv->add_id = 0;
-    }
+  g_signal_handlers_disconnect_by_func (priv->stack, on_stack_child_added, switcher);
 
-  if (priv->remove_id != 0)
-    {
-      g_signal_handler_disconnect (priv->stack, priv->remove_id);
-      priv->remove_id = 0;
-    }
+  g_signal_handlers_disconnect_by_func (priv->stack, on_stack_child_removed, switcher);
 
-  if (priv->visible_child_id != 0)
-    {
-      g_signal_handler_disconnect (priv->stack, priv->visible_child_id);
-      priv->visible_child_id = 0;
-    }
+  g_signal_handlers_disconnect_by_func (priv->stack, on_child_changed, switcher);
 }
 
 static void
@@ -258,12 +242,12 @@ connect_stack_signals (GdStackSwitcher *switcher)
 {
   GdStackSwitcherPrivate *priv = switcher->priv;
 
-  priv->add_id = g_signal_connect_after (priv->stack, "add",
-                                         G_CALLBACK (on_stack_child_added), switcher);
-  priv->remove_id = g_signal_connect_after (priv->stack, "remove",
-                                            G_CALLBACK (on_stack_child_removed), switcher);
-  priv->visible_child_id = g_signal_connect (priv->stack, "notify::visible-child",
-                                             G_CALLBACK (on_child_changed), switcher);
+  g_signal_connect_after (priv->stack, "add",
+                          G_CALLBACK (on_stack_child_added), switcher);
+  g_signal_connect_after (priv->stack, "remove",
+                          G_CALLBACK (on_stack_child_removed), switcher);
+  g_signal_connect (priv->stack, "notify::visible-child",
+                    G_CALLBACK (on_child_changed), switcher);
 }
 
 /**
@@ -372,17 +356,8 @@ static void
 gd_stack_switcher_dispose (GObject *object)
 {
   GdStackSwitcher *switcher = GD_STACK_SWITCHER (object);
-  GdStackSwitcherPrivate *priv = switcher->priv;
 
-  disconnect_stack_signals (switcher);
-
-  if (priv->buttons != NULL)
-    {
-      g_hash_table_unref (priv->buttons);
-      priv->buttons = NULL;
-    }
-
-  g_clear_object (&priv->stack);
+  gd_stack_switcher_set_stack (switcher, NULL);
 
   G_OBJECT_CLASS (gd_stack_switcher_parent_class)->dispose (object);
 }
