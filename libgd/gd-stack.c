@@ -59,6 +59,9 @@ struct _GdStackChildInfo {
 struct _GdStackPrivate {
   GList *children;
 
+  GdkWindow* bin_window;
+  GdkWindow* view_window;
+
   GdStackChildInfo *visible_child;
 
   gboolean homogeneous;
@@ -137,7 +140,7 @@ gd_stack_init (GdStack *stack)
 {
   stack->priv = GD_STACK_GET_PRIVATE (stack);
 
-  gtk_widget_set_has_window ((GtkWidget*) stack, FALSE);
+  gtk_widget_set_has_window ((GtkWidget*) stack, TRUE);
   gtk_widget_set_redraw_on_allocate ((GtkWidget*) stack, TRUE);
 }
 
@@ -219,6 +222,72 @@ gd_stack_set_property (GObject *object,
 }
 
 static void
+gd_stack_realize (GtkWidget *widget)
+{
+  GdStack *stack = GD_STACK (widget);
+  GdStackPrivate *priv = stack->priv;
+  GtkAllocation allocation;
+  GdkWindowAttr attributes = { 0 };
+  GdkWindowAttributesType attributes_mask;
+  GtkAllocation child_allocation;
+  GtkWidget *child;
+  GdStackChildInfo *info;
+  GList *l;
+
+  gtk_widget_set_realized (widget, TRUE);
+
+  gtk_widget_get_allocation (widget, &allocation);
+
+  attributes.x = allocation.x;
+  attributes.y = allocation.y;
+  attributes.width = allocation.width;
+  attributes.height = allocation.height;
+  attributes.window_type = GDK_WINDOW_CHILD;
+  attributes.wclass = GDK_INPUT_OUTPUT;
+  attributes.visual = gtk_widget_get_visual (widget);
+  attributes.event_mask =
+    gtk_widget_get_events (widget) | GDK_EXPOSURE_MASK;
+  attributes_mask = (GDK_WA_X | GDK_WA_Y) | GDK_WA_VISUAL;
+
+  priv->view_window =
+    gdk_window_new (gtk_widget_get_parent_window ((GtkWidget*) stack),
+                    &attributes, attributes_mask);
+  gtk_widget_set_window (widget, priv->view_window);
+  gtk_widget_register_window (widget, priv->view_window);
+
+  attributes.x = 0;
+  attributes.y = 0;
+  attributes.width = allocation.width;
+  attributes.height = allocation.height;
+
+  priv->bin_window =
+    gdk_window_new (priv->view_window, &attributes, attributes_mask);
+  gtk_widget_register_window (widget, priv->bin_window);
+
+  for (l = priv->children; l != NULL; l = l->next)
+    {
+      info = l->data;
+
+      gtk_widget_set_parent_window (info->widget, priv->bin_window);
+    }
+
+  gdk_window_show (priv->bin_window);
+}
+
+static void
+gd_stack_unrealize (GtkWidget* widget)
+{
+  GdStack *stack = GD_STACK (widget);
+  GdStackPrivate *priv = stack->priv;
+
+  gtk_widget_unregister_window (widget, priv->bin_window);
+  gdk_window_destroy (priv->bin_window);
+  priv->view_window = NULL;
+
+  GTK_WIDGET_CLASS (gd_stack_parent_class)->unrealize (widget);
+}
+
+static void
 gd_stack_class_init (GdStackClass * klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -231,6 +300,8 @@ gd_stack_class_init (GdStackClass * klass)
 
   widget_class->size_allocate = gd_stack_size_allocate;
   widget_class->draw = gd_stack_draw;
+  widget_class->realize = gd_stack_realize;
+  widget_class->unrealize = gd_stack_unrealize;
   widget_class->get_preferred_height = gd_stack_get_preferred_height;
   widget_class->get_preferred_height_for_width = gd_stack_get_preferred_height_for_width;
   widget_class->get_preferred_width = gd_stack_get_preferred_width;
@@ -955,7 +1026,7 @@ gd_stack_draw (GtkWidget *widget,
           cairo_set_operator (cr, CAIRO_OPERATOR_ADD);
           cairo_paint_with_alpha (cr, priv->transition_pos);
         }
-      else
+      else if (gtk_cairo_should_draw_window (cr, priv->bin_window))
         gtk_container_propagate_draw (GTK_CONTAINER (stack),
                                       priv->visible_child->widget,
                                       cr);
@@ -970,21 +1041,30 @@ gd_stack_size_allocate (GtkWidget *widget,
 {
   GdStack *stack = GD_STACK (widget);
   GdStackPrivate *priv = stack->priv;
+  GtkAllocation child_allocation;
 
   g_return_if_fail (allocation != NULL);
 
   gtk_widget_set_allocation (widget, allocation);
 
+  child_allocation = *allocation;
+  child_allocation.x = 0;
+  child_allocation.y = 0;
+
   if (priv->last_visible_child)
-    {
-      GtkAllocation child_allocation = *allocation;
-      gtk_widget_size_allocate (priv->last_visible_child->widget, &child_allocation);
-    }
+    gtk_widget_size_allocate (priv->last_visible_child->widget, &child_allocation);
 
   if (priv->visible_child)
+    gtk_widget_size_allocate (priv->visible_child->widget, &child_allocation);
+
+   if (gtk_widget_get_realized (widget))
     {
-      GtkAllocation child_allocation = *allocation;
-      gtk_widget_size_allocate (priv->visible_child->widget, &child_allocation);
+      gdk_window_move_resize (priv->view_window,
+                              allocation->x, allocation->y,
+                              allocation->width, allocation->height);
+      gdk_window_move_resize (priv->bin_window,
+                              0, 0,
+                              allocation->width, allocation->height);
     }
 }
 
