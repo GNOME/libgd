@@ -131,7 +131,9 @@ static void     gd_stack_set_child_property             (GtkContainer *container
                                                          guint         property_id,
                                                          const GValue *value,
                                                          GParamSpec   *pspec);
-static void     gd_stack_unschedule_ticks               (GdStack *stack);
+static void     gd_stack_unschedule_ticks               (GdStack       *stack);
+static int      get_bin_window_x                        (GdStack       *stack,
+                                                         GtkAllocation *allocation);
 
 G_DEFINE_TYPE(GdStack, gd_stack, GTK_TYPE_CONTAINER);
 
@@ -255,7 +257,7 @@ gd_stack_realize (GtkWidget *widget)
   gtk_widget_set_window (widget, priv->view_window);
   gtk_widget_register_window (widget, priv->view_window);
 
-  attributes.x = 0;
+  attributes.x = get_bin_window_x (stack, &allocation);
   attributes.y = 0;
   attributes.width = allocation.width;
   attributes.height = allocation.height;
@@ -490,15 +492,41 @@ gd_stack_set_child_property (GtkContainer *container,
     }
 }
 
+static int
+get_bin_window_x (GdStack *stack, GtkAllocation *allocation)
+{
+  GdStackPrivate *priv = stack->priv;
+  int x = 0;
+
+  if (priv->transition_pos < 1.0)
+    {
+      if (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_LEFT)
+        x = allocation->width * (1 - priv->transition_pos);
+      if (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_RIGHT)
+        x = -allocation->width * (1 - priv->transition_pos);
+    }
+
+  return x;
+}
+
 static gboolean
 gd_stack_set_transition_position (GdStack *stack,
                                   gdouble pos)
 {
   GdStackPrivate *priv = stack->priv;
+  GtkAllocation allocation;
   gboolean done;
 
   priv->transition_pos = pos;
   gtk_widget_queue_draw (GTK_WIDGET (stack));
+
+  if (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_LEFT ||
+      priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_RIGHT)
+    {
+      gtk_widget_get_allocation (GTK_WIDGET (stack), &allocation);
+      gdk_window_move (priv->bin_window,
+                       get_bin_window_x (stack, &allocation), 0);
+    }
 
   done = pos >= 1.0;
 
@@ -987,6 +1015,60 @@ gd_stack_compute_expand (GtkWidget      *widget,
 }
 
 static gboolean
+gd_stack_draw_crossfade (GtkWidget *widget,
+                         cairo_t *cr)
+{
+  GdStack *stack = GD_STACK (widget);
+  GdStackPrivate *priv = stack->priv;
+
+  if (priv->last_visible_pattern)
+    {
+      cairo_set_source (cr, priv->last_visible_pattern);
+      cairo_set_operator (cr, CAIRO_OPERATOR_ADD);
+      cairo_paint_with_alpha (cr, MAX (1.0 - priv->transition_pos, 0));
+    }
+
+  cairo_push_group (cr);
+  cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
+  gtk_container_propagate_draw (GTK_CONTAINER (stack),
+                                priv->visible_child->widget,
+                                cr);
+  cairo_pop_group_to_source (cr);
+  cairo_set_operator (cr, CAIRO_OPERATOR_ADD);
+  cairo_paint_with_alpha (cr, priv->transition_pos);
+}
+
+static gboolean
+gd_stack_draw_slide (GtkWidget *widget,
+                     cairo_t *cr)
+{
+  GdStack *stack = GD_STACK (widget);
+  GdStackPrivate *priv = stack->priv;
+  GtkAllocation allocation;
+  int x = 0;
+
+  gtk_widget_get_allocation (widget, &allocation);
+
+  if (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_LEFT)
+    x = -allocation.width * priv->transition_pos;
+  if (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_RIGHT)
+    x = allocation.width * priv->transition_pos;
+
+  if (priv->last_visible_pattern)
+    {
+      cairo_save (cr);
+      cairo_translate (cr, x, 0);
+      cairo_set_source (cr, priv->last_visible_pattern);
+      cairo_paint (cr);
+      cairo_restore (cr);
+     }
+
+  gtk_container_propagate_draw (GTK_CONTAINER (stack),
+                                priv->visible_child->widget,
+                                cr);
+}
+
+static gboolean
 gd_stack_draw (GtkWidget *widget,
 	       cairo_t *cr)
 {
@@ -1001,30 +1083,25 @@ gd_stack_draw (GtkWidget *widget,
               priv->last_visible_child != NULL)
             {
               cairo_push_group (cr);
-              cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
-              gtk_container_propagate_draw (GTK_CONTAINER (stack),
-                                            priv->last_visible_child->widget,
-                                            cr);
+              /* We don't use propagate_draw here, because we don't want to apply
+                 the bin_window offset */
+              gtk_widget_draw (priv->last_visible_child->widget, cr);
               priv->last_visible_pattern = cairo_pop_group (cr);
               priv->last_visible_pattern_width = gtk_widget_get_allocated_width (priv->last_visible_child->widget);
               priv->last_visible_pattern_height = gtk_widget_get_allocated_height (priv->last_visible_child->widget);
             }
 
-          if (priv->last_visible_pattern)
+          switch (priv->transition_type)
             {
-              cairo_set_source (cr, priv->last_visible_pattern);
-              cairo_set_operator (cr, CAIRO_OPERATOR_ADD);
-              cairo_paint_with_alpha (cr, MAX (1.0 - priv->transition_pos, 0));
+            case GD_STACK_TRANSITION_TYPE_CROSSFADE:
+              gd_stack_draw_crossfade (widget, cr);
+              break;
+            case GD_STACK_TRANSITION_TYPE_SLIDE_LEFT:
+            case GD_STACK_TRANSITION_TYPE_SLIDE_RIGHT:
+              gd_stack_draw_slide (widget, cr);
+              break;
             }
 
-          cairo_push_group (cr);
-          cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
-          gtk_container_propagate_draw (GTK_CONTAINER (stack),
-                                        priv->visible_child->widget,
-                                        cr);
-          cairo_pop_group_to_source (cr);
-          cairo_set_operator (cr, CAIRO_OPERATOR_ADD);
-          cairo_paint_with_alpha (cr, priv->transition_pos);
         }
       else if (gtk_cairo_should_draw_window (cr, priv->bin_window))
         gtk_container_propagate_draw (GTK_CONTAINER (stack),
@@ -1063,7 +1140,7 @@ gd_stack_size_allocate (GtkWidget *widget,
                               allocation->x, allocation->y,
                               allocation->width, allocation->height);
       gdk_window_move_resize (priv->bin_window,
-                              0, 0,
+                              get_bin_window_x (stack, allocation), 0,
                               allocation->width, allocation->height);
     }
 }
