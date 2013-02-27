@@ -22,7 +22,6 @@ static void
 toggle_homogeneous (GtkWidget *button, gpointer data)
 {
   gboolean active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button));
-  g_print ("active %d\n", active);
   gd_stack_set_homogeneous (GD_STACK (stack), active);
 }
 
@@ -36,17 +35,17 @@ toggle_icon_name (GtkWidget *button, gpointer data)
 }
 
 static void
-toggle_transitions (GtkWidget *button, gpointer data)
+toggle_transitions (GtkWidget *combo, gpointer data)
 {
-  gboolean active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button));
-  gd_stack_set_transition_type (GD_STACK (stack), active ? GD_STACK_TRANSITION_TYPE_CROSSFADE : GD_STACK_TRANSITION_TYPE_NONE);
+  int id = gtk_combo_box_get_active (GTK_COMBO_BOX (combo));
+  gd_stack_set_transition_type (GD_STACK (stack), id);
 }
 
 gint
 main (gint argc,
       gchar ** argv)
 {
-  GtkWidget *window, *box, *button, *hbox;
+  GtkWidget *window, *box, *button, *hbox, *combo;
   GtkWidget *b2, *b3;
 
   gtk_init (&argc, &argv);
@@ -119,10 +118,19 @@ main (gint argc,
   g_signal_connect (button, "toggled", (GCallback) toggle_icon_name, NULL);
   gtk_container_add (GTK_CONTAINER (hbox), button);
 
-  button = gtk_check_button_new_with_label ("transitions");
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
-  gtk_container_add (GTK_CONTAINER (hbox), button);
-  g_signal_connect (button, "clicked", (GCallback) toggle_transitions, NULL);
+  combo = gtk_combo_box_text_new ();
+  gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo),
+				  "NONE");
+  gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo),
+				  "CROSSFADE");
+  gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo),
+				  "SLIDE_RIGHT");
+  gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo),
+				  "SLIDE_LEFT");
+  gtk_combo_box_set_active (GTK_COMBO_BOX (combo), 0);
+
+  gtk_container_add (GTK_CONTAINER (hbox), combo);
+  g_signal_connect (combo, "changed", (GCallback) toggle_transitions, NULL);
 
   gtk_widget_show_all (window);
   gtk_main ();
