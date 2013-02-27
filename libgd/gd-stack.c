@@ -513,7 +513,7 @@ gd_stack_start_transition (GdStack *stack)
 {
   GdStackPrivate *priv = stack->priv;
   GtkWidget *widget = GTK_WIDGET (stack);
-  gdouble animations_enabled;
+  gboolean animations_enabled;
 
   g_object_get (gtk_widget_get_settings (widget),
                 "gtk-enable-animations", &animations_enabled,
