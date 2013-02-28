@@ -1,3 +1,6 @@
+
+
+
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /*
  * Copyright (c) 2013 Red Hat, Inc.
@@ -231,8 +234,6 @@ gd_stack_realize (GtkWidget *widget)
   GtkAllocation allocation;
   GdkWindowAttr attributes = { 0 };
   GdkWindowAttributesType attributes_mask;
-  GtkAllocation child_allocation;
-  GtkWidget *child;
   GdStackChildInfo *info;
   GList *l;
 
@@ -1023,7 +1024,7 @@ gd_stack_compute_expand (GtkWidget      *widget,
   *vexpand_p = vexpand;
 }
 
-static gboolean
+static void
 gd_stack_draw_crossfade (GtkWidget *widget,
                          cairo_t *cr)
 {
@@ -1047,7 +1048,7 @@ gd_stack_draw_crossfade (GtkWidget *widget,
   cairo_paint_with_alpha (cr, priv->transition_pos);
 }
 
-static gboolean
+static void
 gd_stack_draw_slide (GtkWidget *widget,
                      cairo_t *cr)
 {
@@ -1111,6 +1112,8 @@ gd_stack_draw (GtkWidget *widget,
             case GD_STACK_TRANSITION_TYPE_SLIDE_RIGHT:
               gd_stack_draw_slide (widget, cr);
               break;
+            default:
+              g_assert_not_reached ();
             }
 
         }
