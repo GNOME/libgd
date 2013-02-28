@@ -492,6 +492,15 @@ gd_stack_set_child_property (GtkContainer *container,
     }
 }
 
+/* From clutter-easing.c, based on Robert Penner's
+ * infamous easing equations, MIT license. */
+static double
+ease_out_cubic (double t)
+{
+  double p = t - 1;
+  return p * p * p + 1;
+}
+
 static int
 get_bin_window_x (GdStack *stack, GtkAllocation *allocation)
 {
@@ -501,9 +510,9 @@ get_bin_window_x (GdStack *stack, GtkAllocation *allocation)
   if (priv->transition_pos < 1.0)
     {
       if (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_LEFT)
-        x = allocation->width * (1 - priv->transition_pos);
+        x = allocation->width * ease_out_cubic (1 - priv->transition_pos);
       if (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_RIGHT)
-        x = -allocation->width * (1 - priv->transition_pos);
+        x = -allocation->width * ease_out_cubic (1 - priv->transition_pos);
     }
 
   return x;
@@ -1049,10 +1058,12 @@ gd_stack_draw_slide (GtkWidget *widget,
 
   gtk_widget_get_allocation (widget, &allocation);
 
+  x = get_bin_window_x (stack, &allocation);
+
   if (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_LEFT)
-    x = -allocation.width * priv->transition_pos;
+    x -= allocation.width;
   if (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_RIGHT)
-    x = allocation.width * priv->transition_pos;
+    x += allocation.width;
 
   if (priv->last_visible_pattern)
     {
