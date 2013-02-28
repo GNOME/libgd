@@ -235,13 +235,6 @@ rebuild_child (GdHeaderButton *self)
     }
 }
 
-static const gchar *
-button_get_label (GdHeaderButton *self)
-{
-  GdHeaderButtonPrivate *priv = GET_PRIVATE (self);
-  return priv->label;
-}
-
 static void
 button_set_label (GdHeaderButton *self,
                   const gchar    *label)
@@ -271,13 +264,6 @@ button_set_use_markup (GdHeaderButton *self,
       rebuild_child (self);
       g_object_notify (G_OBJECT (self), "use-markup");
     }
-}
-
-static const gchar *
-button_get_symbolic_icon_name (GdHeaderButton *self)
-{
-  GdHeaderButtonPrivate *priv = GET_PRIVATE (self);
-  return priv->symbolic_icon_name;
 }
 
 static void
@@ -315,7 +301,6 @@ gd_header_button_generic_set_property (GObject      *object,
                                        GParamSpec   *pspec)
 {
   GdHeaderButton *self = GD_HEADER_BUTTON (object);
-  GdHeaderButtonPrivate *priv = GET_PRIVATE (self);
 
   switch (prop_id)
     {

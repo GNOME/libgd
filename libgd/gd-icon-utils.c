@@ -82,7 +82,7 @@ gd_create_symbolic_icon (const gchar *name,
     goto out;
 
   pixbuf = gtk_icon_info_load_symbolic_for_context (info, style, NULL, NULL);
-  gtk_icon_info_free (info);
+  g_object_unref (info);
 
   if (pixbuf == NULL)
     goto out;

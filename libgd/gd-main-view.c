@@ -230,7 +230,7 @@ gd_main_view_get_counter_icon (GdMainView *self,
   PangoLayout *layout;
   PangoAttrList *attr_list;
   PangoAttribute *attr;
-  const PangoFontDescription *desc;
+  PangoFontDescription *desc;
   GdkRGBA color;
 
   context = gtk_widget_get_style_context (GTK_WIDGET (self));
@@ -272,8 +272,9 @@ gd_main_view_get_counter_icon (GdMainView *self,
   pango_attr_list_insert (attr_list, attr);
   pango_layout_set_attributes (layout, attr_list);
 
-  desc = gtk_style_context_get_font (context, 0);
+  gtk_style_context_get (context, GTK_STATE_FLAG_NORMAL, "font", &desc, NULL);
   pango_layout_set_font_description (layout, desc);
+  pango_font_description_free (desc);
 
   gtk_style_context_get_color (context, 0, &color);
   gdk_cairo_set_source_rgba (emblem_cr, &color);

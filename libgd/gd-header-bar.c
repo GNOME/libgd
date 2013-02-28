@@ -19,6 +19,8 @@
 
 #include "gd-header-bar.h"
 
+#include <string.h>
+
 /* TODO
  * - wm communication
  */
@@ -159,7 +161,6 @@ gd_header_bar_get_size (GtkWidget      *widget,
   GList *l;
   gint nvis_children;
   gint minimum, natural;
-  gint padding;
   GtkBorder css_borders;
 
   minimum = natural = 0;
@@ -493,7 +494,7 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
 	  i = nvis_children - 1;
 	}
 
-      for (l; l != NULL; (packing == GTK_PACK_START) ? (l = l->next) : (l = l->prev))
+      for (; l != NULL; (packing == GTK_PACK_START) ? (l = l->next) : (l = l->prev))
         {
           child = l->data;
           if (!gtk_widget_get_visible (child->widget))
