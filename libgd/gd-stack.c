@@ -511,9 +511,9 @@ get_bin_window_x (GdStack *stack, GtkAllocation *allocation)
   if (priv->transition_pos < 1.0)
     {
       if (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_LEFT)
-        x = allocation->width * ease_out_cubic (1 - priv->transition_pos);
+        x = allocation->width * (1 - ease_out_cubic (priv->transition_pos));
       if (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_RIGHT)
-        x = -allocation->width * ease_out_cubic (1 - priv->transition_pos);
+        x = -allocation->width * (1 - ease_out_cubic (priv->transition_pos));
     }
 
   return x;
