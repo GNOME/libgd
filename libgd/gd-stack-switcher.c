@@ -145,11 +145,8 @@ add_child (GdStackSwitcher *self,
            GtkWidget       *widget)
 {
   GtkWidget *button;
-  GtkWidget *button_child = NULL;
   GList *group;
   GtkStyleContext *context;
-  char *title = NULL;
-  char *symbolic_icon_name = NULL;
 
   button = gtk_radio_button_new (NULL);
   context = gtk_widget_get_style_context (button);
@@ -338,7 +335,6 @@ gd_stack_switcher_set_property (GObject      *object,
                                 GParamSpec   *pspec)
 {
   GdStackSwitcher *switcher = GD_STACK_SWITCHER (object);
-  GdStackSwitcherPrivate *priv = switcher->priv;
 
   switch (prop_id)
     {
@@ -366,8 +362,6 @@ static void
 gd_stack_switcher_class_init (GdStackSwitcherClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
-  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
-  GtkContainerClass *container_class = GTK_CONTAINER_CLASS (class);
 
   object_class->get_property = gd_stack_switcher_get_property;
   object_class->set_property = gd_stack_switcher_set_property;
