@@ -815,6 +815,9 @@ gd_stack_add_titled (GdStack    *stack,
                      const char *name,
                      const char *title)
 {
+  g_return_if_fail (GD_IS_STACK (stack));
+  g_return_if_fail (GTK_IS_WIDGET (child));
+
   gtk_container_add_with_properties (GTK_CONTAINER (stack),
                                      child,
                                      "name", name,
@@ -827,6 +830,9 @@ gd_stack_add_named (GdStack    *stack,
                     GtkWidget  *child,
                     const char *name)
 {
+  g_return_if_fail (GD_IS_STACK (stack));
+  g_return_if_fail (GTK_IS_WIDGET (child));
+
   gtk_container_add_with_properties (GTK_CONTAINER (stack),
                                      child,
                                      "name", name,
@@ -914,7 +920,7 @@ gd_stack_set_homogeneous (GdStack *stack,
 {
   GdStackPrivate *priv;
 
-  g_return_if_fail (stack != NULL);
+  g_return_if_fail (GD_IS_STACK (stack));
 
   priv = stack->priv;
 
@@ -934,7 +940,7 @@ gd_stack_set_homogeneous (GdStack *stack,
 gboolean
 gd_stack_get_homogeneous (GdStack *stack)
 {
-  g_return_val_if_fail (stack != NULL, FALSE);
+  g_return_val_if_fail (GD_IS_STACK (stack), FALSE);
 
   return stack->priv->homogeneous;
 }
@@ -942,7 +948,7 @@ gd_stack_get_homogeneous (GdStack *stack)
 gint
 gd_stack_get_transition_duration (GdStack *stack)
 {
-  g_return_val_if_fail (stack != NULL, 0);
+  g_return_val_if_fail (GD_IS_STACK (stack), 0);
 
   return stack->priv->transition_duration;
 }
@@ -951,7 +957,7 @@ void
 gd_stack_set_transition_duration (GdStack *stack,
                                   gint value)
 {
-  g_return_if_fail (stack != NULL);
+  g_return_if_fail (GD_IS_STACK (stack));
 
   stack->priv->transition_duration = value;
   g_object_notify (G_OBJECT (stack), "transition-duration");
@@ -960,7 +966,7 @@ gd_stack_set_transition_duration (GdStack *stack,
 GdStackTransitionType
 gd_stack_get_transition_type (GdStack *stack)
 {
-  g_return_val_if_fail (stack != NULL, GD_STACK_TRANSITION_TYPE_NONE);
+  g_return_val_if_fail (GD_IS_STACK (stack), GD_STACK_TRANSITION_TYPE_NONE);
 
   return stack->priv->transition_type;
 }
@@ -969,7 +975,7 @@ void
 gd_stack_set_transition_type (GdStack *stack,
                               GdStackTransitionType value)
 {
-  g_return_if_fail (stack != NULL);
+  g_return_if_fail (GD_IS_STACK (stack));
 
   stack->priv->transition_type = value;
   g_object_notify (G_OBJECT (stack), "transition-type");
@@ -988,7 +994,7 @@ gd_stack_set_transition_type (GdStack *stack,
 GtkWidget *
 gd_stack_get_visible_child (GdStack *stack)
 {
-  g_return_val_if_fail (stack != NULL, NULL);
+  g_return_val_if_fail (GD_IS_STACK (stack), NULL);
 
   return stack->priv->visible_child ? stack->priv->visible_child->widget : NULL;
 }
@@ -996,7 +1002,7 @@ gd_stack_get_visible_child (GdStack *stack)
 const char *
 gd_stack_get_visible_child_name (GdStack *stack)
 {
-  g_return_val_if_fail (stack != NULL, NULL);
+  g_return_val_if_fail (GD_IS_STACK (stack), NULL);
 
   if (stack->priv->visible_child)
     return stack->priv->visible_child->name;
@@ -1010,8 +1016,8 @@ gd_stack_set_visible_child (GdStack    *stack,
 {
   GdStackChildInfo *child_info;
 
-  g_return_if_fail (stack != NULL);
-  g_return_if_fail (child != NULL);
+  g_return_if_fail (GD_IS_STACK (stack));
+  g_return_if_fail (GTK_IS_WIDGET (child));
 
   child_info = find_child_info_for_widget (stack, child);
   if (child_info == NULL)
@@ -1029,7 +1035,7 @@ gd_stack_set_visible_child_name (GdStack    *stack,
   GdStackChildInfo *child_info, *info;
   GList *l;
 
-  g_return_if_fail (stack != NULL);
+  g_return_if_fail (GD_IS_STACK (stack));
   g_return_if_fail (name != NULL);
 
   priv = stack->priv;

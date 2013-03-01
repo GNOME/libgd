@@ -719,7 +719,7 @@ void
 gd_revealer_set_orientation (GdRevealer *revealer,
                              GtkOrientation value)
 {
-  g_return_if_fail (revealer != NULL);
+  g_return_if_fail (GD_IS_REVEALER (revealer));
 
   revealer->priv->orientation = value;
   g_object_notify (G_OBJECT (revealer), "orientation");
@@ -737,7 +737,7 @@ void
 gd_revealer_set_transition_duration (GdRevealer *revealer,
                                      gint value)
 {
-  g_return_if_fail (revealer != NULL);
+  g_return_if_fail (GD_IS_REVEALER (revealer));
 
   revealer->priv->transition_duration = value;
   g_object_notify (G_OBJECT (revealer), "transition-duration");
