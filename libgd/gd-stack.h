@@ -80,8 +80,6 @@ void                  gd_stack_set_transition_type     (GdStack               *s
 							GdStackTransitionType  type);
 GdStackTransitionType gd_stack_get_transition_type     (GdStack               *stack);
 
-
-
 G_END_DECLS
 
 #endif

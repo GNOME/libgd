@@ -47,7 +47,8 @@ enum
   CHILD_PROP_0,
   CHILD_PROP_NAME,
   CHILD_PROP_TITLE,
-  CHILD_PROP_SYMBOLIC_ICON_NAME
+  CHILD_PROP_SYMBOLIC_ICON_NAME,
+  CHILD_PROP_POSITION
 };
 
 typedef struct _GdStackChildInfo GdStackChildInfo;
@@ -379,6 +380,13 @@ gd_stack_class_init (GdStackClass * klass)
                          NULL,
                          GTK_PARAM_READWRITE));
 
+  gtk_container_class_install_child_property (container_class, CHILD_PROP_POSITION,
+    g_param_spec_int ("position",
+                      "Position",
+                      "The index of the child in the parent",
+                      -1, G_MAXINT, 0,
+                      GTK_PARAM_READWRITE));
+
   g_type_class_add_private (klass, sizeof (GdStackPrivate));
 }
 
@@ -408,6 +416,61 @@ find_child_info_for_widget (GdStack *stack,
 }
 
 static void
+reorder_child (GdStack   *stack,
+               GtkWidget *child,
+               gint       position)
+{
+  GdStackPrivate *priv;
+  GList *l;
+  GList *old_link = NULL;
+  GList *new_link = NULL;
+  GdStackChildInfo *child_info;
+  gint num = 0;
+
+  priv = stack->priv;
+
+  l = priv->children;
+
+  /* Loop to find the old position and link of child, new link of child and
+   * total number of children. new_link will be NULL if the child should be
+   * moved to the end (in case of position being < 0 || >= num)
+   */
+  while (l && (new_link == NULL || old_link == NULL))
+    {
+      /* Record the new position if found */
+      if (position == num)
+        new_link = l;
+
+      if (old_link == NULL)
+        {
+          GdStackChildInfo *info;
+          info = l->data;
+
+          /* Keep trying to find the current position and link location of the
+             child */
+          if (info->widget == child)
+            {
+              old_link = l;
+              child_info = info;
+            }
+        }
+
+      l = g_list_next (l);
+      num++;
+    }
+
+  g_return_if_fail (old_link != NULL);
+
+  if (old_link == new_link || (g_list_next (old_link) == NULL && new_link == NULL))
+    return;
+
+  priv->children = g_list_delete_link (priv->children, old_link);
+  priv->children = g_list_insert_before (priv->children, new_link, child_info);
+
+  gtk_widget_child_notify (child, "position");
+}
+
+static void
 gd_stack_get_child_property (GtkContainer *container,
                              GtkWidget    *child,
                              guint         property_id,
@@ -416,6 +479,8 @@ gd_stack_get_child_property (GtkContainer *container,
 {
   GdStack *stack = GD_STACK (container);
   GdStackChildInfo *info;
+  GList *list;
+  guint i;
 
   info = find_child_info_for_widget (stack, child);
   if (info == NULL)
@@ -436,6 +501,17 @@ gd_stack_get_child_property (GtkContainer *container,
 
     case CHILD_PROP_SYMBOLIC_ICON_NAME:
       g_value_set_string (value, info->symbolic_icon_name);
+      break;
+
+    case CHILD_PROP_POSITION:
+      i = 0;
+      for (list = stack->priv->children; list != NULL; list = g_list_next (list))
+        {
+          if (info == list->data)
+            break;
+          ++i;
+        }
+      g_value_set_int (value, i);
       break;
 
     default:
@@ -485,6 +561,10 @@ gd_stack_set_child_property (GtkContainer *container,
       g_free (info->symbolic_icon_name);
       info->symbolic_icon_name = g_value_dup_string (value);
       gtk_container_child_notify (container, child, "symbolic-icon-name");
+      break;
+
+    case CHILD_PROP_POSITION:
+      reorder_child (stack, child, g_value_get_int (value));
       break;
 
     default:
@@ -775,6 +855,8 @@ gd_stack_add (GtkContainer *container,
 
   g_signal_connect (child, "notify::visible",
                     G_CALLBACK (stack_child_visibility_notify_cb), stack);
+
+  gtk_widget_child_notify (child, "position");
 
   if (priv->visible_child == NULL &&
       gtk_widget_get_visible (child))

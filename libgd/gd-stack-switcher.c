@@ -145,6 +145,23 @@ on_title_icon_updated (GtkWidget       *widget,
 }
 
 static void
+on_position_updated (GtkWidget       *widget,
+                     GParamSpec      *pspec,
+                     GdStackSwitcher *self)
+{
+  GtkWidget *button;
+  gint position;
+
+  button = g_hash_table_lookup (self->priv->buttons, widget);
+
+  gtk_container_child_get (GTK_CONTAINER (self->priv->stack), widget,
+                          "position", &position,
+                          NULL);
+
+  gtk_box_reorder_child (GTK_BOX (self), button, position);
+}
+
+static void
 add_child (GdStackSwitcher *self,
            GtkWidget       *widget)
 {
@@ -175,6 +192,7 @@ add_child (GdStackSwitcher *self,
   g_signal_connect (button, "clicked", G_CALLBACK (on_button_clicked), self);
   g_signal_connect (widget, "child-notify::title", G_CALLBACK (on_title_icon_updated), self);
   g_signal_connect (widget, "child-notify::symbolic-icon-name", G_CALLBACK (on_title_icon_updated), self);
+  g_signal_connect (widget, "child-notify::position", G_CALLBACK (on_position_updated), self);
 
   g_hash_table_insert (self->priv->buttons, widget, button);
 }
