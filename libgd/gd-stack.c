@@ -73,9 +73,9 @@ struct _GdStackPrivate {
   gint transition_duration;
 
   GdStackChildInfo *last_visible_child;
-  cairo_pattern_t *last_visible_pattern;
-  int last_visible_pattern_width;
-  int last_visible_pattern_height;
+  cairo_surface_t *last_visible_surface;
+  int last_visible_surface_width;
+  int last_visible_surface_height;
   gdouble transition_pos;
 
   guint tick_id;
@@ -157,8 +157,8 @@ gd_stack_finalize (GObject* obj)
 
   gd_stack_unschedule_ticks (stack);
 
-  if (priv->last_visible_pattern != NULL)
-    cairo_pattern_destroy (priv->last_visible_pattern);
+  if (priv->last_visible_surface != NULL)
+    cairo_surface_destroy (priv->last_visible_surface);
 
   G_OBJECT_CLASS (gd_stack_parent_class)->finalize (obj);
 }
@@ -540,7 +540,7 @@ gd_stack_set_transition_position (GdStack *stack,
 
   done = pos >= 1.0;
 
-  if (done || priv->last_visible_pattern != NULL)
+  if (done || priv->last_visible_surface != NULL)
     {
       if (priv->last_visible_child)
         {
@@ -551,10 +551,10 @@ gd_stack_set_transition_position (GdStack *stack,
 
   if (done)
     {
-      if (priv->last_visible_pattern != NULL)
+      if (priv->last_visible_surface != NULL)
         {
-          cairo_pattern_destroy (priv->last_visible_pattern);
-          priv->last_visible_pattern = NULL;
+          cairo_surface_destroy (priv->last_visible_surface);
+          priv->last_visible_surface = NULL;
         }
 
       gtk_widget_queue_resize (GTK_WIDGET (stack));
@@ -677,9 +677,9 @@ set_visible_child (GdStack *stack,
     gtk_widget_set_child_visible (priv->last_visible_child->widget, FALSE);
   priv->last_visible_child = NULL;
 
-  if (priv->last_visible_pattern != NULL)
-    cairo_pattern_destroy (priv->last_visible_pattern);
-  priv->last_visible_pattern = NULL;
+  if (priv->last_visible_surface != NULL)
+    cairo_surface_destroy (priv->last_visible_surface);
+  priv->last_visible_surface = NULL;
 
   if (priv->visible_child && priv->visible_child->widget)
     {
@@ -1031,9 +1031,9 @@ gd_stack_draw_crossfade (GtkWidget *widget,
   GdStack *stack = GD_STACK (widget);
   GdStackPrivate *priv = stack->priv;
 
-  if (priv->last_visible_pattern)
+  if (priv->last_visible_surface)
     {
-      cairo_set_source (cr, priv->last_visible_pattern);
+      cairo_set_source_surface (cr, priv->last_visible_surface, 0, 0);
       cairo_set_operator (cr, CAIRO_OPERATOR_ADD);
       cairo_paint_with_alpha (cr, MAX (1.0 - priv->transition_pos, 0));
     }
@@ -1066,11 +1066,10 @@ gd_stack_draw_slide (GtkWidget *widget,
   if (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_RIGHT)
     x += allocation.width;
 
-  if (priv->last_visible_pattern)
+  if (priv->last_visible_surface)
     {
       cairo_save (cr);
-      cairo_translate (cr, x, 0);
-      cairo_set_source (cr, priv->last_visible_pattern);
+      cairo_set_source_surface (cr, priv->last_visible_surface, x, 0);
       cairo_paint (cr);
       cairo_restore (cr);
      }
@@ -1086,21 +1085,27 @@ gd_stack_draw (GtkWidget *widget,
 {
   GdStack *stack = GD_STACK (widget);
   GdStackPrivate *priv = stack->priv;
+  cairo_t *pattern_cr;
 
   if (priv->visible_child)
     {
       if (priv->transition_pos < 1.0)
         {
-          if (priv->last_visible_pattern == NULL &&
+          if (priv->last_visible_surface == NULL &&
               priv->last_visible_child != NULL)
             {
-              cairo_push_group (cr);
+              priv->last_visible_surface_width = gtk_widget_get_allocated_width (priv->last_visible_child->widget);
+              priv->last_visible_surface_height = gtk_widget_get_allocated_height (priv->last_visible_child->widget);
+              priv->last_visible_surface =
+		gdk_window_create_similar_surface (gtk_widget_get_window (widget),
+						   CAIRO_CONTENT_COLOR_ALPHA,
+						   priv->last_visible_surface_width,
+						   priv->last_visible_surface_height);
+	      pattern_cr = cairo_create (priv->last_visible_surface);
               /* We don't use propagate_draw here, because we don't want to apply
                  the bin_window offset */
-              gtk_widget_draw (priv->last_visible_child->widget, cr);
-              priv->last_visible_pattern = cairo_pop_group (cr);
-              priv->last_visible_pattern_width = gtk_widget_get_allocated_width (priv->last_visible_child->widget);
-              priv->last_visible_pattern_height = gtk_widget_get_allocated_height (priv->last_visible_child->widget);
+              gtk_widget_draw (priv->last_visible_child->widget, pattern_cr);
+	      cairo_destroy (pattern_cr);
             }
 
           switch (priv->transition_type)
@@ -1192,10 +1197,10 @@ gd_stack_get_preferred_height (GtkWidget *widget,
 	}
     }
 
-  if (priv->last_visible_pattern != NULL)
+  if (priv->last_visible_surface != NULL)
     {
-      *minimum_height = MAX (*minimum_height, priv->last_visible_pattern_height);
-      *natural_height = MAX (*natural_height, priv->last_visible_pattern_height);
+      *minimum_height = MAX (*minimum_height, priv->last_visible_surface_height);
+      *natural_height = MAX (*natural_height, priv->last_visible_surface_height);
     }
 }
 
@@ -1233,10 +1238,10 @@ gd_stack_get_preferred_height_for_width (GtkWidget* widget,
 	}
     }
 
-  if (priv->last_visible_pattern != NULL)
+  if (priv->last_visible_surface != NULL)
     {
-      *minimum_height = MAX (*minimum_height, priv->last_visible_pattern_height);
-      *natural_height = MAX (*natural_height, priv->last_visible_pattern_height);
+      *minimum_height = MAX (*minimum_height, priv->last_visible_surface_height);
+      *natural_height = MAX (*natural_height, priv->last_visible_surface_height);
     }
 }
 
@@ -1273,10 +1278,10 @@ gd_stack_get_preferred_width (GtkWidget *widget,
 	}
     }
 
-  if (priv->last_visible_pattern != NULL)
+  if (priv->last_visible_surface != NULL)
     {
-      *minimum_width = MAX (*minimum_width, priv->last_visible_pattern_width);
-      *natural_width = MAX (*natural_width, priv->last_visible_pattern_width);
+      *minimum_width = MAX (*minimum_width, priv->last_visible_surface_width);
+      *natural_width = MAX (*natural_width, priv->last_visible_surface_width);
     }
 }
 
@@ -1314,9 +1319,9 @@ gd_stack_get_preferred_width_for_height (GtkWidget* widget,
 	}
     }
 
-  if (priv->last_visible_pattern != NULL)
+  if (priv->last_visible_surface != NULL)
     {
-      *minimum_width = MAX (*minimum_width, priv->last_visible_pattern_width);
-      *natural_width = MAX (*natural_width, priv->last_visible_pattern_width);
+      *minimum_width = MAX (*minimum_width, priv->last_visible_surface_width);
+      *natural_width = MAX (*natural_width, priv->last_visible_surface_width);
     }
 }
