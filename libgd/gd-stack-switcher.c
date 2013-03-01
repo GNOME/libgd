@@ -23,6 +23,7 @@ struct _GdStackSwitcherPrivate
 {
   GdStack *stack;
   GHashTable *buttons;
+  gboolean in_child_changed;
 };
 
 enum {
@@ -62,8 +63,11 @@ on_button_clicked (GtkWidget       *widget,
 {
   GtkWidget *child;
 
-  child = g_object_get_data (G_OBJECT (widget), "stack-child");
-  gd_stack_set_visible_child (self->priv->stack, child);
+  if (!self->priv->in_child_changed)
+    {
+      child = g_object_get_data (G_OBJECT (widget), "stack-child");
+      gd_stack_set_visible_child (self->priv->stack, child);
+    }
 }
 
 static void
@@ -199,7 +203,11 @@ on_child_changed (GtkWidget       *widget,
   child = gd_stack_get_visible_child (GD_STACK (widget));
   button = g_hash_table_lookup (self->priv->buttons, child);
   if (button != NULL)
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
+    {
+      self->priv->in_child_changed = TRUE;
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
+      self->priv->in_child_changed = FALSE;
+    }
 }
 
 static void
