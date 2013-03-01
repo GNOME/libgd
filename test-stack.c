@@ -4,7 +4,7 @@
 
 GtkWidget *stack;
 GtkWidget *switcher;
-GtkWidget *b1;
+GtkWidget *w1;
 
 static void
 set_visible_child (GtkWidget *button, gpointer data)
@@ -29,7 +29,7 @@ static void
 toggle_icon_name (GtkWidget *button, gpointer data)
 {
   gboolean active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button));
-  gtk_container_child_set (GTK_CONTAINER (stack), b1,
+  gtk_container_child_set (GTK_CONTAINER (stack), w1,
 			   "symbolic-icon-name", active ? "edit-find-symbolic" : NULL,
 			   NULL);
 }
@@ -46,7 +46,14 @@ main (gint argc,
       gchar ** argv)
 {
   GtkWidget *window, *box, *button, *hbox, *combo;
-  GtkWidget *b2, *b3;
+  GtkWidget *w2, *w3;
+  GtkListStore* store;
+  GtkWidget *tree_view;
+  GtkTreeViewColumn *column;
+  GtkCellRenderer *renderer;
+  GtkWidget *scrolled_win;
+  int i;
+  GtkTreeIter iter;
 
   gtk_init (&argc, &argv);
 
@@ -60,41 +67,70 @@ main (gint argc,
   gtk_box_pack_start (GTK_BOX (box), switcher, FALSE, FALSE, 0);
 
   stack = gd_stack_new ();
+
+  /* Make transitions longer so we can see that they work */
+  gd_stack_set_transition_duration (GD_STACK (stack), 500);
+
   gtk_widget_set_halign (stack, GTK_ALIGN_START);
   gtk_container_add (GTK_CONTAINER (box), stack);
 
   gd_stack_switcher_set_stack (GD_STACK_SWITCHER (switcher), GD_STACK (stack));
 
-  b1 = gtk_button_new_with_label ("Blah");
-  gtk_container_add_with_properties (GTK_CONTAINER (stack), b1,
+  w1 = gtk_text_view_new ();
+  gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (w1)),
+			    "This is a\nTest\nBalh!", -1);
+
+  gtk_container_add_with_properties (GTK_CONTAINER (stack), w1,
 				     "name", "1",
 				     "title", "1",
 				     NULL);
 
-  b2 = gtk_button_new_with_label ("Gazoooooooooooooooonk");
-  gtk_container_add (GTK_CONTAINER (stack), b2);
-  gtk_container_child_set (GTK_CONTAINER (stack), b2,
+  w2 = gtk_button_new_with_label ("Gazoooooooooooooooonk");
+  gtk_container_add (GTK_CONTAINER (stack), w2);
+  gtk_container_child_set (GTK_CONTAINER (stack), w2,
 			   "name", "2",
 			   "title", "2",
 			   NULL);
 
-  b3 = gtk_button_new_with_label ("Foo\nBar");
-  gd_stack_add_titled (GD_STACK (stack), b3, "3", "3");
+
+  scrolled_win = gtk_scrolled_window_new (NULL, NULL);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_win),
+				  GTK_POLICY_AUTOMATIC,
+				  GTK_POLICY_AUTOMATIC);
+  gtk_widget_set_size_request (scrolled_win, 100, 200);
+
+
+  store = gtk_list_store_new (1, G_TYPE_STRING);
+
+  for (i = 0; i < 40; i++)
+    gtk_list_store_insert_with_values (store, &iter, i, 0,  "Testvalule", -1);
+
+  tree_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (store));
+
+  gtk_container_add (GTK_CONTAINER (scrolled_win), tree_view);
+  w3 = scrolled_win;
+
+  renderer = gtk_cell_renderer_text_new ();
+  column = gtk_tree_view_column_new_with_attributes ("Target", renderer,
+						     "text", 0, NULL);
+  gtk_tree_view_append_column (GTK_TREE_VIEW (tree_view), column);
+
+  gd_stack_add_titled (GD_STACK (stack), w3, "3", "3");
 
   hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_container_add (GTK_CONTAINER (box), hbox);
 
   button = gtk_button_new_with_label ("1");
   gtk_container_add (GTK_CONTAINER (hbox), button);
-  g_signal_connect (button, "clicked", (GCallback) set_visible_child, b1);
+  g_signal_connect (button, "clicked", (GCallback) set_visible_child, w1);
 
   button = gtk_button_new_with_label ("2");
   gtk_container_add (GTK_CONTAINER (hbox), button);
-  g_signal_connect (button, "clicked", (GCallback) set_visible_child, b2);
+  g_signal_connect (button, "clicked", (GCallback) set_visible_child, w2);
 
   button = gtk_button_new_with_label ("3");
   gtk_container_add (GTK_CONTAINER (hbox), button);
-  g_signal_connect (button, "clicked", (GCallback) set_visible_child, b3);
+  g_signal_connect (button, "clicked", (GCallback) set_visible_child, w3);
 
   button = gtk_button_new_with_label ("1");
   gtk_container_add (GTK_CONTAINER (hbox), button);
