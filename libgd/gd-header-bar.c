@@ -431,6 +431,13 @@ gd_header_bar_size_allocate (GtkWidget     *widget,
 
   gtk_widget_set_allocation (widget, allocation);
 
+  if (gtk_widget_get_realized (widget))
+    gdk_window_move_resize (priv->event_window,
+                            allocation->x,
+                            allocation->y,
+                            allocation->width,
+                            allocation->height);
+
   direction = gtk_widget_get_direction (widget);
   nvis_children = count_visible_children (bar);
   sizes = g_newa (GtkRequestedSize, nvis_children);
