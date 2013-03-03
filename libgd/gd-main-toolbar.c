@@ -405,7 +405,6 @@ gd_main_toolbar_add_mode (GdMainToolbar *self,
   button = gtk_radio_button_new_with_label (NULL, label);
   gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (button), FALSE);
   gtk_widget_set_size_request (button, 100, -1);
-  gtk_widget_set_vexpand (button, TRUE);
   gtk_style_context_add_class (gtk_widget_get_style_context (button), "raised");
   gtk_style_context_add_class (gtk_widget_get_style_context (button), "text-button");
 
