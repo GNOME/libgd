@@ -176,7 +176,6 @@ add_child (GdStackSwitcher *self,
   update_button (self, widget, button);
 
   gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (button), FALSE);
-  gtk_widget_set_vexpand (button, TRUE);
 
   group = gtk_container_get_children (GTK_CONTAINER (self));
   if (group != NULL)
