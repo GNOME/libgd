@@ -820,6 +820,20 @@ gd_header_bar_get_custom_title (GdHeaderBar *bar)
 }
 
 static void
+gd_header_bar_finalize (GObject *object)
+{
+  GdHeaderBar *bar = GD_HEADER_BAR (object);
+  GdHeaderBarPrivate *priv = bar->priv;
+
+  g_free (priv->title);
+  g_free (priv->subtitle);
+
+  g_list_free (priv->children);
+
+  G_OBJECT_CLASS (gd_header_bar_parent_class)->finalize (object);
+}
+
+static void
 gd_header_bar_get_property (GObject      *object,
                             guint         prop_id,
                             GValue       *value,
@@ -1202,6 +1216,7 @@ gd_header_bar_class_init (GdHeaderBarClass *class)
 
   object_class->get_property = gd_header_bar_get_property;
   object_class->set_property = gd_header_bar_set_property;
+  object_class->finalize = gd_header_bar_finalize;
 
   widget_class->size_allocate = gd_header_bar_size_allocate;
   widget_class->get_preferred_width = gd_header_bar_get_preferred_width;
