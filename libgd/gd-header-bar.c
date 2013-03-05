@@ -166,6 +166,13 @@ gd_header_bar_get_size (GtkWidget      *widget,
   minimum = natural = 0;
   nvis_children = 0;
 
+  if (orientation == GTK_ORIENTATION_HORIZONTAL)
+    gtk_widget_get_preferred_width (priv->label,
+                                    &minimum, &natural);
+  else
+    gtk_widget_get_preferred_height (priv->label,
+                                     &minimum, &natural);
+
   for (l = priv->children; l; l = l->next)
     {
       Child *child = l->data;
@@ -259,7 +266,10 @@ gd_header_bar_compute_size_for_orientation (GtkWidget *widget,
         }
     }
 
-  /* FIXME label size */
+  gtk_widget_get_preferred_width (priv->label,
+                                  &child_size, &child_natural);
+  required_size += child_size;
+  required_natural += child_natural;
 
   if (nvis_children > 0)
     {
@@ -360,6 +370,11 @@ gd_header_bar_compute_size_for_opposing_orientation (GtkWidget *widget,
         }
       i += 1;
     }
+
+  gtk_widget_get_preferred_height (priv->label,
+                                   &child_minimum, &child_natural);
+  computed_minimum = MAX (computed_minimum, child_minimum);
+  computed_natural = MAX (computed_natural, child_natural);
 
   get_css_padding_and_border (widget, &css_borders);
 
