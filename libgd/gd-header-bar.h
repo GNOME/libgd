@@ -59,6 +59,9 @@ GtkWidget   *gd_header_bar_new               (void);
 void         gd_header_bar_set_title         (GdHeaderBar *bar,
                                               const char  *title);
 const char * gd_header_bar_get_title         (GdHeaderBar *bar);
+void         gd_header_bar_set_subtitle      (GdHeaderBar *bar,
+                                              const gchar *subtitle);
+const gchar *gd_header_bar_get_subtitle      (GdHeaderBar *bar);
 void         gd_header_bar_set_custom_title  (GdHeaderBar *bar,
                                               GtkWidget   *title_widget);
 GtkWidget *  gd_header_bar_get_custom_title  (GdHeaderBar *bar);
