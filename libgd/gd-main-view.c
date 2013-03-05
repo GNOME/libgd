@@ -672,6 +672,16 @@ on_view_selection_changed (GtkWidget *view,
 }
 
 static void
+on_row_deleted_cb (GtkTreeModel *model,
+                   GtkTreePath *path,
+                   gpointer user_data)
+{
+  GdMainView *self = user_data;
+
+  g_signal_emit (self, signals[VIEW_SELECTION_CHANGED], 0);
+}
+
+static void
 gd_main_view_apply_model (GdMainView *self)
 {
   GdMainViewGeneric *generic = get_generic (self);
@@ -788,12 +798,22 @@ gd_main_view_set_model (GdMainView *self,
 {
   if (model != self->priv->model)
     {
+      if (self->priv->model)
+        g_signal_handlers_disconnect_by_func (self->priv->model,
+                                              on_row_deleted_cb, self);
+
       g_clear_object (&self->priv->model);
 
       if (model)
-        self->priv->model = g_object_ref (model);
+        {
+          self->priv->model = g_object_ref (model);
+          g_signal_connect (self->priv->model, "row-deleted",
+                            G_CALLBACK (on_row_deleted_cb), self);
+        }
       else
-        self->priv->model = NULL;
+        {
+          self->priv->model = NULL;
+        }
 
       gd_main_view_apply_model (self);
       g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODEL]);
