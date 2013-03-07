@@ -414,6 +414,35 @@ gd_header_menu_button_init (GdHeaderMenuButton *self)
 {
 }
 
+typedef GtkRadioButtonClass GdHeaderRadioButtonClass;
+G_DEFINE_TYPE_WITH_CODE (GdHeaderRadioButton, gd_header_radio_button, GTK_TYPE_RADIO_BUTTON,
+                         G_IMPLEMENT_INTERFACE (GD_TYPE_HEADER_BUTTON, gd_header_button_generic_iface_init))
+
+static void
+gd_header_radio_button_constructed (GObject *object)
+{
+  GdHeaderRadioButton *self = (GdHeaderRadioButton *) (object);
+
+  G_OBJECT_CLASS (GET_PARENT_CLASS (object))->constructed (object);
+
+  gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (self), FALSE);
+}
+
+static void
+gd_header_radio_button_class_init (GdHeaderRadioButtonClass *klass)
+{
+  GObjectClass *oclass = G_OBJECT_CLASS (klass);
+
+  oclass->constructed = gd_header_radio_button_constructed;
+
+  gd_header_button_generic_class_init (klass);
+}
+
+static void
+gd_header_radio_button_init (GdHeaderRadioButton *self)
+{
+}
+
 /**
  * gd_header_simple_button_new:
  *
@@ -434,6 +463,17 @@ GtkWidget *
 gd_header_toggle_button_new (void)
 {
   return g_object_new (GD_TYPE_HEADER_TOGGLE_BUTTON, NULL);
+}
+
+/**
+ * gd_header_radio_button_new:
+ *
+ * Returns: (transfer none):
+ */
+GtkWidget *
+gd_header_radio_button_new (void)
+{
+  return g_object_new (GD_TYPE_HEADER_RADIO_BUTTON, NULL);
 }
 
 /**

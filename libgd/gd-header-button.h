@@ -49,6 +49,11 @@ typedef GtkToggleButton GdHeaderToggleButton;
 GType       gd_header_toggle_button_get_type (void) G_GNUC_CONST;
 GtkWidget * gd_header_toggle_button_new      (void);
 
+#define GD_TYPE_HEADER_RADIO_BUTTON (gd_header_radio_button_get_type ())
+typedef GtkRadioButton GdHeaderRadioButton;
+GType       gd_header_radio_button_get_type  (void) G_GNUC_CONST;
+GtkWidget * gd_header_radio_button_new       (void);
+
 #define GD_TYPE_HEADER_MENU_BUTTON   (gd_header_menu_button_get_type ())
 typedef GtkMenuButton GdHeaderMenuButton;
 GType       gd_header_menu_button_get_type   (void) G_GNUC_CONST;
