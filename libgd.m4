@@ -119,6 +119,7 @@ AC_DEFUN([LIBGD_INIT], [
     # stack:
     AM_CONDITIONAL([LIBGD_STACK],[_LIBGD_IF_OPTION_SET([stack],[true],[false])])
     _LIBGD_IF_OPTION_SET([stack],[
+        _LIBGD_SET_OPTION([_header-button])
         AC_DEFINE([LIBGD_STACK], [1], [Description])
     ])
 

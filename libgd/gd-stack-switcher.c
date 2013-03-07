@@ -18,6 +18,7 @@
  */
 
 #include "gd-stack-switcher.h"
+#include "gd-header-button.h"
 
 struct _GdStackSwitcherPrivate
 {
@@ -77,56 +78,19 @@ update_button (GdStackSwitcher *self,
 {
   char *title;
   char *symbolic_icon_name;
-  GtkStyleContext *context;
-  GtkWidget *button_child;
 
   gtk_container_child_get (GTK_CONTAINER (self->priv->stack), widget,
                            "title", &title,
                            "symbolic-icon-name", &symbolic_icon_name,
                            NULL);
 
-  context = gtk_widget_get_style_context (button);
-  button_child = gtk_bin_get_child (GTK_BIN (button));
+  gd_header_button_set_symbolic_icon_name (GD_HEADER_BUTTON (button), symbolic_icon_name);
+  gd_header_button_set_label (GD_HEADER_BUTTON (button), title);
 
-  if (symbolic_icon_name != NULL && symbolic_icon_name[0] != '\0')
-    {
-      if (button_child != NULL && !GTK_IS_IMAGE (button_child))
-        {
-          gtk_widget_set_size_request (button, -1, -1);
-          gtk_widget_destroy (button_child);
-          button_child = NULL;
-        }
-
-      if (button_child == NULL)
-        {
-          button_child = gtk_image_new ();
-          gtk_container_add (GTK_CONTAINER (button), button_child);
-          gtk_widget_show (button_child);
-        }
-
-      gtk_image_set_from_icon_name (GTK_IMAGE (button_child), symbolic_icon_name, GTK_ICON_SIZE_MENU);
-      gtk_widget_set_tooltip_text (button, title);
-
-      gtk_style_context_add_class (context, "image-button");
-      gtk_style_context_remove_class (context, "text-button");
-    }
+  if (symbolic_icon_name != NULL)
+    gtk_widget_set_size_request (button, -1, -1);
   else
-    {
-      if (button_child != NULL && GTK_IS_LABEL (button_child))
-        gtk_label_set_text (GTK_LABEL (button_child), title);
-      else
-        {
-          if (button_child)
-            gtk_widget_destroy (button_child);
-          button_child = gtk_label_new (title);
-          gtk_widget_show (button_child);
-          gtk_container_add (GTK_CONTAINER (button), button_child);
-          gtk_widget_set_size_request (button, 100, -1);
-
-          gtk_style_context_add_class (context, "text-button");
-          gtk_style_context_remove_class (context, "image-button");
-        }
-    }
+    gtk_widget_set_size_request (button, 100, -1);
 
   g_free (title);
   g_free (symbolic_icon_name);
@@ -169,13 +133,8 @@ add_child (GdStackSwitcher *self,
   GList *group;
   GtkStyleContext *context;
 
-  button = gtk_radio_button_new (NULL);
-  context = gtk_widget_get_style_context (button);
-  gtk_style_context_add_class (context, "raised");
-
+  button = gd_header_radio_button_new ();
   update_button (self, widget, button);
-
-  gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (button), FALSE);
 
   group = gtk_container_get_children (GTK_CONTAINER (self));
   if (group != NULL)
