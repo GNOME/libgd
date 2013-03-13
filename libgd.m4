@@ -72,12 +72,6 @@ AC_DEFUN([LIBGD_INIT], [
         AC_DEFINE([LIBGD_MAIN_LIST_VIEW], [1], [Description])
     ])
 
-    # _view-common:
-    AM_CONDITIONAL([LIBGD__VIEW_COMMON],[_LIBGD_IF_OPTION_SET([_view-common],[true],[false])])
-    _LIBGD_IF_OPTION_SET([_view-common],[
-        AC_DEFINE([LIBGD__VIEW_COMMON], [1], [Description])
-    ])
-
     # main-toolbar:
     AM_CONDITIONAL([LIBGD_MAIN_TOOLBAR],[_LIBGD_IF_OPTION_SET([main-toolbar],[true],[false])])
     _LIBGD_IF_OPTION_SET([main-toolbar],[
@@ -90,12 +84,6 @@ AC_DEFUN([LIBGD_INIT], [
     _LIBGD_IF_OPTION_SET([header-bar],[
         _LIBGD_SET_OPTION([_header-button])
         AC_DEFINE([LIBGD_HEADER_BAR], [1], [Description])
-    ])
-
-    # _header-button:
-    AM_CONDITIONAL([LIBGD__HEADER_BUTTON],[_LIBGD_IF_OPTION_SET([_header-button],[true],[false])])
-    _LIBGD_IF_OPTION_SET([_header-button],[
-        AC_DEFINE([LIBGD__HEADER_BUTTON], [1], [Description])
     ])
 
     # margin-container:
@@ -143,6 +131,18 @@ AC_DEFUN([LIBGD_INIT], [
     AM_CONDITIONAL([LIBGD_GIR],[ _LIBGD_IF_OPTION_SET([gir],[true],[false])])
     _LIBGD_IF_OPTION_SET([gir],[
         GOBJECT_INTROSPECTION_REQUIRE([0.9.6])
+    ])
+
+    # _header-button:
+    AM_CONDITIONAL([LIBGD__HEADER_BUTTON],[_LIBGD_IF_OPTION_SET([_header-button],[true],[false])])
+    _LIBGD_IF_OPTION_SET([_header-button],[
+        AC_DEFINE([LIBGD__HEADER_BUTTON], [1], [Description])
+    ])
+
+    # _view-common:
+    AM_CONDITIONAL([LIBGD__VIEW_COMMON],[_LIBGD_IF_OPTION_SET([_view-common],[true],[false])])
+    _LIBGD_IF_OPTION_SET([_view-common],[
+        AC_DEFINE([LIBGD__VIEW_COMMON], [1], [Description])
     ])
 
     PKG_CHECK_MODULES(LIBGD, [ $LIBGD_MODULES ])
