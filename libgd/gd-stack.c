@@ -603,15 +603,16 @@ gd_stack_set_transition_position (GdStack *stack,
                                   gdouble pos)
 {
   GdStackPrivate *priv = stack->priv;
-  GtkAllocation allocation;
   gboolean done;
 
   priv->transition_pos = pos;
   gtk_widget_queue_draw (GTK_WIDGET (stack));
 
-  if (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_LEFT ||
-      priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_RIGHT)
+  if (priv->bin_window != NULL &&
+      (priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_LEFT ||
+       priv->transition_type == GD_STACK_TRANSITION_TYPE_SLIDE_RIGHT))
     {
+      GtkAllocation allocation;
       gtk_widget_get_allocation (GTK_WIDGET (stack), &allocation);
       gdk_window_move (priv->bin_window,
                        get_bin_window_x (stack, &allocation), 0);
