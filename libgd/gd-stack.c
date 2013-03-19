@@ -857,6 +857,7 @@ gd_stack_add (GtkContainer *container,
 
   priv->children = g_list_append (priv->children, child_info);
 
+  gtk_widget_set_parent_window (child, priv->bin_window);
   gtk_widget_set_parent (child, GTK_WIDGET (stack));
 
   g_signal_connect (child, "notify::visible",
