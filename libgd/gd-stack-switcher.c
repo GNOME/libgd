@@ -216,6 +216,8 @@ disconnect_stack_signals (GdStackSwitcher *switcher)
   g_signal_handlers_disconnect_by_func (priv->stack, on_stack_child_removed, switcher);
 
   g_signal_handlers_disconnect_by_func (priv->stack, on_child_changed, switcher);
+
+  g_signal_handlers_disconnect_by_func (priv->stack, disconnect_stack_signals, switcher);
 }
 
 static void
@@ -229,6 +231,9 @@ connect_stack_signals (GdStackSwitcher *switcher)
                           G_CALLBACK (on_stack_child_removed), switcher);
   g_signal_connect (priv->stack, "notify::visible-child",
                     G_CALLBACK (on_child_changed), switcher);
+
+  g_signal_connect_swapped (priv->stack, "destroy",
+                            G_CALLBACK (disconnect_stack_signals), switcher);
 }
 
 /**
