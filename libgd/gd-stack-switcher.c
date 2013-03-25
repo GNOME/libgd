@@ -87,6 +87,8 @@ update_button (GdStackSwitcher *self,
   gd_header_button_set_symbolic_icon_name (GD_HEADER_BUTTON (button), symbolic_icon_name);
   gd_header_button_set_label (GD_HEADER_BUTTON (button), title);
 
+  gtk_widget_set_visible (button, title != NULL || symbolic_icon_name != NULL);
+
   if (symbolic_icon_name != NULL)
     gtk_widget_set_size_request (button, -1, -1);
   else
@@ -144,7 +146,6 @@ add_child (GdStackSwitcher *self,
     }
 
   gtk_container_add (GTK_CONTAINER (self), button);
-  gtk_widget_show (button);
 
   g_object_set_data (G_OBJECT (button), "stack-child", widget);
   g_signal_connect (button, "clicked", G_CALLBACK (on_button_clicked), self);
