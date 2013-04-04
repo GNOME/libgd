@@ -166,6 +166,7 @@ gd_main_view_class_init (GdMainViewClass *klass)
                       GD_MAIN_VIEW_LIST,
                       GD_MAIN_VIEW_ICON,
                       G_PARAM_READWRITE |
+                      G_PARAM_CONSTRUCT |
                       G_PARAM_STATIC_STRINGS);
 
   properties[PROP_SELECTION_MODE] =
