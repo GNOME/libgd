@@ -327,8 +327,19 @@ selection_mode_do_select_range (GdMainView *self,
   GtkTreePath *path, *last_path;
   gboolean equal;
 
+  path = gtk_tree_model_get_path (self->priv->model, first_element);
   last_path = gtk_tree_model_get_path (self->priv->model, last_element);
-  iter = *first_element;
+  if (gtk_tree_path_compare (path, last_path) > 0)
+    {
+      gtk_tree_path_free (last_path);
+      last_path = path;
+      iter = *last_element;
+    }
+  else
+    {
+      gtk_tree_path_free (path);
+      iter = *first_element;
+    }
 
   do
     {
