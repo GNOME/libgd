@@ -36,6 +36,8 @@ struct _GdMainViewPrivate {
   GtkTreeModel *model;
 
   gchar *button_press_item_path;
+
+  gchar *last_selected_id;
 };
 
 enum {
@@ -73,6 +75,7 @@ gd_main_view_finalize (GObject *obj)
   GdMainView *self = GD_MAIN_VIEW (obj);
 
   g_free (self->priv->button_press_item_path);
+  g_free (self->priv->last_selected_id);
 
   G_OBJECT_CLASS (gd_main_view_parent_class)->finalize (obj);
 }
@@ -366,50 +369,69 @@ selection_mode_select_range (GdMainView *self,
   GtkTreeIter other;
   gboolean found = FALSE;
   gboolean selected;
+  char *id;
 
-  other = *iter;
-  while (gtk_tree_model_iter_previous (self->priv->model, &other))
+  if (self->priv->last_selected_id != NULL &&
+      gtk_tree_model_get_iter_first (self->priv->model, &other))
     {
-      gtk_tree_model_get (self->priv->model, &other,
-                          GD_MAIN_COLUMN_SELECTED, &selected,
-                          -1);
+      do
+	{
+	  gtk_tree_model_get (self->priv->model, &other,
+			      GD_MAIN_COLUMN_ID, &id,
+			      -1);
+	  if (g_strcmp0 (id, self->priv->last_selected_id) == 0)
+	    {
+	      g_free (id);
+	      found = TRUE;
+	      break;
+	    }
+	  g_free (id);
+	}
+      while (gtk_tree_model_iter_next (self->priv->model, &other));
+    }
 
-      if (selected)
-        {
-          found = TRUE;
-          break;
-        }
+  if (!found)
+    {
+      other = *iter;
+      while (gtk_tree_model_iter_previous (self->priv->model, &other))
+	{
+	  gtk_tree_model_get (self->priv->model, &other,
+			      GD_MAIN_COLUMN_SELECTED, &selected,
+			      -1);
+
+	  if (selected)
+	    {
+	      found = TRUE;
+	      break;
+	    }
+	}
+    }
+
+  if (!found)
+    {
+      other = *iter;
+      while (gtk_tree_model_iter_next (self->priv->model, &other))
+	{
+	  gtk_tree_model_get (self->priv->model, &other,
+			      GD_MAIN_COLUMN_SELECTED, &selected,
+			      -1);
+	  if (selected)
+	    {
+	      found = TRUE;
+	      break;
+	    }
+	}
     }
 
   if (found)
+    selection_mode_do_select_range (self, iter, &other);
+  else
     {
-      selection_mode_do_select_range (self, &other, iter);
-      return;
+      /* no other selected element found, just select the iter */
+      gtk_list_store_set (GTK_LIST_STORE (self->priv->model), iter,
+			  GD_MAIN_COLUMN_SELECTED, TRUE,
+			  -1);
     }
-
-  other = *iter;
-  while (gtk_tree_model_iter_next (self->priv->model, &other))
-    {
-      gtk_tree_model_get (self->priv->model, &other,
-                          GD_MAIN_COLUMN_SELECTED, &selected,
-                          -1);
-      if (selected)
-        {
-          found = TRUE;
-          break;
-        }
-    }
-
-  if (found)
-    {
-      selection_mode_do_select_range (self, iter, &other);
-      return;
-    }
-
-  /* no other selected element found, just select the iter */
-  gtk_list_store_set (GTK_LIST_STORE (self->priv->model), iter,
-                      GD_MAIN_COLUMN_SELECTED, TRUE,
-                      -1);
 }
 
 static gboolean
@@ -419,6 +441,7 @@ toggle_selection_for_path (GdMainView *self,
 {
   gboolean selected;
   GtkTreeIter iter;
+  char *id;
 
   if (self->priv->model == NULL)
     return FALSE;
@@ -441,9 +464,17 @@ toggle_selection_for_path (GdMainView *self,
       if (select_range)
         selection_mode_select_range (self, &iter);
       else
-        gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
-                            GD_MAIN_COLUMN_SELECTED, TRUE,
-                            -1);
+	{
+	  gtk_tree_model_get (self->priv->model, &iter,
+			      GD_MAIN_COLUMN_ID, &id,
+			      -1);
+	  g_free (self->priv->last_selected_id);
+	  self->priv->last_selected_id = id;
+
+	  gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
+			      GD_MAIN_COLUMN_SELECTED, TRUE,
+			      -1);
+	}
     }
 
   g_signal_emit (self, signals[VIEW_SELECTION_CHANGED], 0);
