@@ -37,6 +37,9 @@ G_DEFINE_TYPE_WITH_CODE (GdMainListView, gd_main_list_view, GTK_TYPE_TREE_VIEW,
                          G_IMPLEMENT_INTERFACE (GD_TYPE_MAIN_VIEW_GENERIC,
                                                 gd_main_view_generic_iface_init))
 
+static gboolean gd_main_list_view_draw (GtkWidget *widget,
+					cairo_t   *cr);
+
 static GtkTreePath*
 get_source_row (GdkDragContext *context)
 {
@@ -144,6 +147,7 @@ gd_main_list_view_class_init (GdMainListViewClass *klass)
 
   oclass->constructed = gd_main_list_view_constructed;
   wclass->drag_data_get = gd_main_list_view_drag_data_get;
+  wclass->draw = gd_main_list_view_draw;
 
   g_type_class_add_private (klass, sizeof (GdMainListViewPrivate));
 }
@@ -179,6 +183,60 @@ gd_main_list_view_set_selection_mode (GdMainViewGeneric *mv,
                 "visible", selection_mode,
                 NULL);
   gtk_tree_view_column_queue_resize (self->priv->tree_col);
+}
+
+static gboolean
+gd_main_list_view_draw (GtkWidget *widget,
+			cairo_t   *cr)
+{
+  GdMainListView *self = GD_MAIN_LIST_VIEW (widget);
+  GtkStyleContext *context;
+  GdkRectangle lines_rect;
+  GdkRectangle rect;
+  GtkTreePath *path;
+  GtkTreePath *rubberband_start, *rubberband_end;
+
+  GTK_WIDGET_CLASS (gd_main_list_view_parent_class)->draw (widget, cr);
+
+  _gd_main_view_generic_get_rubberband_range (GD_MAIN_VIEW_GENERIC (self),
+					      &rubberband_start, &rubberband_end);
+
+  if (rubberband_start)
+    {
+      context = gtk_widget_get_style_context (widget);
+
+      gtk_style_context_save (context);
+      gtk_style_context_add_class (context, GTK_STYLE_CLASS_RUBBERBAND);
+
+      path = gtk_tree_path_copy (rubberband_start);
+
+      lines_rect.width = 0;
+
+      while (gtk_tree_path_compare (path, rubberband_end) <= 0)
+	{
+	  gtk_tree_view_get_cell_area (GTK_TREE_VIEW (self),
+				       path, self->priv->tree_col, &rect);
+	  if (lines_rect.width == 0)
+	    lines_rect = rect;
+	  else
+	    gdk_rectangle_union (&rect, &lines_rect, &lines_rect);
+
+	  gtk_tree_path_next (path);
+	}
+      gtk_tree_path_free (path);
+
+      gtk_render_background (context, cr,
+			     lines_rect.x, lines_rect.y,
+			     lines_rect.width, lines_rect.height);
+      gtk_render_frame (context, cr,
+			     lines_rect.x, lines_rect.y,
+			     lines_rect.width, lines_rect.height);
+
+
+      gtk_style_context_restore (context);
+    }
+
+  return FALSE;
 }
 
 static void

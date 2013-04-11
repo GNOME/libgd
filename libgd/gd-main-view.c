@@ -27,6 +27,7 @@
 
 #define MAIN_VIEW_TYPE_INITIAL -1
 #define MAIN_VIEW_DND_ICON_OFFSET 20
+#define MAIN_VIEW_RUBBERBAND_SELECT_TRIGGER_LENGTH 32
 
 struct _GdMainViewPrivate {
   GdMainViewType current_type;
@@ -34,6 +35,13 @@ struct _GdMainViewPrivate {
 
   GtkWidget *current_view;
   GtkTreeModel *model;
+
+  gboolean track_motion;
+  gboolean rubberband_select;
+  GtkTreePath *rubberband_select_first_path;
+  GtkTreePath *rubberband_select_last_path;
+  int button_down_x;
+  int button_down_y;
 
   gchar *button_press_item_path;
 
@@ -76,6 +84,12 @@ gd_main_view_finalize (GObject *obj)
 
   g_free (self->priv->button_press_item_path);
   g_free (self->priv->last_selected_id);
+
+  if (self->priv->rubberband_select_first_path)
+    gtk_tree_path_free (self->priv->rubberband_select_first_path);
+
+  if (self->priv->rubberband_select_last_path)
+    gtk_tree_path_free (self->priv->rubberband_select_last_path);
 
   G_OBJECT_CLASS (gd_main_view_parent_class)->finalize (obj);
 }
@@ -528,10 +542,12 @@ on_button_release_event (GtkWidget *view,
 {
   GdMainView *self = user_data;
   GdMainViewGeneric *generic = get_generic (self);
-  GtkTreePath *path;
+  GtkTreePath *path, *start_path, *end_path, *tmp_path;
+  GtkTreeIter iter;
   gchar *button_release_item_path;
   gboolean selection_mode;
   gboolean res, same_item = FALSE;
+  gboolean is_selected;
 
   /* eat double/triple click events */
   if (event->type != GDK_BUTTON_RELEASE)
@@ -550,6 +566,53 @@ on_button_release_event (GtkWidget *view,
 
   g_free (self->priv->button_press_item_path);
   self->priv->button_press_item_path = NULL;
+
+  self->priv->track_motion = FALSE;
+  if (self->priv->rubberband_select)
+    {
+      gd_main_view_generic_set_rubberband_range (get_generic (self), NULL, NULL);
+      if (self->priv->rubberband_select_last_path)
+	{
+	  if (!self->priv->selection_mode)
+	    g_signal_emit (self, signals[SELECTION_MODE_REQUEST], 0);
+
+	  start_path = gtk_tree_path_copy (self->priv->rubberband_select_first_path);
+	  end_path = gtk_tree_path_copy (self->priv->rubberband_select_last_path);
+	  if (gtk_tree_path_compare (start_path, end_path) > 0)
+	    {
+	      tmp_path = start_path;
+	      start_path = end_path;
+	      end_path = tmp_path;
+	    }
+
+	  while (gtk_tree_path_compare (start_path, end_path) <= 0)
+	    {
+	      if (gtk_tree_model_get_iter (self->priv->model,
+					   &iter, start_path))
+		{
+		  gtk_tree_model_get (self->priv->model, &iter,
+				      GD_MAIN_COLUMN_SELECTED, &is_selected,
+				      -1);
+		  gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
+				      GD_MAIN_COLUMN_SELECTED, !is_selected,
+				      -1);
+		}
+
+	      gtk_tree_path_next (start_path);
+	    }
+
+	  gtk_tree_path_free (start_path);
+	  gtk_tree_path_free (end_path);
+	}
+
+      g_clear_pointer (&self->priv->rubberband_select_first_path,
+		       gtk_tree_path_free);
+      g_clear_pointer (&self->priv->rubberband_select_last_path,
+		       gtk_tree_path_free);
+
+      res = TRUE;
+      goto out;
+    }
 
   if (!same_item)
     {
@@ -590,39 +653,108 @@ on_button_press_event (GtkWidget *view,
   GList *selection, *l;
   GtkTreePath *sel_path;
   gboolean found = FALSE;
+  gboolean force_selection;
 
   path = gd_main_view_generic_get_path_at_pos (generic, event->x, event->y);
 
   if (path != NULL)
     self->priv->button_press_item_path = gtk_tree_path_to_string (path);
 
-  if (!self->priv->selection_mode ||
-      path == NULL)
+  force_selection =
+    (event->button == 3) ||
+    ((event->button == 1) && (event->state & GDK_CONTROL_MASK));
+
+  if (!self->priv->selection_mode && !force_selection)
     {
       gtk_tree_path_free (path);
       return FALSE;
     }
 
-  selection = gd_main_view_get_selection (self);
-
-  for (l = selection; l != NULL; l = l->next)
+  if (path && !force_selection)
     {
-      sel_path = l->data;
-      if (gtk_tree_path_compare (path, sel_path) == 0)
-        {
-          found = TRUE;
-          break;
-        }
-    }
+      selection = gd_main_view_get_selection (self);
 
-  if (selection != NULL)
-    g_list_free_full (selection, (GDestroyNotify) gtk_tree_path_free);
+      for (l = selection; l != NULL; l = l->next)
+	{
+	  sel_path = l->data;
+	  if (gtk_tree_path_compare (path, sel_path) == 0)
+	    {
+	      found = TRUE;
+	      break;
+	    }
+	}
+
+      if (selection != NULL)
+	g_list_free_full (selection, (GDestroyNotify) gtk_tree_path_free);
+    }
 
   /* if we did not find the item in the selection, block
    * drag and drop, while in selection mode
    */
-  return !found;
+  if (!found)
+    {
+      self->priv->track_motion = TRUE;
+      self->priv->rubberband_select = FALSE;
+      self->priv->rubberband_select_first_path = NULL;
+      self->priv->rubberband_select_last_path = NULL;
+      self->priv->button_down_x = event->x;
+      self->priv->button_down_y = event->y;
+      return TRUE;
+    }
+  else
+    return FALSE;
 }
+
+static gboolean
+on_motion_event (GtkWidget      *widget,
+		 GdkEventMotion *event,
+		 gpointer user_data)
+{
+  GdMainView *self = user_data;
+  GtkTreePath *path;
+
+  if (self->priv->track_motion)
+    {
+      if (!self->priv->rubberband_select &&
+	  (event->x - self->priv->button_down_x) * (event->x - self->priv->button_down_x) +
+	  (event->y - self->priv->button_down_y) * (event->y - self->priv->button_down_y)  >
+	  MAIN_VIEW_RUBBERBAND_SELECT_TRIGGER_LENGTH * MAIN_VIEW_RUBBERBAND_SELECT_TRIGGER_LENGTH)
+	{
+	  self->priv->rubberband_select = TRUE;
+	  if (self->priv->button_press_item_path)
+	    {
+	      self->priv->rubberband_select_first_path =
+		gtk_tree_path_new_from_string (self->priv->button_press_item_path);
+	    }
+	}
+
+      if (self->priv->rubberband_select)
+	{
+	  path = gd_main_view_generic_get_path_at_pos (get_generic (self), event->x, event->y);
+	  if (path != NULL)
+	    {
+	      if (self->priv->rubberband_select_first_path == NULL)
+		self->priv->rubberband_select_first_path = gtk_tree_path_copy (path);
+
+	      if (self->priv->rubberband_select_last_path == NULL ||
+		  gtk_tree_path_compare (self->priv->rubberband_select_last_path, path) != 0)
+		{
+		  if (self->priv->rubberband_select_last_path)
+		    gtk_tree_path_free (self->priv->rubberband_select_last_path);
+		  self->priv->rubberband_select_last_path = path;
+
+		  gd_main_view_generic_set_rubberband_range (get_generic (self),
+							     self->priv->rubberband_select_first_path,
+							     self->priv->rubberband_select_last_path);
+		}
+	      else
+		gtk_tree_path_free (path);
+	    }
+	}
+    }
+  return FALSE;
+}
+
 
 static void
 on_drag_begin (GdMainViewGeneric *generic,
@@ -773,6 +905,8 @@ gd_main_view_rebuild (GdMainView *self)
                     G_CALLBACK (on_button_press_event), self);
   g_signal_connect (self->priv->current_view, "button-release-event",
                     G_CALLBACK (on_button_release_event), self);
+  g_signal_connect (self->priv->current_view, "motion-notify-event",
+                    G_CALLBACK (on_motion_event), self);
   g_signal_connect_after (self->priv->current_view, "drag-begin",
                           G_CALLBACK (on_drag_begin), self);
   g_signal_connect (self->priv->current_view, "view-selection-changed",

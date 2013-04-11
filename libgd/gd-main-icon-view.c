@@ -128,6 +128,167 @@ gd_main_icon_view_constructed (GObject *obj)
 }
 
 static void
+path_from_line_rects (cairo_t *cr,
+		      GdkRectangle *lines,
+		      int n_lines)
+{
+  int start_line, end_line;
+  GdkRectangle *r;
+  int i;
+
+  /* Join rows vertically by extending to the middle */
+  for (i = 0; i < n_lines - 1; i++)
+    {
+      GdkRectangle *r1 = &lines[i];
+      GdkRectangle *r2 = &lines[i+1];
+      int gap = r2->y - (r1->y + r1->height);
+      int old_y;
+
+      r1->height += gap / 2;
+      old_y = r2->y;
+      r2->y = r1->y + r1->height;
+      r2->height += old_y - r2->y;
+    }
+
+  cairo_new_path (cr);
+  start_line = 0;
+
+  do
+    {
+      for (i = start_line; i < n_lines; i++)
+	{
+	  r = &lines[i];
+	  if (i == start_line)
+	    cairo_move_to (cr, r->x + r->width, r->y);
+	  else
+	    cairo_line_to (cr, r->x + r->width, r->y);
+	  cairo_line_to (cr, r->x + r->width, r->y + r->height);
+
+	  if (i < n_lines - 1 &&
+	      (r->x + r->width < lines[i+1].x ||
+	       r->x > lines[i+1].x + lines[i+1].width))
+	    {
+	      i++;
+	      break;
+	    }
+	}
+      end_line = i;
+      for (i = end_line - 1; i >= start_line; i--)
+	{
+	  r = &lines[i];
+	  cairo_line_to (cr, r->x, r->y + r->height);
+	  cairo_line_to (cr, r->x, r->y);
+	}
+      cairo_close_path (cr);
+      start_line = end_line;
+    }
+  while (end_line < n_lines);
+}
+
+static gboolean
+gd_main_icon_view_draw (GtkWidget *widget,
+			cairo_t   *cr)
+{
+  GdMainIconView *self = GD_MAIN_ICON_VIEW (widget);
+  GtkAllocation allocation;
+  GtkStyleContext *context;
+  GdkRectangle line_rect;
+  GdkRectangle rect;
+  GtkTreePath *path;
+  GArray *lines;
+  GtkTreePath *rubberband_start, *rubberband_end;
+
+  GTK_WIDGET_CLASS (gd_main_icon_view_parent_class)->draw (widget, cr);
+
+  _gd_main_view_generic_get_rubberband_range (GD_MAIN_VIEW_GENERIC (self),
+					      &rubberband_start, &rubberband_end);
+
+  if (rubberband_start)
+    {
+      cairo_save (cr);
+
+      context = gtk_widget_get_style_context (widget);
+
+      gtk_style_context_save (context);
+      gtk_style_context_add_class (context, GTK_STYLE_CLASS_RUBBERBAND);
+
+      path = gtk_tree_path_copy (rubberband_start);
+
+      line_rect.width = 0;
+      lines = g_array_new (FALSE, FALSE, sizeof (GdkRectangle));
+
+      while (gtk_tree_path_compare (path, rubberband_end) <= 0)
+	{
+	  if (gtk_icon_view_get_cell_rect (GTK_ICON_VIEW (widget),
+					   path,
+					   NULL, &rect))
+	    {
+	      if (line_rect.width == 0)
+		line_rect = rect;
+	      else
+		{
+		  if (rect.y == line_rect.y)
+		    gdk_rectangle_union (&rect, &line_rect, &line_rect);
+		  else
+		    {
+		      g_array_append_val (lines, line_rect);
+		      line_rect = rect;
+		    }
+		}
+	    }
+	  gtk_tree_path_next (path);
+	}
+
+      if (line_rect.width != 0)
+	g_array_append_val (lines, line_rect);
+
+      if (lines->len > 0)
+	{
+	  GtkStateFlags state;
+	  cairo_path_t *path;
+	  GtkBorder border;
+	  GdkRGBA border_color;
+
+	  path_from_line_rects (cr, (GdkRectangle *)lines->data, lines->len);
+
+	  /* For some reason we need to copy and reapply the path, or it gets
+	     eaten by gtk_render_background() */
+	  path = cairo_copy_path (cr);
+
+	  cairo_save (cr);
+	  cairo_clip (cr);
+	  gtk_widget_get_allocation (widget, &allocation);
+	  gtk_render_background (context, cr,
+				 0, 0,
+				 allocation.width, allocation.height);
+	  cairo_restore (cr);
+
+	  cairo_append_path (cr, path);
+	  cairo_path_destroy (path);
+
+	  state = gtk_widget_get_state_flags (widget);
+	  gtk_style_context_get_border_color (context,
+					      state,
+					      &border_color);
+	  gtk_style_context_get_border (context, state,
+					&border);
+
+	  cairo_set_line_width (cr, border.left);
+	  gdk_cairo_set_source_rgba (cr, &border_color);
+	  cairo_stroke (cr);
+	}
+      g_array_free (lines, TRUE);
+
+      gtk_tree_path_free (path);
+
+      gtk_style_context_restore (context);
+      cairo_restore (cr);
+    }
+
+  return FALSE;
+}
+
+static void
 gd_main_icon_view_class_init (GdMainIconViewClass *klass)
 {
   GObjectClass *oclass = G_OBJECT_CLASS (klass);
@@ -135,6 +296,7 @@ gd_main_icon_view_class_init (GdMainIconViewClass *klass)
 
   oclass->constructed = gd_main_icon_view_constructed;
   wclass->drag_data_get = gd_main_icon_view_drag_data_get;
+  wclass->draw = gd_main_icon_view_draw;
 
   gtk_widget_class_install_style_property (wclass,
                                            g_param_spec_int ("check-icon-size",

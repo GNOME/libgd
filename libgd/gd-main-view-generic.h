@@ -98,12 +98,18 @@ GtkTreePath * gd_main_view_generic_get_path_at_pos (GdMainViewGeneric *self,
                                                     gint y);
 void gd_main_view_generic_select_all (GdMainViewGeneric *self);
 void gd_main_view_generic_unselect_all (GdMainViewGeneric *self);
+void gd_main_view_generic_set_rubberband_range (GdMainViewGeneric *self,
+						GtkTreePath *start,
+						GtkTreePath *end);
 
 /* private */
 void _gd_main_view_generic_dnd_common (GtkTreeModel *model,
                                        gboolean selection_mode,
                                        GtkTreePath *path,
                                        GtkSelectionData *data);
+void _gd_main_view_generic_get_rubberband_range (GdMainViewGeneric *self,
+						 GtkTreePath **start,
+						 GtkTreePath **end);
 
 G_END_DECLS
 

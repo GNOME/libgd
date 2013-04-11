@@ -82,6 +82,84 @@ gd_main_view_generic_set_selection_mode (GdMainViewGeneric *self,
   (* iface->set_selection_mode) (self, selection_mode);
 }
 
+
+typedef struct {
+  GtkTreePath *rubberband_start;
+  GtkTreePath *rubberband_end;
+} RubberbandInfo;
+
+static void
+rubber_band_info_destroy (RubberbandInfo *info)
+{
+  g_clear_pointer (&info->rubberband_start,
+		   gtk_tree_path_free);
+  g_clear_pointer (&info->rubberband_end,
+		   gtk_tree_path_free);
+  g_slice_free (RubberbandInfo, info);
+}
+
+static RubberbandInfo*
+get_rubber_band_info (GdMainViewGeneric *self)
+{
+  RubberbandInfo *info;
+
+  info = g_object_get_data (G_OBJECT (self), "gd-main-view-generic-rubber-band");
+  if (info == NULL)
+    {
+      info = g_slice_new0 (RubberbandInfo);
+      g_object_set_data_full (G_OBJECT (self), "gd-main-view-generic-rubber-band",
+			      info, (GDestroyNotify)rubber_band_info_destroy);
+    }
+
+  return info;
+}
+
+void
+gd_main_view_generic_set_rubberband_range (GdMainViewGeneric *self,
+					   GtkTreePath *start,
+					   GtkTreePath *end)
+{
+  RubberbandInfo *info;
+
+  info = get_rubber_band_info (self);
+
+  if (start == NULL || end == NULL)
+    {
+      g_clear_pointer (&info->rubberband_start,
+		       gtk_tree_path_free);
+      g_clear_pointer (&info->rubberband_end,
+		       gtk_tree_path_free);
+    }
+  else
+    {
+      if (gtk_tree_path_compare (start, end) < 0)
+	{
+	  info->rubberband_start = gtk_tree_path_copy (start);
+	  info->rubberband_end = gtk_tree_path_copy (end);
+	}
+      else
+	{
+	  info->rubberband_start = gtk_tree_path_copy (end);
+	  info->rubberband_end = gtk_tree_path_copy (start);
+	}
+    }
+
+  gtk_widget_queue_draw (GTK_WIDGET (self));
+}
+
+void
+_gd_main_view_generic_get_rubberband_range (GdMainViewGeneric *self,
+					    GtkTreePath **start,
+					    GtkTreePath **end)
+{
+  RubberbandInfo *info;
+
+  info = get_rubber_band_info (self);
+
+  *start = info->rubberband_start;
+  *end = info->rubberband_end;
+}
+
 void
 gd_main_view_generic_scroll_to_path (GdMainViewGeneric *self,
                                      GtkTreePath *path)
