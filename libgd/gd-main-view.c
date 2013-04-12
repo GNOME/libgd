@@ -536,6 +536,14 @@ on_button_release_view_mode (GdMainView *self,
 }
 
 static gboolean
+event_triggers_selection_mode (GdkEventButton *event)
+{
+  return
+    (event->button == 3) ||
+    ((event->button == 1) && (event->state & GDK_CONTROL_MASK));
+}
+
+static gboolean
 on_button_release_event (GtkWidget *view,
                          GdkEventButton *event,
                          gpointer user_data)
@@ -624,8 +632,7 @@ on_button_release_event (GtkWidget *view,
 
   if (!selection_mode)
     {
-      if ((event->button == 3) ||
-          ((event->button == 1) && (event->state & GDK_CONTROL_MASK)))
+      if (event_triggers_selection_mode (event))
         {
           g_signal_emit (self, signals[SELECTION_MODE_REQUEST], 0);
           selection_mode = TRUE;
@@ -660,10 +667,7 @@ on_button_press_event (GtkWidget *view,
   if (path != NULL)
     self->priv->button_press_item_path = gtk_tree_path_to_string (path);
 
-  force_selection =
-    (event->button == 3) ||
-    ((event->button == 1) && (event->state & GDK_CONTROL_MASK));
-
+  force_selection = event_triggers_selection_mode (event);
   if (!self->priv->selection_mode && !force_selection)
     {
       gtk_tree_path_free (path);
@@ -812,8 +816,16 @@ static void
 on_view_path_activated (GdMainView *self,
                         GtkTreePath *path)
 {
-  if (self->priv->selection_mode)
-    toggle_selection_for_path (self, path, FALSE);
+  GdkModifierType state;
+
+  gtk_get_current_event_state (&state);
+
+  if (self->priv->selection_mode || (state & GDK_CONTROL_MASK) != 0)
+    {
+      if (!self->priv->selection_mode)
+	g_signal_emit (self, signals[SELECTION_MODE_REQUEST], 0);
+      toggle_selection_for_path (self, path, ((state & GDK_SHIFT_MASK) != 0));
+    }
   else
     activate_item_for_path (self, path);
 }

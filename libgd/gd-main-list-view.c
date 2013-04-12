@@ -144,12 +144,37 @@ gd_main_list_view_class_init (GdMainListViewClass *klass)
 {
   GObjectClass *oclass = G_OBJECT_CLASS (klass);
   GtkWidgetClass *wclass = GTK_WIDGET_CLASS (klass);
+  GtkBindingSet *binding_set;
+  GdkModifierType activate_modifiers[] = { GDK_SHIFT_MASK, GDK_CONTROL_MASK, GDK_SHIFT_MASK | GDK_CONTROL_MASK };
+  int i;
+
+  binding_set = gtk_binding_set_by_class (klass);
 
   oclass->constructed = gd_main_list_view_constructed;
   wclass->drag_data_get = gd_main_list_view_drag_data_get;
   wclass->draw = gd_main_list_view_draw;
 
   g_type_class_add_private (klass, sizeof (GdMainListViewPrivate));
+
+  for (i = 0; i < G_N_ELEMENTS (activate_modifiers); i++)
+    {
+      gtk_binding_entry_add_signal (binding_set, GDK_KEY_space, activate_modifiers[i],
+				    "select-cursor-row", 1,
+				    G_TYPE_BOOLEAN, TRUE);
+      gtk_binding_entry_add_signal (binding_set, GDK_KEY_KP_Space, activate_modifiers[i],
+				    "select-cursor-row", 1,
+				    G_TYPE_BOOLEAN, TRUE);
+      gtk_binding_entry_add_signal (binding_set, GDK_KEY_Return, activate_modifiers[i],
+				    "select-cursor-row", 1,
+				    G_TYPE_BOOLEAN, TRUE);
+      gtk_binding_entry_add_signal (binding_set, GDK_KEY_ISO_Enter, activate_modifiers[i],
+				    "select-cursor-row", 1,
+				    G_TYPE_BOOLEAN, TRUE);
+      gtk_binding_entry_add_signal (binding_set, GDK_KEY_KP_Enter, activate_modifiers[i],
+				    "select-cursor-row", 1,
+				    G_TYPE_BOOLEAN, TRUE);
+    }
+
 }
 
 static void
