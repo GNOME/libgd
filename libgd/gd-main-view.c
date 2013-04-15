@@ -336,6 +336,31 @@ get_generic (GdMainView *self)
 }
 
 static void
+do_select_row (GdMainView *self,
+               GtkTreeIter *iter,
+               gboolean value)
+{
+  GtkTreeModel *model;
+  GtkTreeModelFilter *filter;
+  GtkTreeIter my_iter, child_iter;
+
+  model = self->priv->model;
+  my_iter = *iter;
+
+  while (GTK_IS_TREE_MODEL_FILTER (model))
+    {
+      filter = GTK_TREE_MODEL_FILTER (model);
+      gtk_tree_model_filter_convert_iter_to_child_iter (filter, &child_iter, &my_iter);
+      model = gtk_tree_model_filter_get_model (filter);
+      my_iter = child_iter;
+    }
+
+  gtk_list_store_set (GTK_LIST_STORE (model), &my_iter,
+                      GD_MAIN_COLUMN_SELECTED, value,
+                      -1);
+}
+
+static void
 selection_mode_do_select_range (GdMainView *self,
                                 GtkTreeIter *first_element,
                                 GtkTreeIter *last_element)
@@ -360,9 +385,7 @@ selection_mode_do_select_range (GdMainView *self,
 
   do
     {
-      gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
-                          GD_MAIN_COLUMN_SELECTED, TRUE,
-                          -1);
+      do_select_row (self, &iter, TRUE);
 
       path = gtk_tree_model_get_path (self->priv->model, &iter);
       equal = (gtk_tree_path_compare (path, last_path) == 0);
@@ -442,9 +465,7 @@ selection_mode_select_range (GdMainView *self,
   else
     {
       /* no other selected element found, just select the iter */
-      gtk_list_store_set (GTK_LIST_STORE (self->priv->model), iter,
-			  GD_MAIN_COLUMN_SELECTED, TRUE,
-			  -1);
+      do_select_row (self, &iter, TRUE);
     }
 }
 
@@ -469,9 +490,7 @@ toggle_selection_for_path (GdMainView *self,
 
   if (selected)
     {
-      gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
-                          GD_MAIN_COLUMN_SELECTED, FALSE,
-                          -1);
+      do_select_row (self, &iter, FALSE);
     }
   else if (!selected)
     {
@@ -485,9 +504,7 @@ toggle_selection_for_path (GdMainView *self,
 	  g_free (self->priv->last_selected_id);
 	  self->priv->last_selected_id = id;
 
-	  gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
-			      GD_MAIN_COLUMN_SELECTED, TRUE,
-			      -1);
+          do_select_row (self, &iter, TRUE);
 	}
     }
 
@@ -602,9 +619,7 @@ on_button_release_event (GtkWidget *view,
 		  gtk_tree_model_get (self->priv->model, &iter,
 				      GD_MAIN_COLUMN_SELECTED, &is_selected,
 				      -1);
-		  gtk_list_store_set (GTK_LIST_STORE (self->priv->model), &iter,
-				      GD_MAIN_COLUMN_SELECTED, !is_selected,
-				      -1);
+                  do_select_row (self, &iter, !is_selected);
 		}
 
 	      gtk_tree_path_next (start_path);
