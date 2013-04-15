@@ -578,6 +578,7 @@ on_button_release_event (GtkWidget *view,
   self->priv->track_motion = FALSE;
   if (self->priv->rubberband_select)
     {
+      self->priv->rubberband_select = FALSE;
       gd_main_view_generic_set_rubberband_range (get_generic (self), NULL, NULL);
       if (self->priv->rubberband_select_last_path)
 	{
