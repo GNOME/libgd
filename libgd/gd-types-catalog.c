@@ -17,23 +17,7 @@
  *
  */
 
-#ifndef __GD_H__
-#define __GD_H__
-
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
-#include <glib-object.h>
-
-G_BEGIN_DECLS
-
-#include <libgd/gd-types-catalog.h>
-
-#ifdef LIBGD_GTK_HACKS
-# include <libgd/gd-icon-utils.h>
-# include <libgd/gd-entry-focus-hack.h>
-#endif
+#include "gd-types-catalog.h"
 
 #ifdef LIBGD__VIEW_COMMON
 # include <libgd/gd-main-view-generic.h>
@@ -87,6 +71,68 @@ G_BEGIN_DECLS
 # include <libgd/gd-stack-switcher.h>
 #endif
 
-G_END_DECLS
+/**
+ * gd_ensure_types:
+ *
+ * This functions must be called during initialization
+ * to make sure the widget types are available to GtkBuilder.
+ */
+void
+gd_ensure_types (void)
+{
+#ifdef LIBGD__VIEW_COMMON
+  g_type_ensure (GD_TYPE_MAIN_VIEW_GENERIC);
+  g_type_ensure (GD_TYPE_STYLED_TEXT_RENDERER);
+  g_type_ensure (GD_TYPE_TOGGLE_PIXBUF_RENDERER);
+  g_type_ensure (GD_TYPE_TWO_LINES_RENDERER);
+#endif
 
-#endif /* __GD_H__ */
+#ifdef LIBGD_MAIN_ICON_VIEW
+  g_type_ensure (GD_TYPE_MAIN_ICON_VIEW);
+#endif
+
+#ifdef LIBGD_MAIN_LIST_VIEW
+  g_type_ensure (GD_TYPE_MAIN_LIST_VIEW);
+#endif
+
+#ifdef LIBGD_MAIN_VIEW
+  g_type_ensure (GD_TYPE_MAIN_VIEW);
+#endif
+
+#ifdef LIBGD_MAIN_TOOLBAR
+  g_type_ensure (GD_TYPE_MAIN_TOOLBAR);
+#endif
+
+#ifdef LIBGD_HEADER_BAR
+  g_type_ensure (GD_TYPE_HEADER_BAR);
+#endif
+
+#ifdef LIBGD__HEADER_BUTTON
+  g_type_ensure (GD_TYPE_HEADER_SIMPLE_BUTTON);
+  g_type_ensure (GD_TYPE_HEADER_MENU_BUTTON);
+  g_type_ensure (GD_TYPE_HEADER_TOGGLE_BUTTON);
+  g_type_ensure (GD_TYPE_HEADER_RADIO_BUTTON);
+#endif
+
+#ifdef LIBGD_MARGIN_CONTAINER
+  g_type_ensure (GD_TYPE_MARGIN_CONTAINER);
+#endif
+
+#ifdef LIBGD_TAGGED_ENTRY
+  g_type_ensure (GD_TYPE_TAGGED_ENTRY);
+#endif
+
+#ifdef LIBGD_NOTIFICATION
+  g_type_ensure (GD_TYPE_NOTIFICATION);
+#endif
+
+#ifdef LIBGD_REVEALER
+  g_type_ensure (GD_TYPE_REVEALER);
+#endif
+
+#ifdef LIBGD_STACK
+  g_type_ensure (GD_TYPE_STACK);
+  g_type_ensure (GD_TYPE_STACK_SWITCHER);
+#endif
+}
+

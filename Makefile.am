@@ -24,7 +24,10 @@ endif
 libgd_la_LIBADD = $(LIBGD_LIBS) $(LIBM)
 libgd_la_LDFLAGS = -avoid-version
 libgd_la_SOURCES = libgd/gd.h
-nodist_libgd_la_SOURCES =
+nodist_libgd_la_SOURCES =			\
+	libgd/gd-types-catalog.c		\
+	libgd/gd-types-catalog.h		\
+	$(NULL)
 
 if LIBGD_GTK_HACKS
 gtk_hacks_sources =                             \
