@@ -20,55 +20,55 @@
 #include "gd-types-catalog.h"
 
 #ifdef LIBGD__VIEW_COMMON
-# include <libgd/gd-main-view-generic.h>
-# include <libgd/gd-styled-text-renderer.h>
-# include <libgd/gd-toggle-pixbuf-renderer.h>
-# include <libgd/gd-two-lines-renderer.h>
+# include "gd-main-view-generic.h"
+# include "gd-styled-text-renderer.h"
+# include "gd-toggle-pixbuf-renderer.h"
+# include "gd-two-lines-renderer.h"
 #endif
 
 #ifdef LIBGD_MAIN_ICON_VIEW
-# include <libgd/gd-main-icon-view.h>
+# include "gd-main-icon-view.h"
 #endif
 
 #ifdef LIBGD_MAIN_LIST_VIEW
-# include <libgd/gd-main-list-view.h>
+# include "gd-main-list-view.h"
 #endif
 
 #ifdef LIBGD_MAIN_VIEW
-# include <libgd/gd-main-view.h>
+# include "gd-main-view.h"
 #endif
 
 #ifdef LIBGD_MAIN_TOOLBAR
-# include <libgd/gd-main-toolbar.h>
+# include "gd-main-toolbar.h"
 #endif
 
 #ifdef LIBGD_HEADER_BAR
-# include <libgd/gd-header-bar.h>
+# include "gd-header-bar.h"
 #endif
 
 #ifdef LIBGD__HEADER_BUTTON
-# include <libgd/gd-header-button.h>
+# include "gd-header-button.h"
 #endif
 
 #ifdef LIBGD_MARGIN_CONTAINER
-# include <libgd/gd-margin-container.h>
+# include "gd-margin-container.h"
 #endif
 
 #ifdef LIBGD_TAGGED_ENTRY
-# include <libgd/gd-tagged-entry.h>
+# include "gd-tagged-entry.h"
 #endif
 
 #ifdef LIBGD_NOTIFICATION
-# include <libgd/gd-notification.h>
+# include "gd-notification.h"
 #endif
 
 #ifdef LIBGD_REVEALER
-# include <libgd/gd-revealer.h>
+# include "gd-revealer.h"
 #endif
 
 #ifdef LIBGD_STACK
-# include <libgd/gd-stack.h>
-# include <libgd/gd-stack-switcher.h>
+# include "gd-stack.h"
+# include "gd-stack-switcher.h"
 #endif
 
 /**
