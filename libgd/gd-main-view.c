@@ -465,7 +465,7 @@ selection_mode_select_range (GdMainView *self,
   else
     {
       /* no other selected element found, just select the iter */
-      do_select_row (self, &iter, TRUE);
+      do_select_row (self, iter, TRUE);
     }
 
   g_signal_emit (self, signals[VIEW_SELECTION_CHANGED], 0);
