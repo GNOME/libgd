@@ -87,6 +87,10 @@ G_BEGIN_DECLS
 # include <libgd/gd-stack-switcher.h>
 #endif
 
+#ifdef LIBGD_BUBBLE_BUTTON
+# include <libgd/gd-bubble-button.h>
+#endif
+
 G_END_DECLS
 
 #endif /* __GD_H__ */

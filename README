@@ -111,6 +111,8 @@ LIBGD_INIT options
 
 - tagged-entry
 
+- bubble-button
+
 - vapi
 
 - gir

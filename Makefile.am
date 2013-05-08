@@ -201,6 +201,27 @@ nodist_libgd_la_SOURCES += $(tagged_entry_sources)
 EXTRA_DIST += $(tagged_entry_sources)
 endif
 
+if LIBGD_BUBBLE_BUTTON
+bubble_button_sources =				\
+	libgd/gd-bubble-window.c		\
+	libgd/gd-bubble-window.h		\
+	libgd/gd-bubble-button.c		\
+	libgd/gd-bubble-button.h		\
+	$(NULL)
+
+nodist_libgd_la_SOURCES += $(bubble_button_sources)
+EXTRA_DIST += $(bubble_button_sources)
+
+noinst_PROGRAMS += test-bubble-button
+test_bubble_button_SOURCES =			\
+	test-bubble-button.c			\
+	$(NULL)
+test_bubble_button_LDADD =			\
+	$(LIBGD_LIBS)				\
+	libgd.la				\
+	$(NULL)
+endif
+
 if LIBGD_GIR
 include $(INTROSPECTION_MAKEFILE)
 INTROSPECTION_GIRS = Gd-1.0.gir

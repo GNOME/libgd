@@ -145,6 +145,12 @@ AC_DEFUN([LIBGD_INIT], [
         AC_DEFINE([LIBGD__VIEW_COMMON], [1], [Description])
     ])
 
+    # bubble-button:
+    AM_CONDITIONAL([LIBGD_BUBBLE_BUTTON],[_LIBGD_IF_OPTION_SET([bubble-button],[true],[false])])
+    _LIBGD_IF_OPTION_SET([bubble-button],[
+        AC_DEFINE([LIBGD_BUBBLE_BUTTON], [1], [Description])
+    ])
+
     PKG_CHECK_MODULES(LIBGD, [ $LIBGD_MODULES ])
     AC_SUBST(LIBGD_GIR_INCLUDES)
     AC_SUBST(LIBGD_SOURCES)
