@@ -146,7 +146,7 @@ gd_main_list_view_class_init (GdMainListViewClass *klass)
   GtkWidgetClass *wclass = GTK_WIDGET_CLASS (klass);
   GtkBindingSet *binding_set;
   GdkModifierType activate_modifiers[] = { GDK_SHIFT_MASK, GDK_CONTROL_MASK, GDK_SHIFT_MASK | GDK_CONTROL_MASK };
-  int i;
+  guint i;
 
   binding_set = gtk_binding_set_by_class (klass);
 
