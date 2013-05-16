@@ -30,14 +30,17 @@ G_BEGIN_DECLS
 
 typedef struct _GdHeaderButton GdHeaderButton;
 
-GType   gd_header_button_get_type               (void) G_GNUC_CONST;
+GType    gd_header_button_get_type               (void) G_GNUC_CONST;
 
-void    gd_header_button_set_label              (GdHeaderButton *self,
-                                                 const gchar    *label);
-void    gd_header_button_set_symbolic_icon_name (GdHeaderButton *self,
-                                                 const gchar    *symbolic_icon_name);
-gchar * gd_header_button_get_label              (GdHeaderButton *self);
-gchar * gd_header_button_get_symbolic_icon_name (GdHeaderButton *self);
+void     gd_header_button_set_label              (GdHeaderButton *self,
+                                                  const gchar    *label);
+void     gd_header_button_set_symbolic_icon_name (GdHeaderButton *self,
+                                                  const gchar    *symbolic_icon_name);
+void     gd_header_button_set_use_markup         (GdHeaderButton *self,
+                                                  gboolean        use_markup);
+gchar *  gd_header_button_get_label              (GdHeaderButton *self);
+gchar *  gd_header_button_get_symbolic_icon_name (GdHeaderButton *self);
+gboolean gd_header_button_get_use_markup         (GdHeaderButton *self);
 
 #define GD_TYPE_HEADER_SIMPLE_BUTTON (gd_header_simple_button_get_type ())
 typedef GtkButton GdHeaderSimpleButton;
