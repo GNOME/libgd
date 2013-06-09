@@ -79,7 +79,7 @@ render_check (GdTogglePixbufRenderer *self,
 }
 
 static void
-render_activity (GdTogglePixbufRenderer *self,
+render_progress (GdTogglePixbufRenderer *self,
                  cairo_t                *cr,
                  GtkWidget              *widget,
                  const GdkRectangle     *cell_area,
@@ -87,10 +87,80 @@ render_activity (GdTogglePixbufRenderer *self,
                  gint                    xpad,
                  gint                    ypad)
 {
-  gint x, y, width, height;
+  GtkStyleContext *context;
+  gint x, y, width, height, pulse;
+  gfloat xalign, yalign;
+  GtkBorder padding;
+  GdkPixbuf *pixbuf;
 
-  if (self->priv->pulse == G_MAXINT)
-    return;
+  g_object_get (self,
+                "pixbuf", &pixbuf,
+                "xalign", &xalign,
+                "yalign", &yalign,
+                NULL);
+  if (pixbuf != NULL)
+    {
+      int pixbuf_height;
+
+      width = gdk_pixbuf_get_width (pixbuf);
+      pixbuf_height = gdk_pixbuf_get_height (pixbuf);
+      height = pixbuf_height / 4;
+
+      x = cell_area->x + ((cell_area->width - width) * xalign) + xpad;
+      y = cell_area->y + ((cell_area->height - pixbuf_height) * yalign) +
+          ypad + (pixbuf_height - height);
+    }
+  else
+    {
+      width = cell_area->width;
+      height = cell_area->height / 4;
+
+      x = cell_area->x + xpad;
+      y = cell_area->y + ypad;
+    }
+
+  context = gtk_widget_get_style_context (widget);
+
+  gtk_style_context_save (context);
+  gtk_style_context_add_class (context, GTK_STYLE_CLASS_TROUGH);
+
+  gtk_render_background (context, cr,
+                         x, y,
+                         width, height);
+  gtk_render_frame (context, cr,
+                    x, y,
+                    width, height);
+
+  gtk_style_context_get_padding (context, GTK_STATE_FLAG_NORMAL, &padding);
+
+  x += padding.left;
+  y += padding.top;
+  width -= padding.left + padding.right;
+  height -= padding.top + padding.bottom;
+  gtk_style_context_restore (context);
+
+  gtk_style_context_save (context);
+  gtk_style_context_add_class (context, GTK_STYLE_CLASS_PROGRESSBAR);
+
+  pulse = CLAMP (self->priv->pulse, 0, 100);
+  width = pulse * width / 100;
+  gtk_render_activity (context, cr,
+                       x, y,
+                       width, height);
+
+  gtk_style_context_restore (context);
+}
+
+static void
+render_spinner (GdTogglePixbufRenderer *self,
+                cairo_t                *cr,
+                GtkWidget              *widget,
+                const GdkRectangle     *cell_area,
+                gint                    icon_size,
+                gint                    xpad,
+                gint                    ypad)
+{
+  gint x, y, width, height;
 
   width = cell_area->width / 4;
   height = cell_area->height / 4;
@@ -106,6 +176,24 @@ render_activity (GdTogglePixbufRenderer *self,
                      (guint) self->priv->pulse,
                      x, y,
                      width, height);
+}
+
+static void
+render_activity (GdTogglePixbufRenderer *self,
+                 cairo_t                *cr,
+                 GtkWidget              *widget,
+                 const GdkRectangle     *cell_area,
+                 gint                    icon_size,
+                 gint                    xpad,
+                 gint                    ypad)
+{
+  if (self->priv->pulse == G_MAXINT)
+    return;
+
+  if (self->priv->pulse < 0)
+    render_spinner (self, cr, widget, cell_area, icon_size, xpad, ypad);
+  else
+    render_progress (self, cr, widget, cell_area, icon_size, xpad, ypad);
 }
 
 static void
@@ -236,8 +324,9 @@ gd_toggle_pixbuf_renderer_class_init (GdTogglePixbufRendererClass *klass)
   properties[PROP_PULSE] =
     g_param_spec_int ("pulse",
                       "Pulse",
-                      "Set to any value other than %G_MAXINT to display a "
-                      "spinner on top of the pixbuf.",
+                      "Set to negative values to show spinner and positive "
+                      "values to show progress bar. Set to %G_MAXINT to not "
+                      "display any activity.",
                       G_MININT,
                       G_MAXINT,
                       G_MAXINT,
