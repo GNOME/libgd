@@ -106,6 +106,8 @@ gd_main_icon_view_constructed (GObject *obj)
                                  "active", GD_MAIN_COLUMN_SELECTED);
   gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (self), cell,
                                  "pixbuf", GD_MAIN_COLUMN_ICON);
+  gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (self), cell,
+                                 "pulse", GD_MAIN_COLUMN_PULSE);
 
   cell = gd_two_lines_renderer_new ();
   g_object_set (cell,
