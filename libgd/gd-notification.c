@@ -118,8 +118,6 @@ gd_notification_init (GdNotification *notification)
 
   gtk_widget_set_has_window (GTK_WIDGET (notification), TRUE);
 
-  gtk_widget_push_composite_child ();
-
   priv = notification->priv =
     G_TYPE_INSTANCE_GET_PRIVATE (notification,
                                  GD_TYPE_NOTIFICATION,
@@ -139,8 +137,6 @@ gd_notification_init (GdNotification *notification)
                     notification);
   close_button_image = gtk_image_new_from_icon_name ("window-close-symbolic", GTK_ICON_SIZE_BUTTON);
   gtk_button_set_image (GTK_BUTTON (notification->priv->close_button), close_button_image);
-
-  gtk_widget_pop_composite_child ();
 
   priv->timeout_source_id = 0;
 }
