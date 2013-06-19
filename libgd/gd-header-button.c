@@ -452,8 +452,6 @@ gd_header_close_button_clicked (GtkButton *button)
   GtkWidget *toplevel;
   GdkEvent *event;
 
-  GTK_BUTTON_CLASS (GET_PARENT_CLASS (button))->clicked (button);
-
   toplevel = gtk_widget_get_toplevel (GTK_WIDGET (button));
 
   event = gdk_event_new (GDK_DELETE);
