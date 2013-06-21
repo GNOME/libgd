@@ -89,7 +89,7 @@ render_activity (GdTogglePixbufRenderer *self,
 {
   gint x, y, width, height;
 
-  if (self->priv->pulse == G_MAXINT)
+  if (self->priv->pulse == -1)
     return;
 
   width = cell_area->width / 4;
@@ -240,7 +240,7 @@ gd_toggle_pixbuf_renderer_class_init (GdTogglePixbufRendererClass *klass)
                       "spinner on top of the pixbuf.",
                       G_MININT,
                       G_MAXINT,
-                      G_MAXINT,
+                      -1,
                       G_PARAM_READWRITE |
                       G_PARAM_STATIC_STRINGS);
 
@@ -253,6 +253,7 @@ gd_toggle_pixbuf_renderer_init (GdTogglePixbufRenderer *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_TOGGLE_PIXBUF_RENDERER,
                                             GdTogglePixbufRendererPrivate);
+  self->priv->pulse = -1;
 }
 
 GtkCellRenderer *
