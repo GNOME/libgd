@@ -476,6 +476,7 @@ gd_header_close_button_init (GdHeaderCloseButton *self)
 {
   gd_header_button_set_symbolic_icon_name (GD_HEADER_BUTTON (self),
                                            "window-close-symbolic");
+  gtk_button_set_relief (GTK_BUTTON (self), GTK_RELIEF_NONE);
 }
 
 /**
