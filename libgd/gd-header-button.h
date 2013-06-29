@@ -62,11 +62,6 @@ typedef GtkMenuButton GdHeaderMenuButton;
 GType       gd_header_menu_button_get_type   (void) G_GNUC_CONST;
 GtkWidget * gd_header_menu_button_new        (void);
 
-#define GD_TYPE_HEADER_CLOSE_BUTTON   (gd_header_close_button_get_type ())
-typedef GdHeaderSimpleButton GdHeaderCloseButton;
-GType       gd_header_close_button_get_type   (void) G_GNUC_CONST;
-GtkWidget * gd_header_close_button_new        (void);
-
 G_END_DECLS
 
 #endif /* __GD_HEADER_BUTTON_H__ */

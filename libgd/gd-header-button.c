@@ -443,42 +443,6 @@ gd_header_radio_button_init (GdHeaderRadioButton *self)
 {
 }
 
-typedef GdHeaderSimpleButtonClass GdHeaderCloseButtonClass;
-G_DEFINE_TYPE (GdHeaderCloseButton, gd_header_close_button, GD_TYPE_HEADER_SIMPLE_BUTTON)
-
-static void
-gd_header_close_button_clicked (GtkButton *button)
-{
-  GtkWidget *toplevel;
-  GdkEvent *event;
-
-  toplevel = gtk_widget_get_toplevel (GTK_WIDGET (button));
-
-  event = gdk_event_new (GDK_DELETE);
-
-  event->any.window = g_object_ref (gtk_widget_get_window (toplevel));
-  event->any.send_event = TRUE;
-
-  gtk_main_do_event (event);
-  gdk_event_free (event);
-}
-
-static void
-gd_header_close_button_class_init (GdHeaderCloseButtonClass *klass)
-{
-  GtkButtonClass *button_class = GTK_BUTTON_CLASS (klass);
-
-  button_class->clicked = gd_header_close_button_clicked;
-}
-
-static void
-gd_header_close_button_init (GdHeaderCloseButton *self)
-{
-  gd_header_button_set_symbolic_icon_name (GD_HEADER_BUTTON (self),
-                                           "window-close-symbolic");
-  gtk_button_set_relief (GTK_BUTTON (self), GTK_RELIEF_NONE);
-}
-
 /**
  * gd_header_simple_button_new:
  *
@@ -521,15 +485,4 @@ GtkWidget *
 gd_header_menu_button_new (void)
 {
   return g_object_new (GD_TYPE_HEADER_MENU_BUTTON, NULL);
-}
-
-/**
- * gd_header_close_button_new:
- *
- * Returns: (transfer none):
- */
-GtkWidget *
-gd_header_close_button_new (void)
-{
-  return g_object_new (GD_TYPE_HEADER_CLOSE_BUTTON, NULL);
 }
