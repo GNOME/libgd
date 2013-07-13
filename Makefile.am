@@ -199,6 +199,15 @@ tagged_entry_sources =				\
 
 nodist_libgd_la_SOURCES += $(tagged_entry_sources)
 EXTRA_DIST += $(tagged_entry_sources)
+
+noinst_PROGRAMS += test-tagged-entry
+test_tagged_entry_SOURCES =				\
+	test-tagged-entry.c				\
+	$(NULL)
+test_tagged_entry_LDADD =				\
+	$(LIBGD_LIBS)				\
+	libgd.la				\
+	$(NULL)
 endif
 
 if LIBGD_GIR

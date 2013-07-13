@@ -74,9 +74,18 @@ void     gd_tagged_entry_set_tag_button_visible (GdTaggedEntry *self,
                                                  gboolean       visible);
 gboolean gd_tagged_entry_get_tag_button_visible (GdTaggedEntry *self);
 
-gboolean gd_tagged_entry_add_tag (GdTaggedEntry *entry,
-                                  const gchar *id,
-                                  const gchar *label);
+gboolean gd_tagged_entry_insert_tag (GdTaggedEntry *self,
+                                     const gchar   *id,
+                                     const gchar   *name,
+                                     const gchar   *style,
+                                     gboolean       has_close_button,
+                                     gint           position);
+
+gboolean gd_tagged_entry_add_tag (GdTaggedEntry *self,
+                                  const gchar   *id,
+                                  const gchar   *name,
+                                  const gchar   *style,
+                                  gboolean       has_close_button);
 
 gboolean gd_tagged_entry_remove_tag (GdTaggedEntry *self,
                                      const gchar *id);
@@ -84,6 +93,10 @@ gboolean gd_tagged_entry_remove_tag (GdTaggedEntry *self,
 gboolean gd_tagged_entry_set_tag_label (GdTaggedEntry *self,
                                         const gchar *tag_id,
                                         const gchar *label);
+
+gboolean gd_tagged_entry_set_tag_has_close_button (GdTaggedEntry *self,
+                                                   const gchar *tag_id,
+                                                   gboolean has_close_button);
 
 G_END_DECLS
 
