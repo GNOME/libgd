@@ -27,6 +27,7 @@
 #define BUTTON_INTERNAL_SPACING 6
 
 struct _GdTaggedEntryTagPrivate {
+  GdTaggedEntry *entry;
   GdkWindow *window;
   PangoLayout *layout;
 
@@ -1015,7 +1016,7 @@ gd_tagged_entry_insert_tag (GdTaggedEntry    *self,
   if (g_list_find (self->priv->tags, tag) != NULL)
     return FALSE;
 
-  g_object_set_data (G_OBJECT (tag), "entry", self);
+  tag->priv->entry = self;
 
   self->priv->tags = g_list_insert (self->priv->tags, g_object_ref (tag), position);
 
@@ -1076,7 +1077,7 @@ gd_tagged_entry_tag_set_label (GdTaggedEntryTag *tag,
       priv->label = g_strdup (label);
       g_clear_object (&priv->layout);
 
-      entry = GTK_WIDGET (g_object_get_data (G_OBJECT (tag), "entry"));
+      entry = GTK_WIDGET (tag->priv->entry);
       if (entry)
         gtk_widget_queue_resize (entry);
     }
@@ -1108,7 +1109,7 @@ gd_tagged_entry_tag_set_has_close_button (GdTaggedEntryTag *tag,
       tag->priv->has_close_button = has_close_button;
       g_clear_object (&tag->priv->layout);
 
-      entry = GTK_WIDGET (g_object_get_data (G_OBJECT (tag), "entry"));
+      entry = GTK_WIDGET (tag->priv->entry);
       if (entry)
         gtk_widget_queue_resize (entry);
     }
@@ -1140,7 +1141,7 @@ gd_tagged_entry_tag_set_style (GdTaggedEntryTag *tag,
       priv->style = g_strdup (style);
       g_clear_object (&priv->layout);
 
-      entry = GTK_WIDGET (g_object_get_data (G_OBJECT (tag), "entry"));
+      entry = GTK_WIDGET (tag->priv->entry);
       if (entry)
         gtk_widget_queue_resize (entry);
     }
