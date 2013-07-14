@@ -6,6 +6,7 @@ main (gint argc,
       gchar ** argv)
 {
   GtkWidget *window, *box, *entry;
+  GdTaggedEntryTag *tag;
 
   gtk_init (&argc, &argv);
 
@@ -18,9 +19,19 @@ main (gint argc,
   entry = GTK_WIDGET (gd_tagged_entry_new ());
   gtk_container_add (GTK_CONTAINER (box), entry);
 
-  gd_tagged_entry_add_tag (GD_TAGGED_ENTRY (entry), "tag1", "Blah1", "documents-entry-tag", TRUE);
-  gd_tagged_entry_insert_tag (GD_TAGGED_ENTRY (entry), "tag2", "Blah2", "documents-entry-tag", FALSE, -1);
-  gd_tagged_entry_insert_tag (GD_TAGGED_ENTRY (entry), "tag3", "Blah3", "documents-entry-tag", FALSE, 0);
+  tag = gd_tagged_entry_tag_new ("Blah1");
+  gd_tagged_entry_add_tag (GD_TAGGED_ENTRY (entry), tag);
+  g_object_unref (tag);
+
+  tag = gd_tagged_entry_tag_new ("Blah2");
+  gd_tagged_entry_tag_set_has_close_button (tag, FALSE);
+  gd_tagged_entry_insert_tag (GD_TAGGED_ENTRY (entry), tag, -1);
+  g_object_unref (tag);
+
+  tag = gd_tagged_entry_tag_new ("Blah2");
+  gd_tagged_entry_tag_set_has_close_button (tag, FALSE);
+  gd_tagged_entry_insert_tag (GD_TAGGED_ENTRY (entry), tag, 0);
+  g_object_unref (tag);
 
   gtk_widget_show_all (window);
   gtk_main ();
