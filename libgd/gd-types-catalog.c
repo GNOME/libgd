@@ -26,12 +26,12 @@
 #ifdef LIBGD__VIEW_COMMON
 # include "gd-main-view-generic.h"
 # include "gd-styled-text-renderer.h"
-# include "gd-toggle-pixbuf-renderer.h"
 # include "gd-two-lines-renderer.h"
 #endif
 
 #ifdef LIBGD_MAIN_ICON_VIEW
 # include "gd-main-icon-view.h"
+# include "gd-toggle-pixbuf-renderer.h"
 #endif
 
 #ifdef LIBGD_MAIN_LIST_VIEW
