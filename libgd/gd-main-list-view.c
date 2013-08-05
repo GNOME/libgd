@@ -23,11 +23,14 @@
 #include "gd-main-view-generic.h"
 #include "gd-two-lines-renderer.h"
 
+#include <cairo-gobject.h>
 #include <glib/gi18n.h>
 
 struct _GdMainListViewPrivate {
   GtkTreeViewColumn *tree_col;
+  GtkCellRenderer *pixbuf_cell;
   GtkCellRenderer *selection_cell;
+  GtkCellRenderer *text_cell;
 
   gboolean selection_mode;
 };
@@ -50,6 +53,38 @@ get_source_row (GdkDragContext *context)
     return gtk_tree_row_reference_get_path (ref);
   else
     return NULL;
+}
+
+static void
+set_attributes_from_model (GdMainListView *self)
+{
+  GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (self));
+  GType icon_gtype;
+
+  gtk_tree_view_column_clear_attributes (self->priv->tree_col, self->priv->pixbuf_cell);
+  gtk_tree_view_column_clear_attributes (self->priv->tree_col, self->priv->selection_cell);
+  gtk_tree_view_column_clear_attributes (self->priv->tree_col, self->priv->text_cell);
+
+  if (!model)
+    return;
+
+  gtk_tree_view_column_add_attribute (self->priv->tree_col, self->priv->selection_cell,
+                                      "active", GD_MAIN_COLUMN_SELECTED);
+
+  icon_gtype = gtk_tree_model_get_column_type (model, GD_MAIN_COLUMN_ICON);
+  if (icon_gtype == GDK_TYPE_PIXBUF)
+    gtk_tree_view_column_add_attribute (self->priv->tree_col, self->priv->pixbuf_cell,
+					"pixbuf", GD_MAIN_COLUMN_ICON);
+  else if (icon_gtype == CAIRO_GOBJECT_TYPE_SURFACE)
+    gtk_tree_view_column_add_attribute (self->priv->tree_col, self->priv->pixbuf_cell,
+					"surface", GD_MAIN_COLUMN_ICON);
+  else
+    g_assert_not_reached ();
+
+  gtk_tree_view_column_add_attribute (self->priv->tree_col, self->priv->text_cell,
+                                      "text", GD_MAIN_COLUMN_PRIMARY_TEXT);
+  gtk_tree_view_column_add_attribute (self->priv->tree_col, self->priv->text_cell,
+                                      "line-two", GD_MAIN_COLUMN_SECONDARY_TEXT);
 }
 
 static void
@@ -106,10 +141,8 @@ gd_main_list_view_constructed (GObject *obj)
                 "xalign", 1.0,
                 NULL);
   gtk_tree_view_column_pack_start (self->priv->tree_col, cell, FALSE);
-  gtk_tree_view_column_add_attribute (self->priv->tree_col, cell,
-                                      "active", GD_MAIN_COLUMN_SELECTED);
 
-  cell = gtk_cell_renderer_pixbuf_new ();
+  self->priv->pixbuf_cell = cell = gtk_cell_renderer_pixbuf_new ();
   g_object_set (cell,
                 "xalign", 0.5,
                 "yalign", 0.5,
@@ -117,10 +150,8 @@ gd_main_list_view_constructed (GObject *obj)
                 "ypad", 2,
                 NULL);
   gtk_tree_view_column_pack_start (self->priv->tree_col, cell, FALSE);
-  gtk_tree_view_column_add_attribute (self->priv->tree_col, cell,
-                                      "pixbuf", GD_MAIN_COLUMN_ICON);
 
-  cell = gd_two_lines_renderer_new ();
+  self->priv->text_cell = cell = gd_two_lines_renderer_new ();
   g_object_set (cell,
                 "xalign", 0.0,
                 "wrap-mode", PANGO_WRAP_WORD_CHAR,
@@ -128,10 +159,8 @@ gd_main_list_view_constructed (GObject *obj)
                 "text-lines", 2,
                 NULL);
   gtk_tree_view_column_pack_start (self->priv->tree_col, cell, TRUE);
-  gtk_tree_view_column_add_attribute (self->priv->tree_col, cell,
-                                      "text", GD_MAIN_COLUMN_PRIMARY_TEXT);
-  gtk_tree_view_column_add_attribute (self->priv->tree_col, cell,
-                                      "line-two", GD_MAIN_COLUMN_SECONDARY_TEXT);
+
+  set_attributes_from_model (self);
 
   gtk_tree_view_enable_model_drag_source (GTK_TREE_VIEW (self),
                                           GDK_BUTTON1_MASK,
@@ -181,6 +210,9 @@ static void
 gd_main_list_view_init (GdMainListView *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_MAIN_LIST_VIEW, GdMainListViewPrivate);
+
+  g_signal_connect (self, "notify::model",
+		    G_CALLBACK (set_attributes_from_model), NULL);
 }
 
 static GtkTreePath *
