@@ -26,6 +26,7 @@
 
 #include <math.h>
 #include <glib/gi18n.h>
+#include <cairo-gobject.h>
 
 #define VIEW_ITEM_WIDTH 140
 #define VIEW_ITEM_WRAP_WIDTH 128
@@ -34,6 +35,7 @@
 
 struct _GdMainIconViewPrivate {
   GtkCellRenderer *pixbuf_cell;
+  GtkCellRenderer *text_cell;
   gboolean selection_mode;
 };
 
@@ -53,6 +55,40 @@ get_source_row (GdkDragContext *context)
     return gtk_tree_row_reference_get_path (ref);
   else
     return NULL;
+}
+
+static void
+set_attributes_from_model (GdMainIconView *self)
+{
+  GtkTreeModel *model = gtk_icon_view_get_model (GTK_ICON_VIEW (self));
+  GtkCellLayout *layout = GTK_CELL_LAYOUT (self);
+  GType icon_gtype;
+
+  gtk_cell_layout_clear_attributes (layout, self->priv->pixbuf_cell);
+  gtk_cell_layout_clear_attributes (layout, self->priv->text_cell);
+
+  if (!model)
+    return;
+
+  gtk_cell_layout_add_attribute (layout, self->priv->pixbuf_cell,
+                                 "active", GD_MAIN_COLUMN_SELECTED);
+  gtk_cell_layout_add_attribute (layout, self->priv->pixbuf_cell,
+                                 "pulse", GD_MAIN_COLUMN_PULSE);
+
+  icon_gtype = gtk_tree_model_get_column_type (model, GD_MAIN_COLUMN_ICON);
+  if (icon_gtype == GDK_TYPE_PIXBUF)
+    gtk_cell_layout_add_attribute (layout, self->priv->pixbuf_cell,
+				   "pixbuf", GD_MAIN_COLUMN_ICON);
+  else if (icon_gtype == CAIRO_GOBJECT_TYPE_SURFACE)
+    gtk_cell_layout_add_attribute (layout, self->priv->pixbuf_cell,
+				   "surface", GD_MAIN_COLUMN_ICON);
+  else
+    g_assert_not_reached ();
+
+  gtk_cell_layout_add_attribute (layout, self->priv->text_cell,
+                                 "text", GD_MAIN_COLUMN_PRIMARY_TEXT);
+  gtk_cell_layout_add_attribute (layout, self->priv->text_cell,
+                                 "line-two", GD_MAIN_COLUMN_SECONDARY_TEXT);
 }
 
 static void
@@ -100,16 +136,9 @@ gd_main_icon_view_constructed (GObject *obj)
                 "xalign", 0.5,
                 "yalign", 0.5,
                 NULL);
-
   gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (self), cell, FALSE);
-  gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (self), cell,
-                                 "active", GD_MAIN_COLUMN_SELECTED);
-  gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (self), cell,
-                                 "pixbuf", GD_MAIN_COLUMN_ICON);
-  gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (self), cell,
-                                 "pulse", GD_MAIN_COLUMN_PULSE);
 
-  cell = gd_two_lines_renderer_new ();
+  self->priv->text_cell = cell = gd_two_lines_renderer_new ();
   g_object_set (cell,
                 "xalign", 0.5,
                 "alignment", PANGO_ALIGN_CENTER,
@@ -118,10 +147,8 @@ gd_main_icon_view_constructed (GObject *obj)
                 "text-lines", 3,
                 NULL);
   gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (self), cell, FALSE);
-  gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (self), cell,
-                                 "text", GD_MAIN_COLUMN_PRIMARY_TEXT);
-  gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (self), cell,
-                                 "line-two", GD_MAIN_COLUMN_SECONDARY_TEXT);
+
+  set_attributes_from_model (self);
 
   gtk_icon_view_enable_model_drag_source (GTK_ICON_VIEW (self),
                                           GDK_BUTTON1_MASK,
@@ -334,6 +361,9 @@ static void
 gd_main_icon_view_init (GdMainIconView *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_MAIN_ICON_VIEW, GdMainIconViewPrivate);
+
+  g_signal_connect (self, "notify::model",
+		    G_CALLBACK (set_attributes_from_model), NULL);
 }
 
 static GtkTreePath *
