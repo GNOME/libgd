@@ -36,7 +36,7 @@ struct _GdTogglePixbufRendererPrivate {
   gboolean active;
   gboolean toggle_visible;
 
-  gint pulse;
+  guint pulse;
 };
 
 static void
@@ -89,7 +89,7 @@ render_activity (GdTogglePixbufRenderer *self,
 {
   gint x, y, width, height;
 
-  if (self->priv->pulse == -1)
+  if (self->priv->pulse == 0)
     return;
 
   width = cell_area->width / 4;
@@ -103,7 +103,7 @@ render_activity (GdTogglePixbufRenderer *self,
                      GTK_STATE_FLAG_ACTIVE,
                      widget,
                      NULL,
-                     (guint) self->priv->pulse,
+                     (guint) self->priv->pulse - 1,
                      x, y,
                      width, height);
 }
@@ -175,7 +175,7 @@ gd_toggle_pixbuf_renderer_get_property (GObject    *object,
       g_value_set_boolean (value, self->priv->toggle_visible);
       break;
     case PROP_PULSE:
-      g_value_set_int (value, self->priv->pulse);
+      g_value_set_uint (value, self->priv->pulse);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -200,7 +200,7 @@ gd_toggle_pixbuf_renderer_set_property (GObject    *object,
       self->priv->toggle_visible = g_value_get_boolean (value);
       break;
     case PROP_PULSE:
-      self->priv->pulse = g_value_get_int (value);
+      self->priv->pulse = g_value_get_uint (value);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -234,15 +234,15 @@ gd_toggle_pixbuf_renderer_class_init (GdTogglePixbufRendererClass *klass)
                           G_PARAM_READWRITE |
                           G_PARAM_STATIC_STRINGS);
   properties[PROP_PULSE] =
-    g_param_spec_int ("pulse",
-                      "Pulse",
-                      "Set to any value other than %G_MAXINT to display a "
-                      "spinner on top of the pixbuf.",
-                      G_MININT,
-                      G_MAXINT,
-                      -1,
-                      G_PARAM_READWRITE |
-                      G_PARAM_STATIC_STRINGS);
+    g_param_spec_uint ("pulse",
+		       "Pulse",
+		       "Set to any value other than 0 to display a "
+		       "spinner on top of the pixbuf.",
+		       0,
+		       G_MAXUINT,
+		       0,
+		       G_PARAM_READWRITE |
+		       G_PARAM_STATIC_STRINGS);
 
   g_type_class_add_private (klass, sizeof (GdTogglePixbufRendererPrivate));
   g_object_class_install_properties (oclass, NUM_PROPERTIES, properties);
@@ -253,7 +253,7 @@ gd_toggle_pixbuf_renderer_init (GdTogglePixbufRenderer *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_TOGGLE_PIXBUF_RENDERER,
                                             GdTogglePixbufRendererPrivate);
-  self->priv->pulse = -1;
+  self->priv->pulse = 0;
 }
 
 GtkCellRenderer *
