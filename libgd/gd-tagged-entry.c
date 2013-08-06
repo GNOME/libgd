@@ -1102,14 +1102,14 @@ gd_tagged_entry_tag_set_has_close_button (GdTaggedEntryTag *tag,
   priv = tag->priv;
 
   has_close_button = has_close_button != FALSE;
-  if (tag->priv->has_close_button != has_close_button)
+  if (priv->has_close_button != has_close_button)
     {
       GtkWidget *entry;
 
-      tag->priv->has_close_button = has_close_button;
-      g_clear_object (&tag->priv->layout);
+      priv->has_close_button = has_close_button;
+      g_clear_object (&priv->layout);
 
-      entry = GTK_WIDGET (tag->priv->entry);
+      entry = GTK_WIDGET (priv->entry);
       if (entry)
         gtk_widget_queue_resize (entry);
     }
