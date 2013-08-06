@@ -10,6 +10,7 @@ gd-resources.*
 test-header-bar
 test-revealer
 test-stack
+test-tagged-entry
 Makefile
 Makefile.in
 gd-1.0.vapi
