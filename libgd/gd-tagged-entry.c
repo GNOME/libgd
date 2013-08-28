@@ -1045,6 +1045,8 @@ gd_tagged_entry_remove_tag (GdTaggedEntry    *self,
   if (!g_list_find (self->priv->tags, tag))
     return FALSE;
 
+  gd_tagged_entry_tag_unrealize (tag);
+
   self->priv->tags = g_list_remove (self->priv->tags, tag);
   g_object_unref (tag);
 
