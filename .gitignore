@@ -17,3 +17,4 @@ gd-1.0.vapi
 *.lo
 *.o
 *.la
+.dirstamp
