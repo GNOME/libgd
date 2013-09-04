@@ -64,11 +64,11 @@ set_attributes_from_model (GdMainIconView *self)
   GtkCellLayout *layout = GTK_CELL_LAYOUT (self);
   GType icon_gtype;
 
-  gtk_cell_layout_clear_attributes (layout, self->priv->pixbuf_cell);
-  gtk_cell_layout_clear_attributes (layout, self->priv->text_cell);
-
   if (!model)
     return;
+
+  gtk_cell_layout_clear_attributes (layout, self->priv->pixbuf_cell);
+  gtk_cell_layout_clear_attributes (layout, self->priv->text_cell);
 
   gtk_cell_layout_add_attribute (layout, self->priv->pixbuf_cell,
                                  "active", GD_MAIN_COLUMN_SELECTED);
