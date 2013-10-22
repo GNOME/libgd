@@ -61,12 +61,14 @@ set_attributes_from_model (GdMainListView *self)
   GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (self));
   GType icon_gtype;
 
+
+  if (!model)
+    return;
+
   gtk_tree_view_column_clear_attributes (self->priv->tree_col, self->priv->pixbuf_cell);
   gtk_tree_view_column_clear_attributes (self->priv->tree_col, self->priv->selection_cell);
   gtk_tree_view_column_clear_attributes (self->priv->tree_col, self->priv->text_cell);
 
-  if (!model)
-    return;
 
   gtk_tree_view_column_add_attribute (self->priv->tree_col, self->priv->selection_cell,
                                       "active", GD_MAIN_COLUMN_SELECTED);
