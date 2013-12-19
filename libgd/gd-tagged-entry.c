@@ -1020,11 +1020,11 @@ gd_tagged_entry_insert_tag (GdTaggedEntry    *self,
 
   self->priv->tags = g_list_insert (self->priv->tags, g_object_ref (tag), position);
 
+  if (gtk_widget_get_realized (GTK_WIDGET (self)))
+    gd_tagged_entry_tag_realize (tag, self);
+
   if (gtk_widget_get_mapped (GTK_WIDGET (self)))
-    {
-      gd_tagged_entry_tag_realize (tag, self);
-      gdk_window_show_unraised (tag->priv->window);
-    }
+    gdk_window_show_unraised (tag->priv->window);
 
   gtk_widget_queue_resize (GTK_WIDGET (self));
 
