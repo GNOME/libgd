@@ -217,12 +217,14 @@ gd_tagged_entry_tag_get_button_state (GdTaggedEntryTag *tag,
 {
   GtkStateFlags state = GTK_STATE_FLAG_NORMAL;
 
-  if (entry->priv->in_child == tag &&
-      entry->priv->in_child_button)
-    state |= GTK_STATE_FLAG_PRELIGHT;
+  if (entry->priv->in_child == tag)
+    {
+      if (entry->priv->in_child_button_active)
+        state |= GTK_STATE_FLAG_ACTIVE;
 
-  if (entry->priv->in_child_button_active)
-    state |= GTK_STATE_FLAG_ACTIVE;
+      else if (entry->priv->in_child_button)
+        state |= GTK_STATE_FLAG_PRELIGHT;
+    }
 
   return state;
 }
