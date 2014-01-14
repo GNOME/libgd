@@ -230,9 +230,18 @@ set_selection_foreach (GtkTreeModel *model,
 {
   gboolean selection = GPOINTER_TO_INT (user_data);
 
-  gtk_list_store_set (GTK_LIST_STORE (model), iter,
-                      GD_MAIN_COLUMN_SELECTED, selection,
-                      -1);
+  if (GTK_IS_LIST_STORE (model))
+    {
+      gtk_list_store_set (GTK_LIST_STORE (model), iter,
+                          GD_MAIN_COLUMN_SELECTED, selection,
+                          -1);
+    }
+  else
+    {
+      gtk_tree_store_set (GTK_TREE_STORE (model), iter,
+                          GD_MAIN_COLUMN_SELECTED, selection,
+                          -1);
+    }
 
   return FALSE;
 }
