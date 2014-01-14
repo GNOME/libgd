@@ -343,6 +343,7 @@ do_select_row (GdMainView *self,
   GtkTreeModel *model;
   GtkTreeModelFilter *filter;
   GtkTreeIter my_iter, child_iter;
+  GtkTreePath *path;
 
   model = self->priv->model;
   my_iter = *iter;
@@ -366,6 +367,14 @@ do_select_row (GdMainView *self,
       gtk_tree_store_set (GTK_TREE_STORE (model), &my_iter,
                           GD_MAIN_COLUMN_SELECTED, value,
                           -1);
+    }
+
+  /* And tell the view model that something changed */
+  path = gtk_tree_model_get_path (self->priv->model, iter);
+  if (path)
+    {
+      gtk_tree_model_row_changed (self->priv->model, path, iter);
+      gtk_tree_path_free (path);
     }
 }
 
