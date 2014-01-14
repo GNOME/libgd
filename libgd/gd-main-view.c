@@ -621,6 +621,11 @@ on_button_release_event (GtkWidget *view,
 	{
 	  if (!self->priv->selection_mode)
 	    g_signal_emit (self, signals[SELECTION_MODE_REQUEST], 0);
+	  if (!self->priv->selection_mode)
+	    {
+	      res = FALSE;
+	      goto out;
+	    }
 
 	  start_path = gtk_tree_path_copy (self->priv->rubberband_select_first_path);
 	  end_path = gtk_tree_path_copy (self->priv->rubberband_select_last_path);
@@ -673,7 +678,12 @@ on_button_release_event (GtkWidget *view,
       if (event_triggers_selection_mode (event))
         {
           g_signal_emit (self, signals[SELECTION_MODE_REQUEST], 0);
-          selection_mode = TRUE;
+          if (!self->priv->selection_mode)
+            {
+              res = FALSE;
+              goto out;
+            }
+          selection_mode = self->priv->selection_mode;
         }
     }
 
