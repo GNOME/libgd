@@ -355,9 +355,18 @@ do_select_row (GdMainView *self,
       my_iter = child_iter;
     }
 
-  gtk_list_store_set (GTK_LIST_STORE (model), &my_iter,
-                      GD_MAIN_COLUMN_SELECTED, value,
-                      -1);
+  if (GTK_IS_LIST_STORE (model))
+    {
+      gtk_list_store_set (GTK_LIST_STORE (model), &my_iter,
+                          GD_MAIN_COLUMN_SELECTED, value,
+                          -1);
+    }
+  else
+    {
+      gtk_tree_store_set (GTK_TREE_STORE (model), &my_iter,
+                          GD_MAIN_COLUMN_SELECTED, value,
+                          -1);
+    }
 }
 
 static void
