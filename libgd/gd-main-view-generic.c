@@ -229,16 +229,30 @@ set_selection_foreach (GtkTreeModel *model,
                        gpointer user_data)
 {
   gboolean selection = GPOINTER_TO_INT (user_data);
+  GtkTreeModel *actual_model;
+  GtkTreeIter real_iter;
 
-  if (GTK_IS_LIST_STORE (model))
+  if (GTK_IS_TREE_MODEL_FILTER (model))
     {
-      gtk_list_store_set (GTK_LIST_STORE (model), iter,
+      actual_model = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (model));
+      gtk_tree_model_filter_convert_iter_to_child_iter (GTK_TREE_MODEL_FILTER (model),
+                                                        &real_iter, iter);
+    }
+  else
+    {
+      actual_model = model;
+      real_iter = *iter;
+    }
+
+  if (GTK_IS_LIST_STORE (actual_model))
+    {
+      gtk_list_store_set (GTK_LIST_STORE (actual_model), &real_iter,
                           GD_MAIN_COLUMN_SELECTED, selection,
                           -1);
     }
   else
     {
-      gtk_tree_store_set (GTK_TREE_STORE (model), iter,
+      gtk_tree_store_set (GTK_TREE_STORE (actual_model), &real_iter,
                           GD_MAIN_COLUMN_SELECTED, selection,
                           -1);
     }
@@ -251,17 +265,7 @@ set_all_selection (GdMainViewGeneric *self,
                    GtkTreeModel *model,
                    gboolean selection)
 {
-  GtkTreeModel *actual_model;
-
-  if (!model)
-    return;
-
-  if (GTK_IS_TREE_MODEL_FILTER (model))
-    actual_model = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (model));
-  else
-    actual_model = model;
-
-  gtk_tree_model_foreach (actual_model,
+  gtk_tree_model_foreach (model,
                           set_selection_foreach,
                           GINT_TO_POINTER (selection));
   g_signal_emit (self, signals[VIEW_SELECTION_CHANGED], 0);
