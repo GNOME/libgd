@@ -341,18 +341,34 @@ do_select_row (GdMainView *self,
                gboolean value)
 {
   GtkTreeModel *model;
-  GtkTreeModelFilter *filter;
-  GtkTreeIter my_iter, child_iter;
+  GtkTreeIter my_iter;
   GtkTreePath *path;
 
   model = self->priv->model;
   my_iter = *iter;
 
-  while (GTK_IS_TREE_MODEL_FILTER (model))
+  while (GTK_IS_TREE_MODEL_FILTER (model) ||
+         GTK_IS_TREE_MODEL_SORT (model))
     {
-      filter = GTK_TREE_MODEL_FILTER (model);
-      gtk_tree_model_filter_convert_iter_to_child_iter (filter, &child_iter, &my_iter);
-      model = gtk_tree_model_filter_get_model (filter);
+      GtkTreeIter child_iter;
+
+      if (GTK_IS_TREE_MODEL_FILTER (model))
+        {
+          GtkTreeModelFilter *filter;
+
+          filter = GTK_TREE_MODEL_FILTER (model);
+          gtk_tree_model_filter_convert_iter_to_child_iter (filter, &child_iter, &my_iter);
+          model = gtk_tree_model_filter_get_model (filter);
+        }
+      else
+        {
+          GtkTreeModelSort *sort;
+
+          sort = GTK_TREE_MODEL_SORT (model);
+          gtk_tree_model_sort_convert_iter_to_child_iter (sort, &child_iter, &my_iter);
+          model = gtk_tree_model_sort_get_model (sort);
+        }
+
       my_iter = child_iter;
     }
 
