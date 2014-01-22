@@ -238,6 +238,12 @@ set_selection_foreach (GtkTreeModel *model,
       gtk_tree_model_filter_convert_iter_to_child_iter (GTK_TREE_MODEL_FILTER (model),
                                                         &real_iter, iter);
     }
+  else if (GTK_IS_TREE_MODEL_SORT (model))
+    {
+      actual_model = gtk_tree_model_sort_get_model (GTK_TREE_MODEL_SORT (model));
+      gtk_tree_model_sort_convert_iter_to_child_iter (GTK_TREE_MODEL_SORT (model),
+                                                      &real_iter, iter);
+    }
   else
     {
       actual_model = model;
