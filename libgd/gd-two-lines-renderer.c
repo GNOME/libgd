@@ -279,6 +279,7 @@ gd_two_lines_renderer_render (GtkCellRenderer      *cell,
 
       gtk_style_context_save (context);
       gtk_style_context_add_class (context, "dim-label");
+      gtk_style_context_add_class (context, "subtitle");
 
       state = gtk_cell_renderer_get_state (cell, widget, flags);
       gtk_style_context_set_state (context, state);
