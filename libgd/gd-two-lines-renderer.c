@@ -121,8 +121,15 @@ gd_two_lines_renderer_prepare_layouts (GdTwoLinesRenderer *self,
     }
   else
     {
+      GtkStyleContext *context;
+
       line_two = create_layout_with_attrs (widget, cell_area,
                                            self, PANGO_ELLIPSIZE_END);
+
+      context = gtk_widget_get_style_context (widget);
+      gtk_style_context_save (context);
+      apply_subtitle_style_to_layout (context, line_two, GTK_STATE_FLAG_NORMAL);
+      gtk_style_context_restore (context);
 
       pango_layout_set_height (line_one, - (self->priv->text_lines - 1));
       pango_layout_set_height (line_two, -1);
