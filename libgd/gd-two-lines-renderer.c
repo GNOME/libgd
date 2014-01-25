@@ -79,6 +79,21 @@ create_layout_with_attrs (GtkWidget *widget,
 }
 
 static void
+apply_subtitle_style_to_layout (GtkStyleContext *context,
+                                PangoLayout     *layout,
+                                GtkStateFlags    flags)
+{
+  PangoFontDescription *desc;
+
+  gtk_style_context_add_class (context, "dim-label");
+  gtk_style_context_add_class (context, "subtitle");
+
+  gtk_style_context_get (context, flags, "font", &desc, NULL);
+  pango_layout_set_font_description (layout, desc);
+  pango_font_description_free (desc);
+}
+
+static void
 gd_two_lines_renderer_prepare_layouts (GdTwoLinesRenderer *self,
                                        const GdkRectangle *cell_area,
                                        GtkWidget *widget,
@@ -274,18 +289,12 @@ gd_two_lines_renderer_render (GtkCellRenderer      *cell,
   /* render the second layout */
   if (layout_two != NULL)
     {
-      PangoFontDescription *desc;
-
       pango_layout_get_pixel_size (layout_one,
                                    NULL, &line_one_height);
 
       gtk_style_context_save (context);
-      gtk_style_context_add_class (context, "dim-label");
-      gtk_style_context_add_class (context, "subtitle");
 
-      gtk_style_context_get (context, flags, "font", &desc, NULL);
-      pango_layout_set_font_description (layout_two, desc);
-      pango_font_description_free (desc);
+      apply_subtitle_style_to_layout (context, layout_two, flags);
 
       state = gtk_cell_renderer_get_state (cell, widget, flags);
       gtk_style_context_set_state (context, state);
