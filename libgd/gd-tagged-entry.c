@@ -394,6 +394,33 @@ gd_tagged_entry_tag_event_is_button (GdTaggedEntryTag *tag,
   return FALSE;
 }
 
+gboolean
+gd_tagged_entry_tag_get_area (GdTaggedEntryTag      *tag,
+                              cairo_rectangle_int_t *rect)
+{
+  GtkStyleContext *context;
+  GtkAllocation background_allocation;
+  int window_x, window_y;
+  GtkAllocation alloc;
+
+  g_return_val_if_fail (GD_IS_TAGGED_ENTRY_TAG (tag), FALSE);
+  g_return_val_if_fail (rect != NULL, FALSE);
+
+  gdk_window_get_position (tag->priv->window, &window_x, &window_y);
+  gtk_widget_get_allocation (GTK_WIDGET (tag->priv->entry), &alloc);
+  context = gd_tagged_entry_tag_get_context (tag, tag->priv->entry);
+  gd_tagged_entry_tag_get_relative_allocations (tag, tag->priv->entry, context,
+                                                &background_allocation,
+                                                NULL, NULL);
+
+  rect->x = window_x - alloc.x + background_allocation.x;
+  rect->y = window_y - alloc.y + background_allocation.y;
+  rect->width = background_allocation.width;
+  rect->height = background_allocation.height;
+
+  return TRUE;
+}
+
 static void
 gd_tagged_entry_tag_draw (GdTaggedEntryTag *tag,
                           cairo_t *cr,

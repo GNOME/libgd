@@ -109,6 +109,9 @@ void gd_tagged_entry_tag_set_style (GdTaggedEntryTag *tag,
                                     const gchar *style);
 const gchar *gd_tagged_entry_tag_get_style (GdTaggedEntryTag *tag);
 
+gboolean gd_tagged_entry_tag_get_area (GdTaggedEntryTag      *tag,
+                                       cairo_rectangle_int_t *rect);
+
 G_END_DECLS
 
 #endif /* __GD_TAGGED_ENTRY_H__ */
