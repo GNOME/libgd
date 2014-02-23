@@ -13,6 +13,8 @@
   <bug-database rdf:resource="http://bugzilla.gnome.org/browse.cgi?product=libgd"/>
 -->
 
+  <category rdf:resource="http://api.gnome.org/doap-extensions#platform" />
+
   <maintainer>
     <foaf:Person>
       <foaf:name>Cosimo Cecchi</foaf:name>
