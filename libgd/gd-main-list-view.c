@@ -61,7 +61,6 @@ set_attributes_from_model (GdMainListView *self)
   GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (self));
   GType icon_gtype;
 
-
   if (!model)
     return;
 
