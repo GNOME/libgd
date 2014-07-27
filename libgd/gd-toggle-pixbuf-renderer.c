@@ -72,6 +72,12 @@ render_check (GdTogglePixbufRenderer *self,
   if (self->priv->active)
     gtk_style_context_set_state (context, GTK_STATE_FLAG_ACTIVE);
 
+  gtk_render_background (context, cr,
+                         check_x, check_y,
+                         icon_size, icon_size);
+  gtk_render_frame (context, cr,
+                    check_x, check_y,
+                    icon_size, icon_size);
   gtk_render_check (context, cr,
                     check_x, check_y,
                     icon_size, icon_size);
