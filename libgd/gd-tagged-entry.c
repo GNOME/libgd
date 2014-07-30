@@ -35,7 +35,7 @@ struct _GdTaggedEntryTagPrivate {
   gchar *style;
   gboolean has_close_button;
 
-  GdkPixbuf *close_pixbuf;
+  cairo_surface_t *close_surface;
   GtkStateFlags last_button_state;
 };
 
@@ -99,28 +99,32 @@ gd_tagged_entry_tag_get_margin (GdTaggedEntryTag *tag,
 }
 
 static void
-gd_tagged_entry_tag_ensure_close_pixbuf (GdTaggedEntryTag *tag,
-                                         GtkStyleContext *context)
+gd_tagged_entry_tag_ensure_close_surface (GdTaggedEntryTag *tag,
+                                          GtkStyleContext *context)
 {
   GtkIconInfo *info;
+  GdkPixbuf *pixbuf;
   gint icon_size;
+  gint scale_factor;
 
-  if (tag->priv->close_pixbuf != NULL)
+  if (tag->priv->close_surface != NULL)
     return;
 
   gtk_icon_size_lookup (GTK_ICON_SIZE_MENU,
                         &icon_size, NULL);
+  scale_factor = gtk_widget_get_scale_factor (GTK_WIDGET (tag->priv->entry));
 
-  info = gtk_icon_theme_lookup_icon (gtk_icon_theme_get_default (),
-                                     "window-close-symbolic",
-                                     icon_size,
-                                     GTK_ICON_LOOKUP_GENERIC_FALLBACK);
-
-  tag->priv->close_pixbuf = 
-    gtk_icon_info_load_symbolic_for_context (info, context,
-                                             NULL, NULL);
+  info = gtk_icon_theme_lookup_icon_for_scale (gtk_icon_theme_get_default (),
+                                               "window-close-symbolic",
+                                               icon_size, scale_factor,
+                                               GTK_ICON_LOOKUP_GENERIC_FALLBACK);
 
   /* FIXME: we need a fallback icon in case the icon is not found */
+  pixbuf = gtk_icon_info_load_symbolic_for_context (info, context, NULL, NULL);
+  tag->priv->close_surface = gdk_cairo_surface_create_from_pixbuf (pixbuf, scale_factor, tag->priv->window);
+
+  g_object_unref (info);
+  g_object_unref (pixbuf);
 }
 
 static gint
@@ -260,6 +264,7 @@ gd_tagged_entry_tag_get_width (GdTaggedEntryTag *tag,
   GtkStateFlags state;
   gint layout_width;
   gint button_width;
+  gint scale_factor;
 
   gd_tagged_entry_tag_ensure_layout (tag, entry);
   pango_layout_get_pixel_size (tag->priv->layout, &layout_width, NULL);
@@ -271,13 +276,17 @@ gd_tagged_entry_tag_get_width (GdTaggedEntryTag *tag,
   gtk_style_context_get_border (context, state, &button_border);
   gtk_style_context_get_margin (context, state, &button_margin);
 
-  gd_tagged_entry_tag_ensure_close_pixbuf (tag, context);
+  gd_tagged_entry_tag_ensure_close_surface (tag, context);
 
   g_object_unref (context);
 
   button_width = 0;
   if (entry->priv->button_visible && tag->priv->has_close_button)
-    button_width = gdk_pixbuf_get_width (tag->priv->close_pixbuf) + BUTTON_INTERNAL_SPACING;
+    {
+      scale_factor = gtk_widget_get_scale_factor (GTK_WIDGET (entry));
+      button_width = cairo_image_surface_get_width (tag->priv->close_surface) / scale_factor +
+        BUTTON_INTERNAL_SPACING;
+    }
 
   return layout_width + button_padding.left + button_padding.right +
     button_border.left + button_border.right +
@@ -313,11 +322,13 @@ gd_tagged_entry_tag_get_relative_allocations (GdTaggedEntryTag *tag,
   GtkAllocation background_allocation, layout_allocation, button_allocation;
   gint width, height, x, y, pix_width, pix_height;
   gint layout_width, layout_height;
+  gint scale_factor;
   GtkBorder padding, border;
   GtkStateFlags state;
 
   width = gdk_window_get_width (tag->priv->window);
   height = gdk_window_get_height (tag->priv->window);
+  scale_factor = gdk_window_get_scale_factor (tag->priv->window);
 
   state = gd_tagged_entry_tag_get_state (tag, entry);
   gtk_style_context_get_margin (context, state, &padding);
@@ -345,8 +356,8 @@ gd_tagged_entry_tag_get_relative_allocations (GdTaggedEntryTag *tag,
 
   if (entry->priv->button_visible && tag->priv->has_close_button)
     {
-      pix_width = gdk_pixbuf_get_width (tag->priv->close_pixbuf);
-      pix_height = gdk_pixbuf_get_height (tag->priv->close_pixbuf);
+      pix_width = cairo_image_surface_get_width (tag->priv->close_surface) / scale_factor;
+      pix_height = cairo_image_surface_get_height (tag->priv->close_surface) / scale_factor;
     }
   else
     {
@@ -468,8 +479,8 @@ gd_tagged_entry_tag_draw (GdTaggedEntryTag *tag,
    */
   if (state != tag->priv->last_button_state)
     {
-      g_clear_object (&tag->priv->close_pixbuf);
-      gd_tagged_entry_tag_ensure_close_pixbuf (tag, context);
+      g_clear_pointer (&tag->priv->close_surface, cairo_surface_destroy);
+      gd_tagged_entry_tag_ensure_close_surface (tag, context);
 
       tag->priv->last_button_state = state;
     }
@@ -481,9 +492,9 @@ gd_tagged_entry_tag_draw (GdTaggedEntryTag *tag,
                          button_allocation.x, button_allocation.y,
                          button_allocation.width, button_allocation.height);
 
-  gtk_render_icon (context, cr,
-                   tag->priv->close_pixbuf,
-                   button_allocation.x, button_allocation.y);
+  gtk_render_icon_surface (context, cr,
+                           tag->priv->close_surface,
+                           button_allocation.x, button_allocation.y);
 
 done:
   cairo_restore (cr);
@@ -950,7 +961,7 @@ gd_tagged_entry_tag_finalize (GObject *obj)
     gd_tagged_entry_tag_unrealize (tag);
 
   g_clear_object (&priv->layout);
-  g_clear_object (&priv->close_pixbuf);
+  g_clear_pointer (&priv->close_surface, cairo_surface_destroy);
   g_free (priv->label);
   g_free (priv->style);
 
