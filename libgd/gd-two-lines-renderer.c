@@ -22,6 +22,9 @@
 #include "gd-two-lines-renderer.h"
 #include <string.h>
 
+#define SUBTITLE_DIM_PERCENTAGE 0.55
+#define SUBTITLE_SIZE_PERCENTAGE 0.82
+
 G_DEFINE_TYPE (GdTwoLinesRenderer, gd_two_lines_renderer, GTK_TYPE_CELL_RENDERER_TEXT)
 
 struct _GdTwoLinesRendererPrivate {
@@ -84,13 +87,32 @@ apply_subtitle_style_to_layout (GtkStyleContext *context,
                                 GtkStateFlags    flags)
 {
   PangoFontDescription *desc;
+  GdkRGBA rgba;
+  PangoAttrList *layout_attr;
+  PangoAttribute *attr_color;
 
-  gtk_style_context_add_class (context, "dim-label");
-  gtk_style_context_add_class (context, "subtitle");
+  gtk_style_context_get (context, flags,
+                         "font", &desc,
+                         "color", &rgba,
+                         NULL);
 
-  gtk_style_context_get (context, flags, "font", &desc, NULL);
+  /* Set the font size */
+  pango_font_description_set_size (desc, pango_font_description_get_size (desc) * SUBTITLE_SIZE_PERCENTAGE);
   pango_layout_set_font_description (layout, desc);
   pango_font_description_free (desc);
+
+  /* Set the color */
+  rgba.red = CLAMP(1.0 - ((1.0 - rgba.red) * SUBTITLE_DIM_PERCENTAGE), 0.0, 1.0);
+  rgba.green = CLAMP(1.0 - ((1.0 - rgba.green) * SUBTITLE_DIM_PERCENTAGE), 0.0, 1.0);
+  rgba.blue = CLAMP(1.0 - ((1.0 - rgba.blue) * SUBTITLE_DIM_PERCENTAGE), 0.0, 1.0);
+
+  layout_attr = pango_attr_list_new ();
+  attr_color = pango_attr_foreground_new (rgba.red * 65535,
+                                          rgba.green * 65535,
+                                          rgba.blue * 65535);
+  pango_attr_list_insert (layout_attr, attr_color);
+  pango_layout_set_attributes (layout, layout_attr);
+  pango_attr_list_unref (layout_attr);
 }
 
 static void
