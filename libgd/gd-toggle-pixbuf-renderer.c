@@ -70,7 +70,7 @@ render_check (GdTogglePixbufRenderer *self,
   gtk_style_context_add_class (context, GTK_STYLE_CLASS_CHECK);
 
   if (self->priv->active)
-    gtk_style_context_set_state (context, GTK_STATE_FLAG_ACTIVE);
+    gtk_style_context_set_state (context, gtk_widget_get_state_flags (widget) | GTK_STATE_FLAG_CHECKED);
 
   gtk_render_background (context, cr,
                          check_x, check_y,
