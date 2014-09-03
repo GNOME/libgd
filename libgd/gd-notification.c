@@ -111,6 +111,7 @@ gd_notification_init (GdNotification *notification)
   GdNotificationPrivate *priv;
 
   context = gtk_widget_get_style_context (GTK_WIDGET (notification));
+  gtk_style_context_add_class (context, GTK_STYLE_CLASS_FRAME);
   gtk_style_context_add_class (context, "app-notification");
 
   gtk_widget_set_halign (GTK_WIDGET (notification), GTK_ALIGN_CENTER);
@@ -482,100 +483,6 @@ gd_notification_class_init (GdNotificationClass *klass)
 }
 
 static void
-draw_shadow_box (cairo_t *cr, GdkRectangle rect, int left_border, int right_border,
-                 int bottom_border, double inner_alpha)
-{
-  cairo_pattern_t *pattern;
-  cairo_matrix_t matrix;
-  double x0, x1, x2, x3;
-  double y0, y2, y3;
-
-  cairo_save (cr);
-
-  x0 = rect.x;
-  x1 = rect.x + left_border;
-  x2 = rect.x + rect.width - right_border;
-  x3 = rect.x + rect.width;
-
-  y0 = rect.y;
-  y2 = rect.y + rect.height - bottom_border;
-  y3 = rect.y + rect.height;
-
-  /* Bottom border */
-
-  pattern = cairo_pattern_create_linear(0, y2, 0, y3);
-
-  cairo_pattern_add_color_stop_rgba(pattern, 0.0, 0, 0, 0, inner_alpha);
-  cairo_pattern_add_color_stop_rgba(pattern, 1.0, 0, 0, 0, 0.0);
-
-  cairo_set_source(cr, pattern);
-  cairo_pattern_destroy(pattern);
-
-  cairo_rectangle(cr, x1, y2, x2 - x1, y3 - y2);
-  cairo_fill(cr);
-
-  /* Left border */
-
-  pattern = cairo_pattern_create_linear(x0, 0, x1, 0);
-
-  cairo_pattern_add_color_stop_rgba(pattern, 0.0, 0, 0, 0, 0.0);
-  cairo_pattern_add_color_stop_rgba(pattern, 1.0, 0, 0, 0, inner_alpha);
-
-  cairo_set_source(cr, pattern);
-  cairo_pattern_destroy(pattern);
-
-  cairo_rectangle(cr, x0, y0, x1 - x0, y2 - y0);
-  cairo_fill(cr);
-
-  /* Right border */
-
-  pattern = cairo_pattern_create_linear(x2, 0, x3, 0);
-
-  cairo_pattern_add_color_stop_rgba(pattern, 0.0, 0, 0, 0, inner_alpha);
-  cairo_pattern_add_color_stop_rgba(pattern, 1.0, 0, 0, 0, 0.0);
-
-  cairo_set_source(cr, pattern);
-  cairo_pattern_destroy(pattern);
-
-  cairo_rectangle(cr, x2, y0, x3 - x2, y2 - y0);
-  cairo_fill(cr);
-
-  /* SW corner */
-
-  pattern = cairo_pattern_create_radial(0, 0, 0, 0.0, 0, 1.0);
-  cairo_pattern_add_color_stop_rgba(pattern, 0.0, 0, 0, 0, inner_alpha);
-  cairo_pattern_add_color_stop_rgba(pattern, 1.0, 0, 0, 0, 0.0);
-
-  cairo_matrix_init_scale (&matrix, 1.0 / left_border, 1.0 / bottom_border);
-  cairo_matrix_translate (&matrix, - x1, -y2);
-  cairo_pattern_set_matrix (pattern, &matrix);
-
-  cairo_set_source(cr, pattern);
-  cairo_pattern_destroy(pattern);
-
-  cairo_rectangle(cr, x0, y2, x1 - x0, y3 - y2);
-  cairo_fill(cr);
-
-  /* SE corner */
-
-  pattern = cairo_pattern_create_radial(0, 0, 0, 0, 0, 1.0);
-  cairo_pattern_add_color_stop_rgba(pattern, 0.0, 0.0, 0, 0, inner_alpha);
-  cairo_pattern_add_color_stop_rgba(pattern, 1.0, 0.0, 0, 0, 0.0);
-
-  cairo_matrix_init_scale (&matrix, 1.0 / left_border, 1.0 / bottom_border);
-  cairo_matrix_translate (&matrix, - x2, -y2);
-  cairo_pattern_set_matrix (pattern, &matrix);
-
-  cairo_set_source(cr, pattern);
-  cairo_pattern_destroy(pattern);
-
-  cairo_rectangle(cr, x2, y2, x3 - x2, y3 - y2);
-  cairo_fill(cr);
-
-  cairo_restore (cr);
-}
-
-static void
 get_padding_and_border (GdNotification *notification,
                         GtkBorder *border)
 {
@@ -601,30 +508,20 @@ gd_notification_draw (GtkWidget *widget, cairo_t *cr)
   GdNotification *notification = GD_NOTIFICATION (widget);
   GdNotificationPrivate *priv = notification->priv;
   GtkStyleContext *context;
-  GdkRectangle rect;
-  int inner_radius;
 
   if (gtk_cairo_should_draw_window (cr, priv->bin_window))
     {
-      gtk_widget_get_allocation (widget, &rect);
+      context = gtk_widget_get_style_context (widget);
 
-      context = gtk_widget_get_style_context(widget);
-
-      inner_radius = 5;
-      draw_shadow_box (cr, rect, SHADOW_OFFSET_X + inner_radius, SHADOW_OFFSET_X + inner_radius,
-                       SHADOW_OFFSET_Y + inner_radius, 0.8);
-
-      gtk_style_context_save (context);
       gtk_render_background (context,  cr,
-                             SHADOW_OFFSET_X, 0,
-                             gtk_widget_get_allocated_width (widget) - 2 *SHADOW_OFFSET_X,
-                             gtk_widget_get_allocated_height (widget) - SHADOW_OFFSET_Y);
+                             0, 0,
+                             gtk_widget_get_allocated_width (widget),
+                             gtk_widget_get_allocated_height (widget));
       gtk_render_frame (context,cr,
-                        SHADOW_OFFSET_X, 0,
-                        gtk_widget_get_allocated_width (widget) - 2 *SHADOW_OFFSET_X,
-                        gtk_widget_get_allocated_height (widget) - SHADOW_OFFSET_Y);
+                        0, 0,
+                        gtk_widget_get_allocated_width (widget),
+                        gtk_widget_get_allocated_height (widget));
 
-      gtk_style_context_restore (context);
 
       if (GTK_WIDGET_CLASS (gd_notification_parent_class)->draw)
         GTK_WIDGET_CLASS (gd_notification_parent_class)->draw(widget, cr);
