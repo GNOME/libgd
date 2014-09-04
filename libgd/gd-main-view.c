@@ -25,6 +25,8 @@
 #include "gd-main-icon-view.h"
 #include "gd-main-list-view.h"
 
+#include <cairo-gobject.h>
+
 #define MAIN_VIEW_TYPE_INITIAL -1
 #define MAIN_VIEW_DND_ICON_OFFSET 20
 #define MAIN_VIEW_RUBBERBAND_SELECT_TRIGGER_LENGTH 32
@@ -231,15 +233,14 @@ gd_main_view_class_init (GdMainViewClass *klass)
   g_object_class_install_properties (oclass, NUM_PROPERTIES, properties);
 }
 
-static GdkPixbuf *
+static cairo_surface_t *
 gd_main_view_get_counter_icon (GdMainView *self,
-                               GdkPixbuf *base,
+                               cairo_surface_t *base,
                                gint number)
 {
   GtkStyleContext *context;
   cairo_t *cr, *emblem_cr;
   cairo_surface_t *surface, *emblem_surface;
-  GdkPixbuf *retval;
   gint width, height;
   gint layout_width, layout_height;
   gint emblem_size;
@@ -255,18 +256,18 @@ gd_main_view_get_counter_icon (GdMainView *self,
   gtk_style_context_save (context);
   gtk_style_context_add_class (context, "documents-counter");
 
-  width = gdk_pixbuf_get_width (base);
-  height = gdk_pixbuf_get_height (base);
+  width = cairo_image_surface_get_width (base);
+  height = cairo_image_surface_get_height (base);
 
-  surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
-                                        width, height);
+  surface = cairo_surface_create_similar (base, CAIRO_CONTENT_COLOR_ALPHA,
+                                          width, height);
   cr = cairo_create (surface);
-  gdk_cairo_set_source_pixbuf (cr, base, 0, 0);
+  cairo_set_source_surface (cr, base, 0, 0);
   cairo_paint (cr);
 
   emblem_size = MIN (width / 2, height / 2);
-  emblem_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
-                                               emblem_size, emblem_size);
+  emblem_surface = cairo_surface_create_similar (base, CAIRO_CONTENT_COLOR_ALPHA,
+                                                 emblem_size, emblem_size);
   emblem_cr = cairo_create (emblem_surface);
   gtk_render_background (context, emblem_cr,
                          0, 0, emblem_size, emblem_size);
@@ -315,15 +316,10 @@ gd_main_view_get_counter_icon (GdMainView *self,
   cairo_paint (cr);
   cairo_destroy (cr);
 
-  retval = gdk_pixbuf_get_from_surface (surface,
-                                        0, 0,
-                                        width, height);
-
   cairo_surface_destroy (emblem_surface);
-  cairo_surface_destroy (surface);
   gtk_style_context_restore (context);
 
-  return retval;
+  return surface;
 }
 
 static GdMainViewGeneric *
@@ -823,6 +819,22 @@ on_motion_event (GtkWidget      *widget,
   return FALSE;
 }
 
+static cairo_surface_t *
+copy_surface (cairo_surface_t *surface)
+{
+  cairo_surface_t *copy;
+  cairo_t *cr;
+
+  copy = cairo_surface_create_similar (surface, CAIRO_CONTENT_COLOR_ALPHA,
+                                       cairo_image_surface_get_width (surface),
+                                       cairo_image_surface_get_height (surface));
+  cr = cairo_create (copy);
+  cairo_set_source_surface (cr, surface, 0, 0);
+  cairo_paint (cr);
+  cairo_destroy (cr);
+
+  return copy;
+}
 
 static void
 on_drag_begin (GdMainViewGeneric *generic,
@@ -835,41 +847,61 @@ on_drag_begin (GdMainViewGeneric *generic,
     {
       gboolean res;
       GtkTreeIter iter;
-      GdkPixbuf *icon = NULL;
+      gpointer data;
+      cairo_surface_t *surface = NULL;
       GtkTreePath *path;
+      GType column_gtype;
 
       path = gtk_tree_path_new_from_string (self->priv->button_press_item_path);
       res = gtk_tree_model_get_iter (self->priv->model,
                                      &iter, path);
       if (res)
         gtk_tree_model_get (self->priv->model, &iter,
-                            GD_MAIN_COLUMN_ICON, &icon,
+                            GD_MAIN_COLUMN_ICON, &data,
                             -1);
 
-      if (self->priv->selection_mode && 
-          icon != NULL)
+      column_gtype = gtk_tree_model_get_column_type (self->priv->model,
+                                                     GD_MAIN_COLUMN_ICON);
+
+      if (column_gtype == CAIRO_GOBJECT_TYPE_SURFACE)
+        {
+          surface = copy_surface (data);
+          cairo_surface_destroy (data);
+        }
+      else if (column_gtype == GDK_TYPE_PIXBUF)
+        {
+          surface = gdk_cairo_surface_create_from_pixbuf (data, 1, NULL);
+          g_object_unref (data);
+        }
+      else
+        g_assert_not_reached ();
+
+      if (self->priv->selection_mode &&
+          surface != NULL)
         {
           GList *selection;
-          GdkPixbuf *counter;
+          cairo_surface_t *counter;
 
           selection = gd_main_view_get_selection (self);
 
           if (g_list_length (selection) > 1)
             {
-              counter = gd_main_view_get_counter_icon (self, icon, g_list_length (selection));
-              g_clear_object (&icon);
-              icon = counter;
+              counter = gd_main_view_get_counter_icon (self, surface, g_list_length (selection));
+              cairo_surface_destroy (surface);
+              surface = counter;
             }
 
           if (selection != NULL)
             g_list_free_full (selection, (GDestroyNotify) gtk_tree_path_free);
         }
 
-      if (icon != NULL)
+      if (surface != NULL)
         {
-          gtk_drag_set_icon_pixbuf (drag_context, icon,
-                                    MAIN_VIEW_DND_ICON_OFFSET, MAIN_VIEW_DND_ICON_OFFSET);
-          g_object_unref (icon);
+          cairo_surface_set_device_offset (surface,
+                                           -MAIN_VIEW_DND_ICON_OFFSET,
+                                           -MAIN_VIEW_DND_ICON_OFFSET);
+          gtk_drag_set_icon_surface (drag_context, surface);
+          cairo_surface_destroy (surface);
         }
 
       gtk_tree_path_free (path);
