@@ -27,15 +27,15 @@ Cecchi), which was one of the first application to follow the novel
 GNOME 3 application design.
 
 Since other applications have similar needs, it makes sense to try to
-reuse and improve the exisiting work. However, the design being not
-frozen, and the code being not yet mattured enough and proven, it is
-not possible for the developpers to guarantee API and propose the
+reuse and improve the existing work. However, the design being not
+frozen, and the code being not yet matured enough and proven, it is
+not possible for the developers to guarantee API and propose the
 addition to the respective projects (Gtk+, or GLib for example) right
 now. Sharing the code allows to experiment, discuss and test together
 before proposing it upstream.
 
-Traditionnally, this problem is solved by copying often outdated
-snippets of code around (due to no API/ABI guaratee), often not
+Traditionally, this problem is solved by copying often outdated
+snippets of code around (due to no API/ABI guarantee), often not
 centralized (libegg).
 
 In the past, there used to be some common aging GNOME application
