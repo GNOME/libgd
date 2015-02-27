@@ -214,14 +214,14 @@ gd_notification_realize (GtkWidget *widget)
   window = gdk_window_new (gtk_widget_get_parent_window (widget),
                            &attributes, attributes_mask);
   gtk_widget_set_window (widget, window);
-  gdk_window_set_user_data (window, notification);
+  gtk_widget_register_window (widget, window);
 
   attributes.x = 0;
   attributes.y = attributes.height + priv->animate_y;
   attributes.event_mask = gtk_widget_get_events (widget) | GDK_EXPOSURE_MASK | GDK_VISIBILITY_NOTIFY_MASK;
 
   priv->bin_window = gdk_window_new (window, &attributes, attributes_mask);
-  gdk_window_set_user_data (priv->bin_window, notification);
+  gtk_widget_register_window (widget, priv->bin_window);
 
   child = gtk_bin_get_child (bin);
   if (child)
@@ -237,7 +237,7 @@ gd_notification_unrealize (GtkWidget *widget)
   GdNotification *notification = GD_NOTIFICATION (widget);
   GdNotificationPrivate *priv = notification->priv;
 
-  gdk_window_set_user_data (priv->bin_window, NULL);
+  gtk_widget_unregister_window (widget, priv->bin_window);
   gdk_window_destroy (priv->bin_window);
   priv->bin_window = NULL;
 
