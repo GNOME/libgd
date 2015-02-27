@@ -284,14 +284,14 @@ animation_timeout_cb (gpointer user_data)
       gdk_window_move (priv->bin_window,
                        0,
                        -allocation.height + priv->animate_y);
-    return TRUE;
+    return G_SOURCE_CONTINUE;
   }
 
   if (priv->dismissed && priv->animate_y == 0)
     gtk_widget_destroy (GTK_WIDGET (notification));
 
   priv->animate_timeout = 0;
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 static void
@@ -765,7 +765,7 @@ gd_notification_timeout_cb (gpointer user_data)
 
   gd_notification_dismiss (notification);
 
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 void
