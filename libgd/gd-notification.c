@@ -394,6 +394,31 @@ gd_notification_forall (GtkContainer *container,
     (* callback) (priv->close_button, callback_data);
 }
 
+static void
+unqueue_autohide (GdNotification *notification)
+{
+  GdNotificationPrivate *priv = notification->priv;
+
+  if (priv->timeout_source_id)
+    {
+      g_source_remove (priv->timeout_source_id);
+      priv->timeout_source_id = 0;
+    }
+}
+
+static void
+queue_autohide (GdNotification *notification)
+{
+  GdNotificationPrivate *priv = notification->priv;
+
+  if (priv->timeout_source_id == 0 &&
+      priv->timeout != -1)
+    priv->timeout_source_id =
+      gdk_threads_add_timeout (priv->timeout * 1000,
+                               gd_notification_timeout_cb,
+                               notification);
+}
+
 static gboolean
 gd_notification_visibility_notify_event (GtkWidget          *widget,
                                           GdkEventVisibility  *event)
@@ -410,12 +435,7 @@ gd_notification_visibility_notify_event (GtkWidget          *widget,
       priv->waiting_for_viewable = FALSE;
     }
 
-  if (notification->priv->timeout_source_id == 0 &&
-      notification->priv->timeout != -1)
-    notification->priv->timeout_source_id =
-      gdk_threads_add_timeout (notification->priv->timeout * 1000,
-                               gd_notification_timeout_cb,
-                               widget);
+  queue_autohide (notification);
 
   return FALSE;
 }
@@ -795,11 +815,7 @@ gd_notification_dismiss (GdNotification *notification)
 {
   GdNotificationPrivate *priv = notification->priv;
 
-  if (notification->priv->timeout_source_id)
-    {
-      g_source_remove (notification->priv->timeout_source_id);
-      notification->priv->timeout_source_id = 0;
-    }
+  unqueue_autohide (notification);
 
   priv->dismissed = TRUE;
   priv->revealed = FALSE;
