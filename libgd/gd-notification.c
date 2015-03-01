@@ -218,7 +218,11 @@ gd_notification_realize (GtkWidget *widget)
 
   attributes.x = 0;
   attributes.y = attributes.height + priv->animate_y;
-  attributes.event_mask = gtk_widget_get_events (widget) | GDK_EXPOSURE_MASK | GDK_VISIBILITY_NOTIFY_MASK;
+  attributes.event_mask = gtk_widget_get_events (widget) |
+                          GDK_EXPOSURE_MASK |
+                          GDK_VISIBILITY_NOTIFY_MASK |
+                          GDK_ENTER_NOTIFY_MASK |
+                          GDK_LEAVE_NOTIFY_MASK;
 
   priv->bin_window = gdk_window_new (window, &attributes, attributes_mask);
   gtk_widget_register_window (widget, priv->bin_window);
@@ -440,6 +444,38 @@ gd_notification_visibility_notify_event (GtkWidget          *widget,
   return FALSE;
 }
 
+static gboolean
+gd_notification_enter_notify (GtkWidget        *widget,
+                              GdkEventCrossing *event)
+{
+  GdNotification *notification = GD_NOTIFICATION (widget);
+  GdNotificationPrivate *priv = notification->priv;
+
+  if ((event->window == priv->bin_window) &&
+      (event->detail != GDK_NOTIFY_INFERIOR))
+    {
+      unqueue_autohide (notification);
+    }
+
+  return FALSE;
+}
+
+static gboolean
+gd_notification_leave_notify (GtkWidget        *widget,
+                              GdkEventCrossing *event)
+{
+  GdNotification *notification = GD_NOTIFICATION (widget);
+  GdNotificationPrivate *priv = notification->priv;
+
+  if ((event->window == priv->bin_window) &&
+      (event->detail != GDK_NOTIFY_INFERIOR))
+    {
+      queue_autohide (notification);
+    }
+
+  return FALSE;
+}
+
 static void
 gd_notification_class_init (GdNotificationClass *klass)
 {
@@ -463,6 +499,8 @@ gd_notification_class_init (GdNotificationClass *klass)
   widget_class->realize = gd_notification_realize;
   widget_class->unrealize = gd_notification_unrealize;
   widget_class->visibility_notify_event = gd_notification_visibility_notify_event;
+  widget_class->enter_notify_event = gd_notification_enter_notify;
+  widget_class->leave_notify_event = gd_notification_leave_notify;
 
   container_class->add = gd_notification_add;
   container_class->forall = gd_notification_forall;
