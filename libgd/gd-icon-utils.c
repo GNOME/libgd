@@ -118,7 +118,6 @@ gd_embed_image_in_frame (GdkPixbuf *source_image,
   cairo_surface_t *surface;
   cairo_t *cr;
   int source_width, source_height;
-  int dest_width, dest_height;
   gchar *css_str;
   GtkCssProvider *provider;
   GtkStyleContext *context;
@@ -128,9 +127,6 @@ gd_embed_image_in_frame (GdkPixbuf *source_image,
 
   source_width = gdk_pixbuf_get_width (source_image);
   source_height = gdk_pixbuf_get_height (source_image);
-
-  dest_width = source_width +  border_width->left + border_width->right;
-  dest_height = source_height + border_width->top + border_width->bottom;
 
   css_str = g_strdup_printf (".embedded-image { border-image: url(\"%s\") %d %d %d %d / %dpx %dpx %dpx %dpx }",
                              frame_image_url,
@@ -148,7 +144,7 @@ gd_embed_image_in_frame (GdkPixbuf *source_image,
       return g_object_ref (source_image);
     }
 
-  surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, dest_width, dest_height);
+  surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, source_width, source_height);
   cr = cairo_create (surface);
 
   context = gtk_style_context_new ();
@@ -158,21 +154,29 @@ gd_embed_image_in_frame (GdkPixbuf *source_image,
   gtk_style_context_set_path (context, path);
   gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (provider), 600);
 
+  cairo_save (cr);
+  cairo_rectangle (cr,
+		   border_width->left,
+		   border_width->top,
+		   source_width - border_width->left - border_width->right,
+		   source_height - border_width->top - border_width->bottom);
+  cairo_clip (cr);
   gtk_render_icon (context, cr,
                    source_image,
-                   border_width->left, border_width->top);
+                   0, 0);
+  cairo_restore (cr);
 
   gtk_style_context_save (context);
   gtk_style_context_add_class (context, "embedded-image");
 
   gtk_render_frame (context, cr,
                     0, 0,
-                    dest_width, dest_height);
+                    source_width, source_height);
 
   gtk_style_context_restore (context);
 
   retval = gdk_pixbuf_get_from_surface (surface,
-                                        0, 0, dest_width, dest_height);
+                                        0, 0, source_width, source_height);
 
   cairo_surface_destroy (surface);
   cairo_destroy (cr);
