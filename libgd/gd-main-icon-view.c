@@ -135,7 +135,6 @@ gd_main_icon_view_constructed (GObject *obj)
   g_object_set (cell,
                 "xalign", 0.5,
                 "yalign", 0.5,
-                "follow-state", TRUE,
                 NULL);
   gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (self), cell, FALSE);
 
