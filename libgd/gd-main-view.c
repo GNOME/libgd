@@ -1020,8 +1020,8 @@ gd_main_view_rebuild (GdMainView *self)
   g_signal_connect (self->priv->current_view, "view-selection-changed",
                     G_CALLBACK (on_view_selection_changed), self);
 
-  gd_main_view_apply_selection_mode (self);
   gd_main_view_apply_model (self);
+  gd_main_view_apply_selection_mode (self);
 
   gtk_widget_show_all (GTK_WIDGET (self));
 }
