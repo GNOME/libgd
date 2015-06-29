@@ -101,7 +101,7 @@ gd_create_symbolic_icon (const gchar *name,
 }
 
 /**
- * gd_embed_image_in_frame:
+ * gd_embed_surface_in_frame:
  * @source_image:
  * @frame_image_url:
  * @slice_width:
@@ -109,11 +109,11 @@ gd_create_symbolic_icon (const gchar *name,
  *
  * Returns: (transfer full):
  */
-GdkPixbuf *
-gd_embed_image_in_frame (GdkPixbuf *source_image,
-                         const gchar *frame_image_url,
-                         GtkBorder *slice_width,
-                         GtkBorder *border_width)
+cairo_surface_t *
+gd_embed_surface_in_frame (cairo_surface_t *source_image,
+                           const gchar *frame_image_url,
+                           GtkBorder *slice_width,
+                           GtkBorder *border_width)
 {
   cairo_surface_t *surface;
   cairo_t *cr;
@@ -124,9 +124,12 @@ gd_embed_image_in_frame (GdkPixbuf *source_image,
   GError *error = NULL;
   GdkPixbuf *retval;
   GtkWidgetPath *path;
+  gdouble scale_x, scale_y;
 
-  source_width = gdk_pixbuf_get_width (source_image);
-  source_height = gdk_pixbuf_get_height (source_image);
+  cairo_surface_get_device_scale (source_image, &scale_x, &scale_y);
+
+  source_width = cairo_image_surface_get_width (source_image) / (gint) floor (scale_x),
+  source_height = cairo_image_surface_get_height (source_image) / (gint) floor (scale_y);
 
   css_str = g_strdup_printf (".embedded-image { border-image: url(\"%s\") %d %d %d %d / %dpx %dpx %dpx %dpx }",
                              frame_image_url,
@@ -144,7 +147,9 @@ gd_embed_image_in_frame (GdkPixbuf *source_image,
       return g_object_ref (source_image);
     }
 
-  surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, source_width, source_height);
+  surface = cairo_surface_create_similar (source_image,
+                                          CAIRO_CONTENT_COLOR_ALPHA,
+                                          source_width, source_height);
   cr = cairo_create (surface);
 
   context = gtk_style_context_new ();
@@ -161,9 +166,9 @@ gd_embed_image_in_frame (GdkPixbuf *source_image,
 		   source_width - border_width->left - border_width->right,
 		   source_height - border_width->top - border_width->bottom);
   cairo_clip (cr);
-  gtk_render_icon (context, cr,
-                   source_image,
-                   0, 0);
+  gtk_render_icon_surface (context, cr,
+                           source_image,
+                           0, 0);
   cairo_restore (cr);
 
   gtk_style_context_save (context);
@@ -174,17 +179,50 @@ gd_embed_image_in_frame (GdkPixbuf *source_image,
                     source_width, source_height);
 
   gtk_style_context_restore (context);
-
-  retval = gdk_pixbuf_get_from_surface (surface,
-                                        0, 0, source_width, source_height);
-
-  cairo_surface_destroy (surface);
   cairo_destroy (cr);
 
   gtk_widget_path_unref (path);
   g_object_unref (provider);
   g_object_unref (context);
   g_free (css_str);
+
+  return surface;
+}
+
+/**
+ * gd_embed_image_in_frame:
+ * @source_image:
+ * @frame_image_url:
+ * @slice_width:
+ * @border_width:
+ *
+ * Returns: (transfer full):
+ */
+GdkPixbuf *
+gd_embed_image_in_frame (GdkPixbuf *source_image,
+                         const gchar *frame_image_url,
+                         GtkBorder *slice_width,
+                         GtkBorder *border_width)
+{
+  cairo_surface_t *surface, *embedded_surface;
+  GdkPixbuf *retval;
+
+  surface = gdk_cairo_surface_create_from_pixbuf (source_image,
+                                                  NULL, NULL);
+
+  /* Force the device scale to 1.0, since pixbufs are always in unscaled
+   * dimensions.
+   */
+  cairo_surface_set_device_scale (surface, 1.0, 1.0);
+  embedded_surface = gd_embed_surface_in_frame (surface, frame_image_url,
+                                                slice_width, border_width);
+  retval = gdk_pixbuf_get_from_surface (embedded_surface,
+                                        0, 0,
+                                        cairo_image_surface_get_width (embedded_surface),
+                                        cairo_image_surface_get_height (embedded_surface));
+
+  cairo_surface_destroy (embedded_surface);
+  cairo_surface_destroy (surface);
 
   return retval;
 }
