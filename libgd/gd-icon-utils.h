@@ -31,5 +31,9 @@ GdkPixbuf *gd_embed_image_in_frame (GdkPixbuf *source_image,
                                     const gchar *frame_image_url,
                                     GtkBorder *slice_width,
                                     GtkBorder *border_width);
+cairo_surface_t *gd_embed_surface_in_frame (cairo_surface_t *source_image,
+                                            const gchar *frame_image_url,
+                                            GtkBorder *slice_width,
+                                            GtkBorder *border_width);
 
 #endif /* __GD_CREATE_SYMBOLIC_ICON_H__ */
