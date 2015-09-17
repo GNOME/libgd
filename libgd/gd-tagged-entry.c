@@ -421,6 +421,7 @@ gd_tagged_entry_tag_get_area (GdTaggedEntryTag      *tag,
   gd_tagged_entry_tag_get_relative_allocations (tag, tag->priv->entry, context,
                                                 &background_allocation,
                                                 NULL, NULL);
+  gtk_style_context_restore (context);
 
   rect->x = window_x - alloc.x + background_allocation.x;
   rect->y = window_y - alloc.y + background_allocation.y;
