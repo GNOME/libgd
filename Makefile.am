@@ -199,7 +199,7 @@ tagged_entry_sources =				\
 	$(NULL)
 
 nodist_libgd_la_SOURCES += $(tagged_entry_sources)
-EXTRA_DIST += $(tagged_entry_sources)
+EXTRA_DIST += $(tagged_entry_sources) libgd/gd-tagged-entry.example.css
 
 noinst_PROGRAMS += test-tagged-entry
 test_tagged_entry_SOURCES =				\
