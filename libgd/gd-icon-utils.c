@@ -208,7 +208,7 @@ gd_embed_image_in_frame (GdkPixbuf *source_image,
   GdkPixbuf *retval;
 
   surface = gdk_cairo_surface_create_from_pixbuf (source_image,
-                                                  NULL, NULL);
+                                                  0, NULL);
 
   /* Force the device scale to 1.0, since pixbufs are always in unscaled
    * dimensions.
