@@ -87,7 +87,7 @@ apply_subtitle_style_to_layout (GtkStyleContext *context,
                                 GtkStateFlags    flags)
 {
   PangoFontDescription *desc;
-  GdkRGBA rgba;
+  GdkRGBA rgba = {0.0, 0.0, 0.0, 0.0};
   PangoAttrList *layout_attr;
   PangoAttribute *attr_color;
 
