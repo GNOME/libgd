@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2012 Red Hat, Inc.
+ * Copyright (c) 2011, 2012, 2015 Red Hat, Inc.
  *
  * Gnome Documents is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by the
@@ -26,6 +26,9 @@
 
 GIcon *gd_create_symbolic_icon (const gchar *name,
                                 gint base_size);
+GIcon *gd_create_symbolic_icon_for_scale (const gchar *name,
+                                          gint base_size,
+                                          gint scale);
 
 GdkPixbuf *gd_embed_image_in_frame (GdkPixbuf *source_image,
                                     const gchar *frame_image_url,

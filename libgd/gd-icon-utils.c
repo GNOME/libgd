@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2012 Red Hat, Inc.
+ * Copyright (c) 2011, 2012, 2015 Red Hat, Inc.
  *
  * Gnome Documents is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by the
@@ -29,18 +29,21 @@
 #define _EMBLEM_MIN_SIZE 8
 
 /**
- * gd_create_symbolic_icon:
+ * gd_create_symbolic_icon_for_scale:
  * @name:
  * @base_size:
+ * @scale:
  *
  * Returns: (transfer full):
  */
 GIcon *
-gd_create_symbolic_icon (const gchar *name,
-                         gint base_size)
+gd_create_symbolic_icon_for_scale (const gchar *name,
+                                   gint base_size,
+                                   gint scale)
 {
   gchar *symbolic_name;
   GIcon *icon, *retval = NULL;
+  cairo_surface_t *icon_surface;
   cairo_surface_t *surface;
   cairo_t *cr;
   GtkStyleContext *style;
@@ -51,12 +54,16 @@ gd_create_symbolic_icon (const gchar *name,
   gint bg_size;
   gint emblem_size;
   gint total_size;
+  gint total_size_scaled;
 
   total_size = base_size / 2;
+  total_size_scaled = total_size * scale;
+
   bg_size = MAX (total_size / 2, _BG_MIN_SIZE);
   emblem_size = MAX (bg_size - 8, _EMBLEM_MIN_SIZE);
 
-  surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, total_size, total_size);
+  surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, total_size_scaled, total_size_scaled);
+  cairo_surface_set_device_scale (surface, (gdouble) scale, (gdouble) scale);
   cr = cairo_create (surface);
 
   style = gtk_style_context_new ();
@@ -75,8 +82,8 @@ gd_create_symbolic_icon (const gchar *name,
   g_free (symbolic_name);
 
   theme = gtk_icon_theme_get_default();
-  info = gtk_icon_theme_lookup_by_gicon (theme, icon, emblem_size,
-                                         GTK_ICON_LOOKUP_FORCE_SIZE);
+  info = gtk_icon_theme_lookup_by_gicon_for_scale (theme, icon, emblem_size, scale,
+                                                   GTK_ICON_LOOKUP_FORCE_SIZE);
   g_object_unref (icon);
 
   if (info == NULL)
@@ -88,10 +95,13 @@ gd_create_symbolic_icon (const gchar *name,
   if (pixbuf == NULL)
     goto out;
 
-  gtk_render_icon (style, cr, pixbuf, (total_size - emblem_size) / 2,  (total_size - emblem_size) / 2);
+  icon_surface = gdk_cairo_surface_create_from_pixbuf (pixbuf, scale, NULL);
   g_object_unref (pixbuf);
 
-  retval = G_ICON (gdk_pixbuf_get_from_surface (surface, 0, 0, total_size, total_size));
+  gtk_render_icon_surface (style, cr, icon_surface, (total_size - emblem_size) / 2,  (total_size - emblem_size) / 2);
+  cairo_surface_destroy (icon_surface);
+
+  retval = G_ICON (gdk_pixbuf_get_from_surface (surface, 0, 0, total_size_scaled, total_size_scaled));
 
  out:
   g_object_unref (style);
@@ -99,6 +109,20 @@ gd_create_symbolic_icon (const gchar *name,
   cairo_destroy (cr);
 
   return retval;
+}
+
+/**
+ * gd_create_symbolic_icon:
+ * @name:
+ * @base_size:
+ *
+ * Returns: (transfer full):
+ */
+GIcon *
+gd_create_symbolic_icon (const gchar *name,
+                         gint base_size)
+{
+  return gd_create_symbolic_icon_for_scale (name, base_size, 1);
 }
 
 /**
