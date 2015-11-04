@@ -31,6 +31,7 @@
 /**
  * gd_create_symbolic_icon:
  * @name:
+ * @base_size:
  *
  * Returns: (transfer full):
  */
