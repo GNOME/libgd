@@ -91,10 +91,13 @@ apply_subtitle_style_to_layout (GtkStyleContext *context,
   PangoAttrList *layout_attr;
   PangoAttribute *attr_color;
 
-  gtk_style_context_get (context, flags,
+  gtk_style_context_save (context);
+  gtk_style_context_set_state (context, flags);
+  gtk_style_context_get (context, gtk_style_context_get_state (context),
                          "font", &desc,
                          "color", &rgba,
                          NULL);
+  gtk_style_context_restore (context);
 
   /* Set the font size */
   pango_font_description_set_size (desc, pango_font_description_get_size (desc) * SUBTITLE_SIZE_PERCENTAGE);
@@ -376,7 +379,11 @@ gd_two_lines_renderer_get_preferred_width (GtkCellRenderer *cell,
 
   /* Fetch the average size of a character */
   context = gtk_widget_get_pango_context (widget);
-  gtk_style_context_get (style_context, 0, "font", &font_desc, NULL);
+  gtk_style_context_save (style_context);
+  gtk_style_context_set_state (style_context, 0);
+  gtk_style_context_get (style_context, gtk_style_context_get_state (style_context),
+                         "font", &font_desc, NULL);
+  gtk_style_context_restore (style_context);
   metrics = pango_context_get_metrics (context, font_desc,
                                        pango_context_get_language (context));
 
