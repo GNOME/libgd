@@ -94,7 +94,10 @@ gd_tagged_entry_tag_get_margin (GdTaggedEntryTag *tag,
   GtkStyleContext *context;
 
   context = gd_tagged_entry_tag_get_context (tag, entry);
-  gtk_style_context_get_margin (context, 0, margin);
+  gtk_style_context_set_state (context, GTK_STATE_FLAG_NORMAL);
+  gtk_style_context_get_margin (context,
+                                gtk_style_context_get_state (context),
+                                margin);
   gtk_style_context_restore (context);
 }
 
@@ -270,9 +273,16 @@ gd_tagged_entry_tag_get_width (GdTaggedEntryTag *tag,
   context = gd_tagged_entry_tag_get_context (tag, entry);
   state = gd_tagged_entry_tag_get_state (tag, entry);
 
-  gtk_style_context_get_padding (context, state, &button_padding);
-  gtk_style_context_get_border (context, state, &button_border);
-  gtk_style_context_get_margin (context, state, &button_margin);
+  gtk_style_context_set_state (context, state);
+  gtk_style_context_get_padding (context,
+                                 gtk_style_context_get_state (context),
+                                 &button_padding);
+  gtk_style_context_get_border (context,
+                                gtk_style_context_get_state (context),
+                                &button_border);
+  gtk_style_context_get_margin (context,
+                                gtk_style_context_get_state (context),
+                                &button_margin);
 
   gd_tagged_entry_tag_ensure_close_surface (tag, context);
 
@@ -329,7 +339,12 @@ gd_tagged_entry_tag_get_relative_allocations (GdTaggedEntryTag *tag,
   scale_factor = gdk_window_get_scale_factor (tag->priv->window);
 
   state = gd_tagged_entry_tag_get_state (tag, entry);
-  gtk_style_context_get_margin (context, state, &padding);
+  gtk_style_context_save (context);
+  gtk_style_context_set_state (context, state);
+  gtk_style_context_get_margin (context,
+                                gtk_style_context_get_state (context),
+                                &padding);
+  gtk_style_context_restore (context);
 
   width -= padding.left + padding.right;
   height -= padding.top + padding.bottom;
@@ -343,8 +358,15 @@ gd_tagged_entry_tag_get_relative_allocations (GdTaggedEntryTag *tag,
 
   layout_allocation = button_allocation = background_allocation;
 
-  gtk_style_context_get_padding (context, state, &padding);
-  gtk_style_context_get_border (context, state, &border);  
+  gtk_style_context_save (context);
+  gtk_style_context_set_state (context, state);
+  gtk_style_context_get_padding (context,
+                                 gtk_style_context_get_state (context),
+                                 &padding);
+  gtk_style_context_get_border (context,
+                                gtk_style_context_get_state (context),
+                                &border);
+  gtk_style_context_restore (context);
 
   gd_tagged_entry_tag_ensure_layout (tag, entry);
   pango_layout_get_pixel_size (tag->priv->layout, &layout_width, &layout_height);
