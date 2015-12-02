@@ -912,6 +912,22 @@ gd_tagged_entry_set_property (GObject      *object,
 }
 
 static void
+gd_tagged_entry_add_default_style (void)
+{
+  GtkCssProvider *provider;
+
+  provider = gtk_css_provider_new ();
+  gtk_css_provider_load_from_resource
+    (provider, "/org/gnome/libgd/tagged-entry/default.css");
+
+  gtk_style_context_add_provider_for_screen (gdk_screen_get_default (),
+                                             GTK_STYLE_PROVIDER (provider),
+                                             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+  g_object_unref (provider);
+}
+
+static void
 gd_tagged_entry_class_init (GdTaggedEntryClass *klass)
 {
   GtkWidgetClass *wclass = GTK_WIDGET_CLASS (klass);
@@ -956,6 +972,8 @@ gd_tagged_entry_class_init (GdTaggedEntryClass *klass)
     g_param_spec_boolean ("tag-close-visible", "Tag close icon visibility",
                           "Whether the close button should be shown in tags.", TRUE,
                           G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS);
+
+  gd_tagged_entry_add_default_style ();
 
   g_type_class_add_private (klass, sizeof (GdTaggedEntryPrivate));
   g_object_class_install_properties (oclass, NUM_PROPERTIES, properties);

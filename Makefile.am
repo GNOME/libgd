@@ -193,13 +193,28 @@ test_stack_LDADD =				\
 endif
 
 if LIBGD_TAGGED_ENTRY
+tagged_entry_resource_files = $(shell glib-compile-resources --sourcedir=$(srcdir)/libgd --generate-dependencies $(srcdir)/libgd/gd-tagged-entry.gresource.xml)
+libgd/gd-tagged-entry-resources.c: libgd/gd-tagged-entry.gresource.xml $(tagged_entry_resource_files)
+	glib-compile-resources --target=$@ --sourcedir=$(srcdir)/libgd --generate-source --c-name gd_tagged_entry $(srcdir)/libgd/gd-tagged-entry.gresource.xml
+libgd/gd-tagged-entry-resources.h: libgd/gd-tagged-entry.gresource.xml $(tagged_entry_resource_files)
+	glib-compile-resources --target=$@ --sourcedir=$(srcdir)/libgd --generate-header --c-name gd_tagged_entry $(srcdir)/libgd/gd-tagged-entry.gresource.xml
+
 tagged_entry_sources =				\
+	libgd/gd-tagged-entry-resources.c	\
+	libgd/gd-tagged-entry-resources.h	\
 	libgd/gd-tagged-entry.c			\
 	libgd/gd-tagged-entry.h			\
 	$(NULL)
 
 nodist_libgd_la_SOURCES += $(tagged_entry_sources)
-EXTRA_DIST += $(tagged_entry_sources) libgd/gd-tagged-entry.example.css
+EXTRA_DIST += \
+	$(tagged_entry_sources) \
+	$(tagged_entry_resource_files) \
+	$(NULL)
+CLEANFILES += \
+	libgd/gd-tagged-entry-resources.c \
+	libgd/gd-tagged-entry-resources.h \
+	$(NULL)
 
 noinst_PROGRAMS += test-tagged-entry
 test_tagged_entry_SOURCES =				\
