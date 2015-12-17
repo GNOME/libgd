@@ -208,9 +208,9 @@ tagged_entry_sources =				\
 
 nodist_libgd_la_SOURCES += $(tagged_entry_sources)
 EXTRA_DIST += \
-	libgd/gd-tagged-entry.gresource.xml \
 	$(tagged_entry_sources) \
-	$(tagged_entry_resource_files) \
+	libgd/gd-tagged-entry.gresource.xml \
+	libgd/gd-tagged-entry-default.css \
 	$(NULL)
 CLEANFILES += \
 	libgd/gd-tagged-entry-resources.c \
