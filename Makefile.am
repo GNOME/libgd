@@ -277,5 +277,3 @@ noinst_DATA += $(VAPIS)
 EXTRA_DIST += $(VAPIS)
 MAINTAINERCLEANFILES += $(VAPIS)
 endif
-
--include $(top_srcdir)/git.mk
