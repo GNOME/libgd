@@ -194,7 +194,7 @@ endif
 
 if LIBGD_TAGGED_ENTRY
 tagged_entry_resource_files = $(shell glib-compile-resources --sourcedir=$(srcdir)/libgd --generate-dependencies $(srcdir)/libgd/gd-tagged-entry.gresource.xml)
-libgd/gd-tagged-entry-resources.c: libgd/gd-tagged-entry.gresource.xml $(tagged_entry_resource_files)
+libgd/gd-tagged-entry-resources.c: libgd/gd-tagged-entry.gresource.xml $(tagged_entry_resource_files) libgd/gd-tagged-entry-resources.h
 	glib-compile-resources --target=$@ --sourcedir=$(srcdir)/libgd --generate-source --c-name gd_tagged_entry $(srcdir)/libgd/gd-tagged-entry.gresource.xml
 libgd/gd-tagged-entry-resources.h: libgd/gd-tagged-entry.gresource.xml $(tagged_entry_resource_files)
 	glib-compile-resources --target=$@ --sourcedir=$(srcdir)/libgd --generate-header --c-name gd_tagged_entry $(srcdir)/libgd/gd-tagged-entry.gresource.xml
