@@ -23,6 +23,7 @@
 #include "gd-tagged-entry.h"
 
 #include <math.h>
+#include <libgd/gd-tagged-entry-resources.h>
 
 #define BUTTON_INTERNAL_SPACING 6
 
@@ -915,8 +916,10 @@ static void
 gd_tagged_entry_add_default_style (void)
 {
   GtkCssProvider *provider;
+  GResource *do_not_optimize_away_get_resource G_GNUC_UNUSED;
 
   provider = gtk_css_provider_new ();
+  do_not_optimize_away_get_resource = gd_tagged_entry_get_resource ();
   gtk_css_provider_load_from_resource
     (provider, "/org/gnome/libgd/tagged-entry/default.css");
 
