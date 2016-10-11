@@ -98,9 +98,6 @@ if get_option('libgd-revealer')
                  'libgd/gd-revealer.h' ]
 endif
 
-add_global_arguments('-I' + meson.source_root(), language: 'c')
-
-
 libgd = shared_library('gd', sources, dependencies: [gtk, libm])
 if get_option('libgd-static')
     libgd_lib = static_library('gd', sources, dependencies: [gtk, libm])
@@ -116,7 +113,8 @@ if get_option('libgd-gir') or get_option('libgd-vapi')
                              namespace : 'Gd',
                              symbol_prefix : 'gd',
                              identifier_prefix : 'Gd',
-                             includes : 'Gtk-3.0')
+                             includes : 'Gtk-3.0',
+                             extra_args: ['-I' + meson.source_root()])
 
     if get_option('libgd-vapi')
         vapigen = find_program('vapigen')
