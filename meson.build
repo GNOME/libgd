@@ -101,10 +101,12 @@ endif
 add_global_arguments('-I' + meson.source_root(), language: 'c')
 add_global_arguments('-I' + meson.source_root() + '/libgd', language: 'c')
 
-if get_option('libgd-static')
-    static_library('gd', sources, dependencies: [gtk, libm])
-endif
 libgd = shared_library('gd', sources, dependencies: [gtk, libm])
+if get_option('libgd-static')
+    libgd_lib = static_library('gd', sources, dependencies: [gtk, libm])
+else
+    libgd_lib = libgd
+endif
 
 if get_option('libgd-gir') or get_option('libgd-vapi')
     gnome = import('gnome')
@@ -127,3 +129,10 @@ if get_option('libgd-gir') or get_option('libgd-vapi')
                              install: false)
     endif
 endif
+
+include = include_directories(meson.source_root())
+
+# If you use libgd as meson subproject in your project, you'll want to make use
+# of libgd_dep variable
+libgd_dep = declare_dependency(link_with: libgd_lib,
+                               include_directories: include)
