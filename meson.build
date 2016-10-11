@@ -99,7 +99,7 @@ if get_option('libgd-revealer')
 endif
 
 add_global_arguments('-I' + meson.source_root(), language: 'c')
-add_global_arguments('-I' + meson.source_root() + '/libgd', language: 'c')
+
 
 libgd = shared_library('gd', sources, dependencies: [gtk, libm])
 if get_option('libgd-static')
