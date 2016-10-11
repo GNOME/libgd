@@ -21,7 +21,7 @@ project('libgd', 'c')
 
 gtk = dependency('gtk+-3.0')
 cc = meson.get_compiler('c')
-libm = cc.find_library('libm')
+libm = cc.find_library('libm', required: false)
 
 sources = [ 'libgd/gd.h',
             'libgd/gd-types-catalog.c',
