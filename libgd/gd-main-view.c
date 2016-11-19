@@ -73,8 +73,11 @@ static void
 gd_main_view_dispose (GObject *obj)
 {
   GdMainView *self = GD_MAIN_VIEW (obj);
+  GdMainViewPrivate *priv;
 
-  g_clear_object (&self->priv->model);
+  priv = gd_main_view_get_instance_private (self);
+
+  g_clear_object (&priv->model);
 
   G_OBJECT_CLASS (gd_main_view_parent_class)->dispose (obj);
 }
@@ -83,15 +86,18 @@ static void
 gd_main_view_finalize (GObject *obj)
 {
   GdMainView *self = GD_MAIN_VIEW (obj);
+  GdMainViewPrivate *priv;
 
-  g_free (self->priv->button_press_item_path);
-  g_free (self->priv->last_selected_id);
+  priv = gd_main_view_get_instance_private (self);
 
-  if (self->priv->rubberband_select_first_path)
-    gtk_tree_path_free (self->priv->rubberband_select_first_path);
+  g_free (priv->button_press_item_path);
+  g_free (priv->last_selected_id);
 
-  if (self->priv->rubberband_select_last_path)
-    gtk_tree_path_free (self->priv->rubberband_select_last_path);
+  if (priv->rubberband_select_first_path)
+    gtk_tree_path_free (priv->rubberband_select_first_path);
+
+  if (priv->rubberband_select_last_path)
+    gtk_tree_path_free (priv->rubberband_select_last_path);
 
   G_OBJECT_CLASS (gd_main_view_parent_class)->finalize (obj);
 }
@@ -99,12 +105,13 @@ gd_main_view_finalize (GObject *obj)
 static void
 gd_main_view_init (GdMainView *self)
 {
+  GdMainViewPrivate *priv;
   GtkStyleContext *context;
 
-  self->priv = gd_main_view_get_instance_private (self);
+  priv = gd_main_view_get_instance_private (self);
 
   /* so that we get constructed with the right view even at startup */
-  self->priv->current_type = MAIN_VIEW_TYPE_INITIAL;
+  priv->current_type = MAIN_VIEW_TYPE_INITIAL;
 
   gtk_widget_set_hexpand (GTK_WIDGET (self), TRUE);
   gtk_widget_set_vexpand (GTK_WIDGET (self), TRUE);
@@ -324,8 +331,12 @@ gd_main_view_get_counter_icon (GdMainView *self,
 static GdMainViewGeneric *
 get_generic (GdMainView *self)
 {
-  if (self->priv->current_view != NULL)
-    return GD_MAIN_VIEW_GENERIC (self->priv->current_view);
+  GdMainViewPrivate *priv;
+
+  priv = gd_main_view_get_instance_private (self);
+
+  if (priv->current_view != NULL)
+    return GD_MAIN_VIEW_GENERIC (priv->current_view);
 
   return NULL;
 }
@@ -335,11 +346,14 @@ do_select_row (GdMainView *self,
                GtkTreeIter *iter,
                gboolean value)
 {
+  GdMainViewPrivate *priv;
   GtkTreeModel *model;
   GtkTreeIter my_iter;
   GtkTreePath *path;
 
-  model = self->priv->model;
+  priv = gd_main_view_get_instance_private (self);
+
+  model = priv->model;
   my_iter = *iter;
 
   while (GTK_IS_TREE_MODEL_FILTER (model) ||
@@ -381,10 +395,10 @@ do_select_row (GdMainView *self,
     }
 
   /* And tell the view model that something changed */
-  path = gtk_tree_model_get_path (self->priv->model, iter);
+  path = gtk_tree_model_get_path (priv->model, iter);
   if (path)
     {
-      gtk_tree_model_row_changed (self->priv->model, path, iter);
+      gtk_tree_model_row_changed (priv->model, path, iter);
       gtk_tree_path_free (path);
     }
 }
@@ -394,12 +408,15 @@ selection_mode_do_select_range (GdMainView *self,
                                 GtkTreeIter *first_element,
                                 GtkTreeIter *last_element)
 {
+  GdMainViewPrivate *priv;
   GtkTreeIter iter;
   GtkTreePath *path, *last_path;
   gboolean equal;
 
-  path = gtk_tree_model_get_path (self->priv->model, first_element);
-  last_path = gtk_tree_model_get_path (self->priv->model, last_element);
+  priv = gd_main_view_get_instance_private (self);
+
+  path = gtk_tree_model_get_path (priv->model, first_element);
+  last_path = gtk_tree_model_get_path (priv->model, last_element);
   if (gtk_tree_path_compare (path, last_path) > 0)
     {
       gtk_tree_path_free (last_path);
@@ -416,14 +433,14 @@ selection_mode_do_select_range (GdMainView *self,
     {
       do_select_row (self, &iter, TRUE);
 
-      path = gtk_tree_model_get_path (self->priv->model, &iter);
+      path = gtk_tree_model_get_path (priv->model, &iter);
       equal = (gtk_tree_path_compare (path, last_path) == 0);
       gtk_tree_path_free (path);
 
       if (equal)
         break;
     }
-  while (gtk_tree_model_iter_next (self->priv->model, &iter));
+  while (gtk_tree_model_iter_next (priv->model, &iter));
 
   gtk_tree_path_free (last_path);
 }
@@ -432,20 +449,23 @@ static void
 selection_mode_select_range (GdMainView *self,
                              GtkTreeIter *iter)
 {
+  GdMainViewPrivate *priv;
   GtkTreeIter other;
   gboolean found = FALSE;
   gboolean selected;
   char *id;
 
-  if (self->priv->last_selected_id != NULL &&
-      gtk_tree_model_get_iter_first (self->priv->model, &other))
+  priv = gd_main_view_get_instance_private (self);
+
+  if (priv->last_selected_id != NULL &&
+      gtk_tree_model_get_iter_first (priv->model, &other))
     {
       do
 	{
-	  gtk_tree_model_get (self->priv->model, &other,
+	  gtk_tree_model_get (priv->model, &other,
 			      GD_MAIN_COLUMN_ID, &id,
 			      -1);
-	  if (g_strcmp0 (id, self->priv->last_selected_id) == 0)
+	  if (g_strcmp0 (id, priv->last_selected_id) == 0)
 	    {
 	      g_free (id);
 	      found = TRUE;
@@ -453,15 +473,15 @@ selection_mode_select_range (GdMainView *self,
 	    }
 	  g_free (id);
 	}
-      while (gtk_tree_model_iter_next (self->priv->model, &other));
+      while (gtk_tree_model_iter_next (priv->model, &other));
     }
 
   if (!found)
     {
       other = *iter;
-      while (gtk_tree_model_iter_previous (self->priv->model, &other))
+      while (gtk_tree_model_iter_previous (priv->model, &other))
 	{
-	  gtk_tree_model_get (self->priv->model, &other,
+	  gtk_tree_model_get (priv->model, &other,
 			      GD_MAIN_COLUMN_SELECTED, &selected,
 			      -1);
 
@@ -476,9 +496,9 @@ selection_mode_select_range (GdMainView *self,
   if (!found)
     {
       other = *iter;
-      while (gtk_tree_model_iter_next (self->priv->model, &other))
+      while (gtk_tree_model_iter_next (priv->model, &other))
 	{
-	  gtk_tree_model_get (self->priv->model, &other,
+	  gtk_tree_model_get (priv->model, &other,
 			      GD_MAIN_COLUMN_SELECTED, &selected,
 			      -1);
 	  if (selected)
@@ -505,17 +525,20 @@ toggle_selection_for_path (GdMainView *self,
                            GtkTreePath *path,
                            gboolean select_range)
 {
+  GdMainViewPrivate *priv;
   gboolean selected;
   GtkTreeIter iter;
   char *id;
 
-  if (self->priv->model == NULL)
+  priv = gd_main_view_get_instance_private (self);
+
+  if (priv->model == NULL)
     return FALSE;
 
-  if (!gtk_tree_model_get_iter (self->priv->model, &iter, path))
+  if (!gtk_tree_model_get_iter (priv->model, &iter, path))
     return FALSE;
 
-  gtk_tree_model_get (self->priv->model, &iter,
+  gtk_tree_model_get (priv->model, &iter,
                       GD_MAIN_COLUMN_SELECTED, &selected,
                       -1);
 
@@ -529,11 +552,11 @@ toggle_selection_for_path (GdMainView *self,
         selection_mode_select_range (self, &iter);
       else
 	{
-	  gtk_tree_model_get (self->priv->model, &iter,
+	  gtk_tree_model_get (priv->model, &iter,
 			      GD_MAIN_COLUMN_ID, &id,
 			      -1);
-	  g_free (self->priv->last_selected_id);
-	  self->priv->last_selected_id = id;
+	  g_free (priv->last_selected_id);
+	  priv->last_selected_id = id;
 
           do_select_row (self, &iter, TRUE);
 	}
@@ -548,16 +571,19 @@ static gboolean
 activate_item_for_path (GdMainView *self,
                         GtkTreePath *path)
 {
+  GdMainViewPrivate *priv;
   GtkTreeIter iter;
   gchar *id;
 
-  if (self->priv->model == NULL)
+  priv = gd_main_view_get_instance_private (self);
+
+  if (priv->model == NULL)
     return FALSE;
 
-  if (!gtk_tree_model_get_iter (self->priv->model, &iter, path))
+  if (!gtk_tree_model_get_iter (priv->model, &iter, path))
     return FALSE;
 
-  gtk_tree_model_get (self->priv->model, &iter,
+  gtk_tree_model_get (priv->model, &iter,
                       GD_MAIN_COLUMN_ID, &id,
                       -1);
 
@@ -597,6 +623,7 @@ on_button_release_event (GtkWidget *view,
                          gpointer user_data)
 {
   GdMainView *self = user_data;
+  GdMainViewPrivate *priv;
   GdMainViewGeneric *generic = get_generic (self);
   GtkTreePath *path, *start_path, *end_path, *tmp_path;
   GtkTreeIter iter;
@@ -604,6 +631,8 @@ on_button_release_event (GtkWidget *view,
   gboolean selection_mode;
   gboolean res, same_item = FALSE;
   gboolean is_selected;
+
+  priv = gd_main_view_get_instance_private (self);
 
   /* eat double/triple click events */
   if (event->type != GDK_BUTTON_RELEASE)
@@ -614,32 +643,32 @@ on_button_release_event (GtkWidget *view,
   if (path != NULL)
     {
       button_release_item_path = gtk_tree_path_to_string (path);
-      if (g_strcmp0 (self->priv->button_press_item_path, button_release_item_path) == 0)
+      if (g_strcmp0 (priv->button_press_item_path, button_release_item_path) == 0)
         same_item = TRUE;
 
       g_free (button_release_item_path);
     }
 
-  g_free (self->priv->button_press_item_path);
-  self->priv->button_press_item_path = NULL;
+  g_free (priv->button_press_item_path);
+  priv->button_press_item_path = NULL;
 
-  self->priv->track_motion = FALSE;
-  if (self->priv->rubberband_select)
+  priv->track_motion = FALSE;
+  if (priv->rubberband_select)
     {
-      self->priv->rubberband_select = FALSE;
+      priv->rubberband_select = FALSE;
       gd_main_view_generic_set_rubberband_range (get_generic (self), NULL, NULL);
-      if (self->priv->rubberband_select_last_path)
+      if (priv->rubberband_select_last_path)
 	{
-	  if (!self->priv->selection_mode)
+	  if (!priv->selection_mode)
 	    g_signal_emit (self, signals[SELECTION_MODE_REQUEST], 0);
-	  if (!self->priv->selection_mode)
+	  if (!priv->selection_mode)
 	    {
 	      res = FALSE;
 	      goto out;
 	    }
 
-	  start_path = gtk_tree_path_copy (self->priv->rubberband_select_first_path);
-	  end_path = gtk_tree_path_copy (self->priv->rubberband_select_last_path);
+	  start_path = gtk_tree_path_copy (priv->rubberband_select_first_path);
+	  end_path = gtk_tree_path_copy (priv->rubberband_select_last_path);
 	  if (gtk_tree_path_compare (start_path, end_path) > 0)
 	    {
 	      tmp_path = start_path;
@@ -649,10 +678,10 @@ on_button_release_event (GtkWidget *view,
 
 	  while (gtk_tree_path_compare (start_path, end_path) <= 0)
 	    {
-	      if (gtk_tree_model_get_iter (self->priv->model,
+	      if (gtk_tree_model_get_iter (priv->model,
 					   &iter, start_path))
 		{
-		  gtk_tree_model_get (self->priv->model, &iter,
+		  gtk_tree_model_get (priv->model, &iter,
 				      GD_MAIN_COLUMN_SELECTED, &is_selected,
 				      -1);
                   do_select_row (self, &iter, !is_selected);
@@ -667,9 +696,9 @@ on_button_release_event (GtkWidget *view,
 	  gtk_tree_path_free (end_path);
 	}
 
-      g_clear_pointer (&self->priv->rubberband_select_first_path,
+      g_clear_pointer (&priv->rubberband_select_first_path,
 		       gtk_tree_path_free);
-      g_clear_pointer (&self->priv->rubberband_select_last_path,
+      g_clear_pointer (&priv->rubberband_select_last_path,
 		       gtk_tree_path_free);
 
       res = TRUE;
@@ -682,19 +711,19 @@ on_button_release_event (GtkWidget *view,
       goto out;
     }
 
-  selection_mode = self->priv->selection_mode;
+  selection_mode = priv->selection_mode;
 
   if (!selection_mode)
     {
       if (event_triggers_selection_mode (event))
         {
           g_signal_emit (self, signals[SELECTION_MODE_REQUEST], 0);
-          if (!self->priv->selection_mode)
+          if (!priv->selection_mode)
             {
               res = FALSE;
               goto out;
             }
-          selection_mode = self->priv->selection_mode;
+          selection_mode = priv->selection_mode;
         }
     }
 
@@ -714,6 +743,7 @@ on_button_press_event (GtkWidget *view,
                        gpointer user_data)
 {
   GdMainView *self = user_data;
+  GdMainViewPrivate *priv;
   GdMainViewGeneric *generic = get_generic (self);
   GtkTreePath *path;
   GList *selection, *l;
@@ -721,13 +751,15 @@ on_button_press_event (GtkWidget *view,
   gboolean found = FALSE;
   gboolean force_selection;
 
+  priv = gd_main_view_get_instance_private (self);
+
   path = gd_main_view_generic_get_path_at_pos (generic, event->x, event->y);
 
   if (path != NULL)
-    self->priv->button_press_item_path = gtk_tree_path_to_string (path);
+    priv->button_press_item_path = gtk_tree_path_to_string (path);
 
   force_selection = event_triggers_selection_mode (event);
-  if (!self->priv->selection_mode && !force_selection)
+  if (!priv->selection_mode && !force_selection)
     {
       gtk_tree_path_free (path);
       return FALSE;
@@ -756,12 +788,12 @@ on_button_press_event (GtkWidget *view,
    */
   if (!found)
     {
-      self->priv->track_motion = TRUE;
-      self->priv->rubberband_select = FALSE;
-      self->priv->rubberband_select_first_path = NULL;
-      self->priv->rubberband_select_last_path = NULL;
-      self->priv->button_down_x = event->x;
-      self->priv->button_down_y = event->y;
+      priv->track_motion = TRUE;
+      priv->rubberband_select = FALSE;
+      priv->rubberband_select_first_path = NULL;
+      priv->rubberband_select_last_path = NULL;
+      priv->button_down_x = event->x;
+      priv->button_down_y = event->y;
       return TRUE;
     }
   else
@@ -774,41 +806,44 @@ on_motion_event (GtkWidget      *widget,
 		 gpointer user_data)
 {
   GdMainView *self = user_data;
+  GdMainViewPrivate *priv;
   GtkTreePath *path;
 
-  if (self->priv->track_motion)
+  priv = gd_main_view_get_instance_private (self);
+
+  if (priv->track_motion)
     {
-      if (!self->priv->rubberband_select &&
-	  (event->x - self->priv->button_down_x) * (event->x - self->priv->button_down_x) +
-	  (event->y - self->priv->button_down_y) * (event->y - self->priv->button_down_y)  >
+      if (!priv->rubberband_select &&
+	  (event->x - priv->button_down_x) * (event->x - priv->button_down_x) +
+	  (event->y - priv->button_down_y) * (event->y - priv->button_down_y)  >
 	  MAIN_VIEW_RUBBERBAND_SELECT_TRIGGER_LENGTH * MAIN_VIEW_RUBBERBAND_SELECT_TRIGGER_LENGTH)
 	{
-	  self->priv->rubberband_select = TRUE;
-	  if (self->priv->button_press_item_path)
+	  priv->rubberband_select = TRUE;
+	  if (priv->button_press_item_path)
 	    {
-	      self->priv->rubberband_select_first_path =
-		gtk_tree_path_new_from_string (self->priv->button_press_item_path);
+	      priv->rubberband_select_first_path =
+		gtk_tree_path_new_from_string (priv->button_press_item_path);
 	    }
 	}
 
-      if (self->priv->rubberband_select)
+      if (priv->rubberband_select)
 	{
 	  path = gd_main_view_generic_get_path_at_pos (get_generic (self), event->x, event->y);
 	  if (path != NULL)
 	    {
-	      if (self->priv->rubberband_select_first_path == NULL)
-		self->priv->rubberband_select_first_path = gtk_tree_path_copy (path);
+	      if (priv->rubberband_select_first_path == NULL)
+		priv->rubberband_select_first_path = gtk_tree_path_copy (path);
 
-	      if (self->priv->rubberband_select_last_path == NULL ||
-		  gtk_tree_path_compare (self->priv->rubberband_select_last_path, path) != 0)
+	      if (priv->rubberband_select_last_path == NULL ||
+		  gtk_tree_path_compare (priv->rubberband_select_last_path, path) != 0)
 		{
-		  if (self->priv->rubberband_select_last_path)
-		    gtk_tree_path_free (self->priv->rubberband_select_last_path);
-		  self->priv->rubberband_select_last_path = path;
+		  if (priv->rubberband_select_last_path)
+		    gtk_tree_path_free (priv->rubberband_select_last_path);
+		  priv->rubberband_select_last_path = path;
 
 		  gd_main_view_generic_set_rubberband_range (get_generic (self),
-							     self->priv->rubberband_select_first_path,
-							     self->priv->rubberband_select_last_path);
+							     priv->rubberband_select_first_path,
+							     priv->rubberband_select_last_path);
 		}
 	      else
 		gtk_tree_path_free (path);
@@ -841,8 +876,11 @@ on_drag_begin (GdMainViewGeneric *generic,
                gpointer user_data)
 {
   GdMainView *self = user_data;
+  GdMainViewPrivate *priv;
 
-  if (self->priv->button_press_item_path != NULL)
+  priv = gd_main_view_get_instance_private (self);
+
+  if (priv->button_press_item_path != NULL)
     {
       gboolean res;
       GtkTreeIter iter;
@@ -851,15 +889,15 @@ on_drag_begin (GdMainViewGeneric *generic,
       GtkTreePath *path;
       GType column_gtype;
 
-      path = gtk_tree_path_new_from_string (self->priv->button_press_item_path);
-      res = gtk_tree_model_get_iter (self->priv->model,
+      path = gtk_tree_path_new_from_string (priv->button_press_item_path);
+      res = gtk_tree_model_get_iter (priv->model,
                                      &iter, path);
       if (res)
-        gtk_tree_model_get (self->priv->model, &iter,
+        gtk_tree_model_get (priv->model, &iter,
                             GD_MAIN_COLUMN_ICON, &data,
                             -1);
 
-      column_gtype = gtk_tree_model_get_column_type (self->priv->model,
+      column_gtype = gtk_tree_model_get_column_type (priv->model,
                                                      GD_MAIN_COLUMN_ICON);
 
       if (column_gtype == CAIRO_GOBJECT_TYPE_SURFACE)
@@ -875,7 +913,7 @@ on_drag_begin (GdMainViewGeneric *generic,
       else
         g_assert_not_reached ();
 
-      if (self->priv->selection_mode &&
+      if (priv->selection_mode &&
           surface != NULL)
         {
           GList *selection;
@@ -911,13 +949,16 @@ static void
 on_view_path_activated (GdMainView *self,
                         GtkTreePath *path)
 {
+  GdMainViewPrivate *priv;
   GdkModifierType state;
+
+  priv = gd_main_view_get_instance_private (self);
 
   gtk_get_current_event_state (&state);
 
-  if (self->priv->selection_mode || (state & GDK_CONTROL_MASK) != 0)
+  if (priv->selection_mode || (state & GDK_CONTROL_MASK) != 0)
     {
-      if (!self->priv->selection_mode)
+      if (!priv->selection_mode)
 	g_signal_emit (self, signals[SELECTION_MODE_REQUEST], 0);
       toggle_selection_for_path (self, path, ((state & GDK_SHIFT_MASK) != 0));
     }
@@ -966,57 +1007,66 @@ on_row_deleted_cb (GtkTreeModel *model,
 static void
 gd_main_view_apply_model (GdMainView *self)
 {
+  GdMainViewPrivate *priv;
   GdMainViewGeneric *generic = get_generic (self);
-  gd_main_view_generic_set_model (generic, self->priv->model);
+
+  priv = gd_main_view_get_instance_private (self);
+  gd_main_view_generic_set_model (generic, priv->model);
 }
 
 static void
 gd_main_view_apply_selection_mode (GdMainView *self)
 {
+  GdMainViewPrivate *priv;
   GdMainViewGeneric *generic = get_generic (self);
 
-  gd_main_view_generic_set_selection_mode (generic, self->priv->selection_mode);
+  priv = gd_main_view_get_instance_private (self);
 
-  if (!self->priv->selection_mode &&
-      self->priv->model != NULL)
+  gd_main_view_generic_set_selection_mode (generic, priv->selection_mode);
+
+  if (!priv->selection_mode &&
+      priv->model != NULL)
     gd_main_view_unselect_all (self);
 }
 
 static void
 gd_main_view_rebuild (GdMainView *self)
 {
+  GdMainViewPrivate *priv;
   GtkStyleContext *context;
 
-  if (self->priv->current_view != NULL)
-    gtk_widget_destroy (self->priv->current_view);
+  priv = gd_main_view_get_instance_private (self);
 
-  if (self->priv->current_type == GD_MAIN_VIEW_ICON)
+  if (priv->current_view != NULL)
+    gtk_widget_destroy (priv->current_view);
+
+  if (priv->current_type == GD_MAIN_VIEW_ICON)
     {
-      self->priv->current_view = gd_main_icon_view_new ();
-      g_signal_connect (self->priv->current_view, "item-activated",
+      priv->current_view = gd_main_icon_view_new ();
+      g_signal_connect (priv->current_view, "item-activated",
                         G_CALLBACK (on_icon_view_item_activated), self);
     }
   else
     {
-      self->priv->current_view = gd_main_list_view_new ();
-      g_signal_connect (self->priv->current_view, "row-activated",
+      priv->current_view = gd_main_list_view_new ();
+      g_signal_connect (priv->current_view, "row-activated",
                         G_CALLBACK (on_list_view_row_activated), self);
     }
 
-  context = gtk_widget_get_style_context (self->priv->current_view);
+  context = gtk_widget_get_style_context (priv->current_view);
   gtk_style_context_add_class (context, "content-view");
 
-  gtk_container_add (GTK_CONTAINER (self), self->priv->current_view);
+  gtk_container_add (GTK_CONTAINER (self), priv->current_view);
 
-  g_signal_connect (self->priv->current_view, "button-press-event",
+  g_signal_connect (priv->current_view, "button-press-event",
                     G_CALLBACK (on_button_press_event), self);
-  g_signal_connect (self->priv->current_view, "button-release-event",
+  g_signal_connect (priv->current_view, "button-release-event",
                     G_CALLBACK (on_button_release_event), self);
-  g_signal_connect (self->priv->current_view, "motion-notify-event",
+  g_signal_connect (priv->current_view, "motion-notify-event",
                     G_CALLBACK (on_motion_event), self);
-  g_signal_connect_after (self->priv->current_view, "drag-begin",
+  g_signal_connect_after (priv->current_view, "drag-begin",
                           G_CALLBACK (on_drag_begin), self);
-  g_signal_connect (self->priv->current_view, "view-selection-changed",
+  g_signal_connect (priv->current_view, "view-selection-changed",
                     G_CALLBACK (on_view_selection_changed), self);
 
   gd_main_view_apply_model (self);
@@ -1037,9 +1087,13 @@ void
 gd_main_view_set_view_type (GdMainView *self,
                             GdMainViewType type)
 {
-  if (type != self->priv->current_type)
+  GdMainViewPrivate *priv;
+
+  priv = gd_main_view_get_instance_private (self);
+
+  if (type != priv->current_type)
     {
-      self->priv->current_type = type;
+      priv->current_type = type;
       gd_main_view_rebuild (self);
 
       g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_VIEW_TYPE]);
@@ -1049,16 +1103,23 @@ gd_main_view_set_view_type (GdMainView *self,
 GdMainViewType
 gd_main_view_get_view_type (GdMainView *self)
 {
-  return self->priv->current_type;
+  GdMainViewPrivate *priv;
+
+  priv = gd_main_view_get_instance_private (self);
+  return priv->current_type;
 }
 
 void
 gd_main_view_set_selection_mode (GdMainView *self,
                                  gboolean selection_mode)
 {
-  if (selection_mode != self->priv->selection_mode)
+  GdMainViewPrivate *priv;
+
+  priv = gd_main_view_get_instance_private (self);
+
+  if (selection_mode != priv->selection_mode)
     {
-      self->priv->selection_mode = selection_mode;
+      priv->selection_mode = selection_mode;
       gd_main_view_apply_selection_mode (self);
       g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_SELECTION_MODE]);
     }
@@ -1067,7 +1128,10 @@ gd_main_view_set_selection_mode (GdMainView *self,
 gboolean
 gd_main_view_get_selection_mode (GdMainView *self)
 {
-  return self->priv->selection_mode;
+  GdMainViewPrivate *priv;
+
+  priv = gd_main_view_get_instance_private (self);
+  return priv->selection_mode;
 }
 
 /**
@@ -1080,23 +1144,27 @@ void
 gd_main_view_set_model (GdMainView *self,
                         GtkTreeModel *model)
 {
-  if (model != self->priv->model)
+  GdMainViewPrivate *priv;
+
+  priv = gd_main_view_get_instance_private (self);
+
+  if (model != priv->model)
     {
-      if (self->priv->model)
-        g_signal_handlers_disconnect_by_func (self->priv->model,
+      if (priv->model)
+        g_signal_handlers_disconnect_by_func (priv->model,
                                               on_row_deleted_cb, self);
 
-      g_clear_object (&self->priv->model);
+      g_clear_object (&priv->model);
 
       if (model)
         {
-          self->priv->model = g_object_ref (model);
-          g_signal_connect (self->priv->model, "row-deleted",
+          priv->model = g_object_ref (model);
+          g_signal_connect (priv->model, "row-deleted",
                             G_CALLBACK (on_row_deleted_cb), self);
         }
       else
         {
-          self->priv->model = NULL;
+          priv->model = NULL;
         }
 
       gd_main_view_apply_model (self);
@@ -1113,7 +1181,10 @@ gd_main_view_set_model (GdMainView *self,
 GtkTreeModel *
 gd_main_view_get_model (GdMainView *self)
 {
-  return self->priv->model;
+  GdMainViewPrivate *priv;
+
+  priv = gd_main_view_get_instance_private (self);
+  return priv->model;
 }
 
 /**
@@ -1125,7 +1196,10 @@ gd_main_view_get_model (GdMainView *self)
 GtkWidget *
 gd_main_view_get_generic_view (GdMainView *self)
 {
-  return self->priv->current_view;
+  GdMainViewPrivate *priv;
+
+  priv = gd_main_view_get_instance_private (self);
+  return priv->current_view;
 }
 
 static gboolean
@@ -1156,9 +1230,12 @@ build_selection_list_foreach (GtkTreeModel *model,
 GList *
 gd_main_view_get_selection (GdMainView *self)
 {
+  GdMainViewPrivate *priv;
   GList *retval = NULL;
 
-  gtk_tree_model_foreach (self->priv->model,
+  priv = gd_main_view_get_instance_private (self);
+
+  gtk_tree_model_foreach (priv->model,
                           build_selection_list_foreach,
                           &retval);
 

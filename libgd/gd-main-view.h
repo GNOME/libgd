@@ -61,8 +61,6 @@ typedef enum {
 
 struct _GdMainView {
   GtkScrolledWindow parent;
-
-  GdMainViewPrivate *priv;
 };
 
 struct _GdMainViewClass {
