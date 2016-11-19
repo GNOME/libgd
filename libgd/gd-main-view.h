@@ -29,29 +29,8 @@
 G_BEGIN_DECLS
 
 #define GD_TYPE_MAIN_VIEW gd_main_view_get_type()
+G_DECLARE_DERIVABLE_TYPE (GdMainView, gd_main_view, GD, MAIN_VIEW, GtkScrolledWindow)
 
-#define GD_MAIN_VIEW(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-   GD_TYPE_MAIN_VIEW, GdMainView))
-
-#define GD_MAIN_VIEW_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), \
-   GD_TYPE_MAIN_VIEW, GdMainViewIface))
-
-#define GD_IS_MAIN_VIEW(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-   GD_TYPE_MAIN_VIEW))
-
-#define GD_IS_MAIN_VIEW_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-   GD_TYPE_MAIN_VIEW))
-
-#define GD_MAIN_VIEW_GET_IFACE(obj) \
-  (G_TYPE_INSTANCE_GET_INTERFACE ((obj), \
-   GD_TYPE_MAIN_VIEW, GdMainViewIface))
-
-typedef struct _GdMainView GdMainView;
-typedef struct _GdMainViewClass GdMainViewClass;
 typedef struct _GdMainViewPrivate GdMainViewPrivate;
 
 typedef enum {
@@ -59,15 +38,9 @@ typedef enum {
   GD_MAIN_VIEW_LIST
 } GdMainViewType;
 
-struct _GdMainView {
-  GtkScrolledWindow parent;
-};
-
 struct _GdMainViewClass {
   GtkScrolledWindowClass parent_class;
 };
-
-GType gd_main_view_get_type (void) G_GNUC_CONST;
 
 GdMainView * gd_main_view_new (GdMainViewType type);
 void         gd_main_view_set_view_type (GdMainView *self,
