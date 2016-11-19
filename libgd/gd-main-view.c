@@ -31,6 +31,8 @@
 #define MAIN_VIEW_DND_ICON_OFFSET 20
 #define MAIN_VIEW_RUBBERBAND_SELECT_TRIGGER_LENGTH 32
 
+typedef struct _GdMainViewPrivate GdMainViewPrivate;
+
 struct _GdMainViewPrivate {
   GdMainViewType current_type;
   gboolean selection_mode;

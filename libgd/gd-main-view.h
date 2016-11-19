@@ -31,8 +31,6 @@ G_BEGIN_DECLS
 #define GD_TYPE_MAIN_VIEW gd_main_view_get_type()
 G_DECLARE_DERIVABLE_TYPE (GdMainView, gd_main_view, GD, MAIN_VIEW, GtkScrolledWindow)
 
-typedef struct _GdMainViewPrivate GdMainViewPrivate;
-
 typedef enum {
   GD_MAIN_VIEW_ICON,
   GD_MAIN_VIEW_LIST
