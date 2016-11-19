@@ -67,7 +67,7 @@ enum {
 static GParamSpec *properties[NUM_PROPERTIES] = { NULL, };
 static guint signals[NUM_SIGNALS] = { 0, };
 
-G_DEFINE_TYPE (GdMainView, gd_main_view, GTK_TYPE_SCROLLED_WINDOW)
+G_DEFINE_TYPE_WITH_PRIVATE (GdMainView, gd_main_view, GTK_TYPE_SCROLLED_WINDOW)
 
 static void
 gd_main_view_dispose (GObject *obj)
@@ -101,7 +101,7 @@ gd_main_view_init (GdMainView *self)
 {
   GtkStyleContext *context;
 
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_MAIN_VIEW, GdMainViewPrivate);
+  self->priv = gd_main_view_get_instance_private (self);
 
   /* so that we get constructed with the right view even at startup */
   self->priv->current_type = MAIN_VIEW_TYPE_INITIAL;
@@ -229,7 +229,6 @@ gd_main_view_class_init (GdMainViewClass *klass)
                   0, NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 
-  g_type_class_add_private (klass, sizeof (GdMainViewPrivate));
   g_object_class_install_properties (oclass, NUM_PROPERTIES, properties);
 }
 
