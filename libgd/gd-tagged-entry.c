@@ -925,7 +925,7 @@ gd_tagged_entry_add_default_style (void)
 
   gtk_style_context_add_provider_for_screen (gdk_screen_get_default (),
                                              GTK_STYLE_PROVIDER (provider),
-                                             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+                                             GTK_STYLE_PROVIDER_PRIORITY_THEME);
 
   g_object_unref (provider);
 }
