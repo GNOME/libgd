@@ -41,6 +41,7 @@ struct _GdMainIconViewPrivate {
 
 static void gd_main_view_generic_iface_init (GdMainViewGenericIface *iface);
 G_DEFINE_TYPE_WITH_CODE (GdMainIconView, gd_main_icon_view, GTK_TYPE_ICON_VIEW,
+                         G_ADD_PRIVATE (GdMainIconView)
                          G_IMPLEMENT_INTERFACE (GD_TYPE_MAIN_VIEW_GENERIC,
                                                 gd_main_view_generic_iface_init))
 
@@ -339,9 +340,6 @@ gd_main_icon_view_class_init (GdMainIconViewClass *klass)
                                                              -1, G_MAXINT, 40,
                                                              G_PARAM_READWRITE));
 
-  g_type_class_add_private (klass, sizeof (GdMainIconViewPrivate));
-
-
   for (i = 0; i < G_N_ELEMENTS (activate_modifiers); i++)
     {
       gtk_binding_entry_add_signal (binding_set, GDK_KEY_space, activate_modifiers[i],
@@ -360,7 +358,7 @@ gd_main_icon_view_class_init (GdMainIconViewClass *klass)
 static void
 gd_main_icon_view_init (GdMainIconView *self)
 {
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_MAIN_ICON_VIEW, GdMainIconViewPrivate);
+  self->priv = gd_main_icon_view_get_instance_private (self);
 
   g_signal_connect (self, "notify::model",
 		    G_CALLBACK (set_attributes_from_model), NULL);
