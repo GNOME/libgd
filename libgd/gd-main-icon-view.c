@@ -61,34 +61,37 @@ get_source_row (GdkDragContext *context)
 static void
 set_attributes_from_model (GdMainIconView *self)
 {
+  GdMainIconViewPrivate *priv;
   GtkTreeModel *model = gtk_icon_view_get_model (GTK_ICON_VIEW (self));
   GtkCellLayout *layout = GTK_CELL_LAYOUT (self);
   GType icon_gtype;
 
+  priv = gd_main_icon_view_get_instance_private (self);
+
   if (!model)
     return;
 
-  gtk_cell_layout_clear_attributes (layout, self->priv->pixbuf_cell);
-  gtk_cell_layout_clear_attributes (layout, self->priv->text_cell);
+  gtk_cell_layout_clear_attributes (layout, priv->pixbuf_cell);
+  gtk_cell_layout_clear_attributes (layout, priv->text_cell);
 
-  gtk_cell_layout_add_attribute (layout, self->priv->pixbuf_cell,
+  gtk_cell_layout_add_attribute (layout, priv->pixbuf_cell,
                                  "active", GD_MAIN_COLUMN_SELECTED);
-  gtk_cell_layout_add_attribute (layout, self->priv->pixbuf_cell,
+  gtk_cell_layout_add_attribute (layout, priv->pixbuf_cell,
                                  "pulse", GD_MAIN_COLUMN_PULSE);
 
   icon_gtype = gtk_tree_model_get_column_type (model, GD_MAIN_COLUMN_ICON);
   if (icon_gtype == GDK_TYPE_PIXBUF)
-    gtk_cell_layout_add_attribute (layout, self->priv->pixbuf_cell,
+    gtk_cell_layout_add_attribute (layout, priv->pixbuf_cell,
 				   "pixbuf", GD_MAIN_COLUMN_ICON);
   else if (icon_gtype == CAIRO_GOBJECT_TYPE_SURFACE)
-    gtk_cell_layout_add_attribute (layout, self->priv->pixbuf_cell,
+    gtk_cell_layout_add_attribute (layout, priv->pixbuf_cell,
 				   "surface", GD_MAIN_COLUMN_ICON);
   else
     g_assert_not_reached ();
 
-  gtk_cell_layout_add_attribute (layout, self->priv->text_cell,
+  gtk_cell_layout_add_attribute (layout, priv->text_cell,
                                  "text", GD_MAIN_COLUMN_PRIMARY_TEXT);
-  gtk_cell_layout_add_attribute (layout, self->priv->text_cell,
+  gtk_cell_layout_add_attribute (layout, priv->text_cell,
                                  "line-two", GD_MAIN_COLUMN_SECONDARY_TEXT);
 }
 
@@ -100,12 +103,15 @@ gd_main_icon_view_drag_data_get (GtkWidget *widget,
                                  guint time)
 {
   GdMainIconView *self = GD_MAIN_ICON_VIEW (widget);
+  GdMainIconViewPrivate *priv;
   GtkTreeModel *model = gtk_icon_view_get_model (GTK_ICON_VIEW (self));
+
+  priv = gd_main_icon_view_get_instance_private (self);
 
   if (info != 0)
     return;
 
-  _gd_main_view_generic_dnd_common (model, self->priv->selection_mode,
+  _gd_main_view_generic_dnd_common (model, priv->selection_mode,
                                     get_source_row (drag_context), data);
 
   GTK_WIDGET_CLASS (gd_main_icon_view_parent_class)->drag_data_get (widget, drag_context,
@@ -116,10 +122,13 @@ static void
 gd_main_icon_view_constructed (GObject *obj)
 {
   GdMainIconView *self = GD_MAIN_ICON_VIEW (obj);
+  GdMainIconViewPrivate *priv;
   GtkCellRenderer *cell;
   const GtkTargetEntry targets[] = {
     { (char *) "text/uri-list", GTK_TARGET_OTHER_APP, 0 }
   };
+
+  priv = gd_main_icon_view_get_instance_private (self);
 
   G_OBJECT_CLASS (gd_main_icon_view_parent_class)->constructed (obj);
 
@@ -132,14 +141,14 @@ gd_main_icon_view_constructed (GObject *obj)
                 "margin", VIEW_MARGIN,
                 NULL);
 
-  self->priv->pixbuf_cell = cell = gd_toggle_pixbuf_renderer_new ();
+  priv->pixbuf_cell = cell = gd_toggle_pixbuf_renderer_new ();
   g_object_set (cell,
                 "xalign", 0.5,
                 "yalign", 0.5,
                 NULL);
   gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (self), cell, FALSE);
 
-  self->priv->text_cell = cell = gd_two_lines_renderer_new ();
+  priv->text_cell = cell = gd_two_lines_renderer_new ();
   g_object_set (cell,
                 "xalign", 0.5,
                 "alignment", PANGO_ALIGN_CENTER,
@@ -358,8 +367,6 @@ gd_main_icon_view_class_init (GdMainIconViewClass *klass)
 static void
 gd_main_icon_view_init (GdMainIconView *self)
 {
-  self->priv = gd_main_icon_view_get_instance_private (self);
-
   g_signal_connect (self, "notify::model",
 		    G_CALLBACK (set_attributes_from_model), NULL);
 }
@@ -377,10 +384,13 @@ gd_main_icon_view_set_selection_mode (GdMainViewGeneric *mv,
                                       gboolean selection_mode)
 {
   GdMainIconView *self = GD_MAIN_ICON_VIEW (mv);
+  GdMainIconViewPrivate *priv;
 
-  self->priv->selection_mode = selection_mode;
+  priv = gd_main_icon_view_get_instance_private (self);
 
-  g_object_set (self->priv->pixbuf_cell,
+  priv->selection_mode = selection_mode;
+
+  g_object_set (priv->pixbuf_cell,
                 "toggle-visible", selection_mode,
                 NULL);
   gtk_widget_queue_draw (GTK_WIDGET (self));

@@ -56,8 +56,6 @@ typedef struct _GdMainIconViewPrivate GdMainIconViewPrivate;
 struct _GdMainIconView
 {
   GtkIconView parent;
-
-  GdMainIconViewPrivate *priv;
 };
 
 struct _GdMainIconViewClass
