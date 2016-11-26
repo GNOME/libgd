@@ -98,13 +98,6 @@ AC_DEFUN([LIBGD_INIT], [
         AC_DEFINE([LIBGD_NOTIFICATION], [1], [Description])
     ])
 
-    # stack:
-    AM_CONDITIONAL([LIBGD_STACK],[_LIBGD_IF_OPTION_SET([stack],[true],[false])])
-    _LIBGD_IF_OPTION_SET([stack],[
-        _LIBGD_SET_OPTION([_header-button])
-        AC_DEFINE([LIBGD_STACK], [1], [Description])
-    ])
-
     # tagged-entry: Gtk+ widget
     AM_CONDITIONAL([LIBGD_TAGGED_ENTRY],[_LIBGD_IF_OPTION_SET([tagged-entry],[true],[false])])
     _LIBGD_IF_OPTION_SET([tagged-entry],[

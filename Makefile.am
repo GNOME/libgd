@@ -152,27 +152,6 @@ nodist_libgd_la_SOURCES += $(notification_sources)
 EXTRA_DIST += $(notification_sources)
 endif
 
-if LIBGD_STACK
-stack_sources =				\
-	libgd/gd-stack.c			\
-	libgd/gd-stack.h			\
-	libgd/gd-stack-switcher.c		\
-	libgd/gd-stack-switcher.h		\
-	$(NULL)
-
-nodist_libgd_la_SOURCES += $(stack_sources)
-EXTRA_DIST += $(stack_sources)
-
-noinst_PROGRAMS += test-stack
-test_stack_SOURCES =				\
-	test-stack.c				\
-	$(NULL)
-test_stack_LDADD =				\
-	$(LIBGD_LIBS)				\
-	libgd.la				\
-	$(NULL)
-endif
-
 if LIBGD_TAGGED_ENTRY
 tagged_entry_resource_files = $(shell glib-compile-resources --sourcedir=$(srcdir)/libgd --generate-dependencies $(srcdir)/libgd/gd-tagged-entry.gresource.xml)
 libgd/gd-tagged-entry-resources.c: libgd/gd-tagged-entry.gresource.xml $(tagged_entry_resource_files) libgd/gd-tagged-entry-resources.h

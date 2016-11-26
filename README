@@ -103,8 +103,6 @@ LIBGD_INIT options
 
 - notification
 
-- stack
-
 - static
 
 - tagged-entry

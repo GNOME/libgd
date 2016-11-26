@@ -66,11 +66,6 @@
 # include "gd-notification.h"
 #endif
 
-#ifdef LIBGD_STACK
-# include "gd-stack.h"
-# include "gd-stack-switcher.h"
-#endif
-
 /**
  * gd_ensure_types:
  *
@@ -124,11 +119,6 @@ gd_ensure_types (void)
 
 #ifdef LIBGD_NOTIFICATION
   g_type_ensure (GD_TYPE_NOTIFICATION);
-#endif
-
-#ifdef LIBGD_STACK
-  g_type_ensure (GD_TYPE_STACK);
-  g_type_ensure (GD_TYPE_STACK_SWITCHER);
 #endif
 }
 

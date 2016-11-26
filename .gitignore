@@ -8,7 +8,6 @@ Gd-1.0.typelib
 gd.gresource.xml
 gd-resources.*
 test-header-bar
-test-stack
 test-tagged-entry
 Makefile
 Makefile.in
