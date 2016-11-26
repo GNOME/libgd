@@ -98,12 +98,6 @@ AC_DEFUN([LIBGD_INIT], [
         AC_DEFINE([LIBGD_NOTIFICATION], [1], [Description])
     ])
 
-    # revealer:
-    AM_CONDITIONAL([LIBGD_REVEALER],[_LIBGD_IF_OPTION_SET([revealer],[true],[false])])
-    _LIBGD_IF_OPTION_SET([revealer],[
-        AC_DEFINE([LIBGD_REVEALER], [1], [Description])
-    ])
-
     # stack:
     AM_CONDITIONAL([LIBGD_STACK],[_LIBGD_IF_OPTION_SET([stack],[true],[false])])
     _LIBGD_IF_OPTION_SET([stack],[

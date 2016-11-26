@@ -78,10 +78,6 @@ G_BEGIN_DECLS
 # include <libgd/gd-notification.h>
 #endif
 
-#ifdef LIBGD_REVEALER
-# include <libgd/gd-revealer.h>
-#endif
-
 #ifdef LIBGD_STACK
 # include <libgd/gd-stack.h>
 # include <libgd/gd-stack-switcher.h>
