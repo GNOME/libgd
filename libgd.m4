@@ -72,13 +72,6 @@ AC_DEFUN([LIBGD_INIT], [
         AC_DEFINE([LIBGD_MAIN_LIST_VIEW], [1], [Description])
     ])
 
-    # main-toolbar:
-    AM_CONDITIONAL([LIBGD_MAIN_TOOLBAR],[_LIBGD_IF_OPTION_SET([main-toolbar],[true],[false])])
-    _LIBGD_IF_OPTION_SET([main-toolbar],[
-        _LIBGD_SET_OPTION([_header-button])
-        AC_DEFINE([LIBGD_MAIN_TOOLBAR], [1], [Description])
-    ])
-
     # margin-container:
     AM_CONDITIONAL([LIBGD_MARGIN_CONTAINER],[_LIBGD_IF_OPTION_SET([margin-container],[true],[false])])
     _LIBGD_IF_OPTION_SET([margin-container],[

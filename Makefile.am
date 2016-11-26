@@ -93,16 +93,6 @@ nodist_libgd_la_SOURCES += $(main_view_sources)
 EXTRA_DIST += $(main_view_sources)
 endif
 
-if LIBGD_MAIN_TOOLBAR
-main_toolbar_sources =				\
-	libgd/gd-main-toolbar.c			\
-	libgd/gd-main-toolbar.h			\
-	$(NULL)
-
-nodist_libgd_la_SOURCES += $(main_toolbar_sources)
-EXTRA_DIST += $(main_toolbar_sources)
-endif
-
 if LIBGD__HEADER_BUTTON
 header_button_sources =				\
 	libgd/gd-header-button.c		\

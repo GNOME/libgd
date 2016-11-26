@@ -42,10 +42,6 @@
 # include "gd-main-view.h"
 #endif
 
-#ifdef LIBGD_MAIN_TOOLBAR
-# include "gd-main-toolbar.h"
-#endif
-
 #ifdef LIBGD__HEADER_BUTTON
 # include "gd-header-button.h"
 #endif
@@ -88,10 +84,6 @@ gd_ensure_types (void)
 
 #ifdef LIBGD_MAIN_VIEW
   g_type_ensure (GD_TYPE_MAIN_VIEW);
-#endif
-
-#ifdef LIBGD_MAIN_TOOLBAR
-  g_type_ensure (GD_TYPE_MAIN_TOOLBAR);
 #endif
 
 #ifdef LIBGD__HEADER_BUTTON

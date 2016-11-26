@@ -54,10 +54,6 @@ G_BEGIN_DECLS
 # include <libgd/gd-main-view.h>
 #endif
 
-#ifdef LIBGD_MAIN_TOOLBAR
-# include <libgd/gd-main-toolbar.h>
-#endif
-
 #ifdef LIBGD__HEADER_BUTTON
 # include <libgd/gd-header-button.h>
 #endif
