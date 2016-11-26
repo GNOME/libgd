@@ -106,12 +106,6 @@ AC_DEFUN([LIBGD_INIT], [
         GOBJECT_INTROSPECTION_REQUIRE([0.9.6])
     ])
 
-    # _header-button:
-    AM_CONDITIONAL([LIBGD__HEADER_BUTTON],[_LIBGD_IF_OPTION_SET([_header-button],[true],[false])])
-    _LIBGD_IF_OPTION_SET([_header-button],[
-        AC_DEFINE([LIBGD__HEADER_BUTTON], [1], [Description])
-    ])
-
     # _view-common:
     AM_CONDITIONAL([LIBGD__VIEW_COMMON],[_LIBGD_IF_OPTION_SET([_view-common],[true],[false])])
     _LIBGD_IF_OPTION_SET([_view-common],[

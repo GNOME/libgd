@@ -42,10 +42,6 @@
 # include "gd-main-view.h"
 #endif
 
-#ifdef LIBGD__HEADER_BUTTON
-# include "gd-header-button.h"
-#endif
-
 #ifdef LIBGD_MARGIN_CONTAINER
 # include "gd-margin-container.h"
 #endif
@@ -84,13 +80,6 @@ gd_ensure_types (void)
 
 #ifdef LIBGD_MAIN_VIEW
   g_type_ensure (GD_TYPE_MAIN_VIEW);
-#endif
-
-#ifdef LIBGD__HEADER_BUTTON
-  g_type_ensure (GD_TYPE_HEADER_SIMPLE_BUTTON);
-  g_type_ensure (GD_TYPE_HEADER_MENU_BUTTON);
-  g_type_ensure (GD_TYPE_HEADER_TOGGLE_BUTTON);
-  g_type_ensure (GD_TYPE_HEADER_RADIO_BUTTON);
 #endif
 
 #ifdef LIBGD_MARGIN_CONTAINER

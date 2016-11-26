@@ -93,16 +93,6 @@ nodist_libgd_la_SOURCES += $(main_view_sources)
 EXTRA_DIST += $(main_view_sources)
 endif
 
-if LIBGD__HEADER_BUTTON
-header_button_sources =				\
-	libgd/gd-header-button.c		\
-	libgd/gd-header-button.h		\
-	$(NULL)
-
-nodist_libgd_la_SOURCES += $(header_button_sources)
-EXTRA_DIST += $(header_button_sources)
-endif
-
 if LIBGD_MARGIN_CONTAINER
 margin_container_sources =			\
 	libgd/gd-margin-container.c		\
