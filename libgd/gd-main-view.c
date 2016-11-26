@@ -1026,9 +1026,12 @@ gd_main_view_apply_selection_mode (GdMainView *self)
 
   gd_main_view_generic_set_selection_mode (generic, priv->selection_mode);
 
-  if (!priv->selection_mode &&
-      priv->model != NULL)
-    gd_main_view_unselect_all (self);
+  if (!priv->selection_mode)
+    {
+      g_clear_pointer (&priv->last_selected_id, g_free);
+      if (priv->model != NULL)
+        gd_main_view_unselect_all (self);
+    }
 }
 
 static void
