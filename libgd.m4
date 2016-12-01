@@ -107,6 +107,12 @@ AC_DEFUN([LIBGD_INIT], [
         GOBJECT_INTROSPECTION_REQUIRE([0.9.6])
     ])
 
+    # _box-common:
+    AM_CONDITIONAL([LIBGD__BOX_COMMON],[_LIBGD_IF_OPTION_SET([_box-common],[true],[false])])
+    _LIBGD_IF_OPTION_SET([_box-common],[
+        AC_DEFINE([LIBGD__BOX_COMMON], [1], [Description])
+    ])
+
     # _view-common:
     AM_CONDITIONAL([LIBGD__VIEW_COMMON],[_LIBGD_IF_OPTION_SET([_view-common],[true],[false])])
     _LIBGD_IF_OPTION_SET([_view-common],[

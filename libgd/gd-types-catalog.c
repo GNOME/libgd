@@ -23,6 +23,12 @@
 
 #include "gd-types-catalog.h"
 
+#ifdef LIBGD__BOX_COMMON
+# include "gd-main-box-child.h"
+# include "gd-main-box-generic.h"
+# include "gd-main-box-item.h"
+#endif
+
 #ifdef LIBGD__VIEW_COMMON
 # include "gd-main-view-generic.h"
 # include "gd-styled-text-renderer.h"
@@ -63,6 +69,12 @@
 void
 gd_ensure_types (void)
 {
+#ifdef LIBGD__BOX_COMMON
+  g_type_ensure (GD_TYPE_MAIN_BOX_CHILD);
+  g_type_ensure (GD_TYPE_MAIN_BOX_GENERIC);
+  g_type_ensure (GD_TYPE_MAIN_BOX_ITEM);
+#endif
+
 #ifdef LIBGD__VIEW_COMMON
   g_type_ensure (GD_TYPE_MAIN_VIEW_GENERIC);
   g_type_ensure (GD_TYPE_STYLED_TEXT_RENDERER);

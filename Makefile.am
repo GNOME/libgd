@@ -47,6 +47,20 @@ nodist_libgd_la_SOURCES += $(gtk_hacks_sources)
 EXTRA_DIST += $(gtk_hacks_sources)
 endif
 
+if LIBGD__BOX_COMMON
+box_common_sources =				\
+	libgd/gd-main-box-child.c		\
+	libgd/gd-main-box-child.h		\
+	libgd/gd-main-box-generic.c		\
+	libgd/gd-main-box-generic.h		\
+	libgd/gd-main-box-item.c		\
+	libgd/gd-main-box-item.h		\
+	$(NULL)
+
+nodist_libgd_la_SOURCES += $(box_common_sources)
+EXTRA_DIST += $(box_common_sources)
+endif
+
 if LIBGD__VIEW_COMMON
 view_common_sources =				\
 	libgd/gd-main-view-generic.c		\

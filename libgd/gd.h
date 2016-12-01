@@ -35,6 +35,12 @@ G_BEGIN_DECLS
 # include <libgd/gd-entry-focus-hack.h>
 #endif
 
+#ifdef LIBGD__BOX_COMMON
+# include <libgd/gd-main-box-child.h>
+# include <libgd/gd-main-box-generic.h>
+# include <libgd/gd-main-box-item.h>
+#endif
+
 #ifdef LIBGD__VIEW_COMMON
 # include <libgd/gd-main-view-generic.h>
 # include <libgd/gd-styled-text-renderer.h>
