@@ -29,6 +29,11 @@
 # include "gd-main-box-item.h"
 #endif
 
+#ifdef LIBGD_MAIN_ICON_BOX
+# include "gd-main-icon-box.h"
+# include "gd-main-icon-box-child.h"
+#endif
+
 #ifdef LIBGD__VIEW_COMMON
 # include "gd-main-view-generic.h"
 # include "gd-styled-text-renderer.h"
@@ -73,6 +78,11 @@ gd_ensure_types (void)
   g_type_ensure (GD_TYPE_MAIN_BOX_CHILD);
   g_type_ensure (GD_TYPE_MAIN_BOX_GENERIC);
   g_type_ensure (GD_TYPE_MAIN_BOX_ITEM);
+#endif
+
+#ifdef LIBGD_MAIN_ICON_BOX
+  g_type_ensure (GD_TYPE_MAIN_ICON_BOX);
+  g_type_ensure (GD_TYPE_MAIN_ICON_BOX_CHILD);
 #endif
 
 #ifdef LIBGD__VIEW_COMMON
