@@ -50,6 +50,13 @@ AC_DEFUN([LIBGD_INIT], [
         AC_DEFINE([LIBGD_GTK_HACKS], [1], [Description])
     ])
 
+    # main-box:
+    AM_CONDITIONAL([LIBGD_MAIN_BOX],[_LIBGD_IF_OPTION_SET([main-box],[true],[false])])
+    _LIBGD_IF_OPTION_SET([main-box],[
+        _LIBGD_SET_OPTION([main-icon-box])
+        AC_DEFINE([LIBGD_MAIN_BOX], [1], [Description])
+    ])
+
     # main-icon-box:
     AM_CONDITIONAL([LIBGD_MAIN_ICON_BOX],[_LIBGD_IF_OPTION_SET([main-icon-box],[true],[false])])
     _LIBGD_IF_OPTION_SET([main-icon-box],[

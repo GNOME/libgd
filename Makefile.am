@@ -73,6 +73,16 @@ nodist_libgd_la_SOURCES += $(main_icon_box_sources)
 EXTRA_DIST += $(main_icon_box_sources)
 endif
 
+if LIBGD_MAIN_BOX
+main_box_sources =				\
+	libgd/gd-main-box.c			\
+	libgd/gd-main-box.h			\
+	$(NULL)
+
+nodist_libgd_la_SOURCES += $(main_box_sources)
+EXTRA_DIST += $(main_box_sources)
+endif
+
 if LIBGD__VIEW_COMMON
 view_common_sources =				\
 	libgd/gd-main-view-generic.c		\

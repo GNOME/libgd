@@ -34,6 +34,10 @@
 # include "gd-main-icon-box-child.h"
 #endif
 
+#ifdef LIBGD_MAIN_BOX
+# include "gd-main-box.h"
+#endif
+
 #ifdef LIBGD__VIEW_COMMON
 # include "gd-main-view-generic.h"
 # include "gd-styled-text-renderer.h"
@@ -83,6 +87,10 @@ gd_ensure_types (void)
 #ifdef LIBGD_MAIN_ICON_BOX
   g_type_ensure (GD_TYPE_MAIN_ICON_BOX);
   g_type_ensure (GD_TYPE_MAIN_ICON_BOX_CHILD);
+#endif
+
+#ifdef LIBGD_MAIN_BOX
+  g_type_ensure (GD_TYPE_MAIN_BOX);
 #endif
 
 #ifdef LIBGD__VIEW_COMMON

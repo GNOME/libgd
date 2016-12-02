@@ -46,6 +46,10 @@ G_BEGIN_DECLS
 # include <libgd/gd-main-icon-box-child.h>
 #endif
 
+#ifdef LIBGD_MAIN_BOX
+# include <libgd/gd-main-box.h>
+#endif
+
 #ifdef LIBGD__VIEW_COMMON
 # include <libgd/gd-main-view-generic.h>
 # include <libgd/gd-styled-text-renderer.h>
