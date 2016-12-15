@@ -860,10 +860,15 @@ copy_surface (cairo_surface_t *surface)
 {
   cairo_surface_t *copy;
   cairo_t *cr;
+  gdouble scale_x;
+  gdouble scale_y;
 
-  copy = cairo_surface_create_similar (surface, CAIRO_CONTENT_COLOR_ALPHA,
-                                       cairo_image_surface_get_width (surface),
-                                       cairo_image_surface_get_height (surface));
+  copy = cairo_surface_create_similar_image (surface, CAIRO_FORMAT_ARGB32,
+                                             cairo_image_surface_get_width (surface),
+                                             cairo_image_surface_get_height (surface));
+  cairo_surface_get_device_scale (surface, &scale_x, &scale_y);
+  cairo_surface_set_device_scale (copy, scale_x, scale_y);
+
   cr = cairo_create (copy);
   cairo_set_source_surface (cr, surface, 0, 0);
   cairo_paint (cr);
