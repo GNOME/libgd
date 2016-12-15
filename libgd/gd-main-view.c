@@ -25,6 +25,7 @@
 #include "gd-main-icon-view.h"
 #include "gd-main-list-view.h"
 
+#include <math.h>
 #include <cairo-gobject.h>
 
 #define MAIN_VIEW_TYPE_INITIAL -1
@@ -249,10 +250,16 @@ gd_main_view_get_counter_icon (GdMainView *self,
   GtkStyleContext *context;
   cairo_t *cr, *emblem_cr;
   cairo_surface_t *surface, *emblem_surface;
-  gint width, height;
+  gint height;
+  gint height_scaled;
+  gint width;
+  gint width_scaled;
   gint layout_width, layout_height;
   gint emblem_size;
+  gint emblem_size_scaled;
   gdouble scale;
+  gdouble scale_x;
+  gdouble scale_y;
   gchar *str;
   PangoLayout *layout;
   PangoAttrList *attr_list;
@@ -264,18 +271,28 @@ gd_main_view_get_counter_icon (GdMainView *self,
   gtk_style_context_save (context);
   gtk_style_context_add_class (context, "documents-counter");
 
-  width = cairo_image_surface_get_width (base);
-  height = cairo_image_surface_get_height (base);
+  width_scaled = cairo_image_surface_get_width (base);
+  height_scaled = cairo_image_surface_get_height (base);
+  cairo_surface_get_device_scale (base, &scale_x, &scale_y);
 
-  surface = cairo_surface_create_similar (base, CAIRO_CONTENT_COLOR_ALPHA,
-                                          width, height);
+  width = width_scaled / (gint) floor (scale_x),
+  height = height_scaled / (gint) floor (scale_y);
+
+  surface = cairo_surface_create_similar_image (base, CAIRO_FORMAT_ARGB32,
+                                                width_scaled, height_scaled);
+  cairo_surface_set_device_scale (surface, scale_x, scale_y);
+
   cr = cairo_create (surface);
   cairo_set_source_surface (cr, base, 0, 0);
   cairo_paint (cr);
 
+  emblem_size_scaled = MIN (width_scaled / 2, height_scaled / 2);
   emblem_size = MIN (width / 2, height / 2);
-  emblem_surface = cairo_surface_create_similar (base, CAIRO_CONTENT_COLOR_ALPHA,
-                                                 emblem_size, emblem_size);
+
+  emblem_surface = cairo_surface_create_similar_image (base, CAIRO_FORMAT_ARGB32,
+                                                       emblem_size_scaled, emblem_size_scaled);
+  cairo_surface_set_device_scale (emblem_surface, scale_x, scale_y);
+
   emblem_cr = cairo_create (emblem_surface);
   gtk_render_background (context, emblem_cr,
                          0, 0, emblem_size, emblem_size);
