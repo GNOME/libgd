@@ -21,6 +21,7 @@
 
 #include "gd-main-view.h"
 
+#include "gd-icon-utils.h"
 #include "gd-main-view-generic.h"
 #include "gd-main-icon-view.h"
 #include "gd-main-list-view.h"
@@ -872,28 +873,6 @@ on_motion_event (GtkWidget      *widget,
   return FALSE;
 }
 
-static cairo_surface_t *
-copy_surface (cairo_surface_t *surface)
-{
-  cairo_surface_t *copy;
-  cairo_t *cr;
-  gdouble scale_x;
-  gdouble scale_y;
-
-  copy = cairo_surface_create_similar_image (surface, CAIRO_FORMAT_ARGB32,
-                                             cairo_image_surface_get_width (surface),
-                                             cairo_image_surface_get_height (surface));
-  cairo_surface_get_device_scale (surface, &scale_x, &scale_y);
-  cairo_surface_set_device_scale (copy, scale_x, scale_y);
-
-  cr = cairo_create (copy);
-  cairo_set_source_surface (cr, surface, 0, 0);
-  cairo_paint (cr);
-  cairo_destroy (cr);
-
-  return copy;
-}
-
 static void
 on_drag_begin (GdMainViewGeneric *generic,
                GdkDragContext *drag_context,
@@ -926,7 +905,7 @@ on_drag_begin (GdMainViewGeneric *generic,
 
       if (column_gtype == CAIRO_GOBJECT_TYPE_SURFACE)
         {
-          surface = copy_surface (data);
+          surface = gd_copy_image_surface (data);
           cairo_surface_destroy (data);
         }
       else if (column_gtype == GDK_TYPE_PIXBUF)

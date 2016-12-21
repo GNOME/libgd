@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2012, 2015 Red Hat, Inc.
+ * Copyright (c) 2011, 2012, 2015, 2016 Red Hat, Inc.
  *
  * Gnome Documents is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by the
@@ -27,6 +27,34 @@
 
 #define _BG_MIN_SIZE 20
 #define _EMBLEM_MIN_SIZE 8
+
+/**
+ * gd_copy_image_surface:
+ * @surface:
+ *
+ * Returns: (transfer full):
+ */
+cairo_surface_t *
+gd_copy_image_surface (cairo_surface_t *surface)
+{
+  cairo_surface_t *copy = NULL;
+  cairo_t *cr;
+  gdouble scale_x;
+  gdouble scale_y;
+
+  copy = cairo_surface_create_similar_image (surface, CAIRO_FORMAT_ARGB32,
+                                             cairo_image_surface_get_width (surface),
+                                             cairo_image_surface_get_height (surface));
+  cairo_surface_get_device_scale (surface, &scale_x, &scale_y);
+  cairo_surface_set_device_scale (copy, scale_x, scale_y);
+
+  cr = cairo_create (copy);
+  cairo_set_source_surface (cr, surface, 0, 0);
+  cairo_paint (cr);
+  cairo_destroy (cr);
+
+  return copy;
+}
 
 /**
  * gd_create_symbolic_icon_for_scale:

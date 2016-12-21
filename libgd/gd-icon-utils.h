@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2012, 2015 Red Hat, Inc.
+ * Copyright (c) 2011, 2012, 2015, 2016 Red Hat, Inc.
  *
  * Gnome Documents is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by the
@@ -22,7 +22,10 @@
 #ifndef __GD_CREATE_SYMBOLIC_ICON_H__
 #define __GD_CREATE_SYMBOLIC_ICON_H__
 
+#include <cairo.h>
 #include <gtk/gtk.h>
+
+cairo_surface_t *gd_copy_image_surface (cairo_surface_t *surface);
 
 GIcon *gd_create_symbolic_icon (const gchar *name,
                                 gint base_size);

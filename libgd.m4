@@ -55,6 +55,7 @@ AC_DEFUN([LIBGD_INIT], [
     _LIBGD_IF_OPTION_SET([main-view],[
         _LIBGD_SET_OPTION([main-icon-view])
         _LIBGD_SET_OPTION([main-list-view])
+        _LIBGD_SET_OPTION([gtk-hacks])
         AC_DEFINE([LIBGD_MAIN_VIEW], [1], [Description])
     ])
 
