@@ -57,6 +57,118 @@ gd_copy_image_surface (cairo_surface_t *surface)
 }
 
 /**
+ * gd_create_surface_with_counter:
+ * @widget:
+ * @base:
+ * @number:
+ *
+ * Returns: (transfer full):
+ */
+cairo_surface_t *
+gd_create_surface_with_counter (GtkWidget *widget, cairo_surface_t *base, gint number)
+{
+  GtkStyleContext *context;
+  cairo_t *cr, *emblem_cr;
+  cairo_surface_t *emblem_surface;
+  cairo_surface_t *surface;
+  gint height;
+  gint height_scaled;
+  gint width;
+  gint width_scaled;
+  gint layout_width, layout_height;
+  gint emblem_size;
+  gint emblem_size_scaled;
+  gdouble scale;
+  gdouble scale_x;
+  gdouble scale_y;
+  gchar *str;
+  PangoLayout *layout;
+  PangoAttrList *attr_list;
+  PangoAttribute *attr;
+  PangoFontDescription *desc;
+  GdkRGBA color;
+
+  context = gtk_widget_get_style_context (GTK_WIDGET (widget));
+  gtk_style_context_save (context);
+  gtk_style_context_add_class (context, "documents-counter");
+
+  width_scaled = cairo_image_surface_get_width (base);
+  height_scaled = cairo_image_surface_get_height (base);
+  cairo_surface_get_device_scale (base, &scale_x, &scale_y);
+
+  width = width_scaled / (gint) floor (scale_x),
+  height = height_scaled / (gint) floor (scale_y);
+
+  surface = cairo_surface_create_similar_image (base, CAIRO_FORMAT_ARGB32,
+                                                width_scaled, height_scaled);
+  cairo_surface_set_device_scale (surface, scale_x, scale_y);
+
+  cr = cairo_create (surface);
+  cairo_set_source_surface (cr, base, 0, 0);
+  cairo_paint (cr);
+
+  emblem_size_scaled = MIN (width_scaled / 2, height_scaled / 2);
+  emblem_size = MIN (width / 2, height / 2);
+
+  emblem_surface = cairo_surface_create_similar_image (base, CAIRO_FORMAT_ARGB32,
+                                                       emblem_size_scaled, emblem_size_scaled);
+  cairo_surface_set_device_scale (emblem_surface, scale_x, scale_y);
+
+  emblem_cr = cairo_create (emblem_surface);
+  gtk_render_background (context, emblem_cr,
+                         0, 0, emblem_size, emblem_size);
+
+  if (number > 99)
+    number = 99;
+  if (number < -99)
+    number = -99;
+
+  str = g_strdup_printf ("%d", number);
+  layout = gtk_widget_create_pango_layout (GTK_WIDGET (widget), str);
+  g_free (str);
+
+  pango_layout_get_pixel_size (layout, &layout_width, &layout_height);
+
+  /* scale the layout to be 0.5 of the size still available for drawing */
+  scale = (emblem_size * 0.50) / (MAX (layout_width, layout_height));
+  attr_list = pango_attr_list_new ();
+
+  attr = pango_attr_scale_new (scale);
+  pango_attr_list_insert (attr_list, attr);
+  pango_layout_set_attributes (layout, attr_list);
+
+  gtk_style_context_get (context, GTK_STATE_FLAG_NORMAL, "font", &desc, NULL);
+  pango_layout_set_font_description (layout, desc);
+  pango_font_description_free (desc);
+
+  gtk_style_context_get_color (context, 0, &color);
+  gdk_cairo_set_source_rgba (emblem_cr, &color);
+
+  /* update these values */
+  pango_layout_get_pixel_size (layout, &layout_width, &layout_height);
+
+  cairo_move_to (emblem_cr,
+                 emblem_size / 2 - layout_width / 2,
+                 emblem_size / 2 - layout_height / 2);
+
+  pango_cairo_show_layout (emblem_cr, layout);
+
+  g_object_unref (layout);
+  pango_attr_list_unref (attr_list);
+  cairo_destroy (emblem_cr);
+
+  cairo_set_source_surface (cr, emblem_surface, 
+                            width - emblem_size, height - emblem_size);
+  cairo_paint (cr);
+  cairo_destroy (cr);
+
+  cairo_surface_destroy (emblem_surface);
+  gtk_style_context_restore (context);
+
+  return surface;
+}
+
+/**
  * gd_create_symbolic_icon_for_scale:
  * @name:
  * @base_size:

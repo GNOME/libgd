@@ -27,6 +27,10 @@
 
 cairo_surface_t *gd_copy_image_surface (cairo_surface_t *surface);
 
+cairo_surface_t *gd_create_surface_with_counter (GtkWidget *widget,
+                                                 cairo_surface_t *base,
+                                                 gint number);
+
 GIcon *gd_create_symbolic_icon (const gchar *name,
                                 gint base_size);
 GIcon *gd_create_symbolic_icon_for_scale (const gchar *name,
