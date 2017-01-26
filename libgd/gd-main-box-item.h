@@ -40,7 +40,6 @@ struct _GdMainBoxItemInterface
   const gchar      * (* get_primary_text)    (GdMainBoxItem *self);
   const gchar      * (* get_secondary_text)  (GdMainBoxItem *self);
   cairo_surface_t  * (* get_icon)            (GdMainBoxItem *self);
-  gboolean           (* get_pulse)           (GdMainBoxItem *self);
 };
 
 const gchar      * gd_main_box_item_get_id              (GdMainBoxItem *self);
