@@ -33,6 +33,7 @@ struct _GdMainBoxPrivate
   GListModel *model;
   GdMainBoxType current_type;
   GtkWidget *current_box;
+  GtkWidget *frame;
   gboolean selection_mode;
   gboolean show_primary_text;
   gboolean show_secondary_text;
@@ -157,7 +158,7 @@ gd_main_box_rebuild (GdMainBox *self)
   g_object_bind_property (self, "show-secondary-text",
                           priv->current_box, "show-secondary-text",
                           G_BINDING_SYNC_CREATE);
-  gtk_container_add (GTK_CONTAINER (self), priv->current_box);
+  gtk_container_add (GTK_CONTAINER (priv->frame), priv->current_box);
 
   g_signal_connect_swapped (priv->current_box,
                             "item-activated",
@@ -176,21 +177,6 @@ gd_main_box_rebuild (GdMainBox *self)
   gd_main_box_apply_selection_mode (self);
 
   gtk_widget_show_all (GTK_WIDGET (self));
-}
-
-static gboolean
-gd_main_box_draw (GtkWidget *widget, cairo_t *cr)
-{
-  GtkStyleContext *context;
-  gint height;
-  gint width;
-
-  context = gtk_widget_get_style_context (widget);
-  height = gtk_widget_get_allocated_height (widget);
-  width = gtk_widget_get_allocated_width (widget);
-  gtk_render_background (context, cr, 0, 0, width, height);
-
-  return GTK_WIDGET_CLASS (gd_main_box_parent_class)->draw (widget, cr);
 }
 
 static void
@@ -214,8 +200,10 @@ gd_main_box_init (GdMainBox *self)
 
   priv = gd_main_box_get_instance_private (self);
 
-  context = gtk_widget_get_style_context (GTK_WIDGET (self));
+  priv->frame = gtk_frame_new (NULL);
+  context = gtk_widget_get_style_context (priv->frame);
   gtk_style_context_add_class (context, "content-view");
+  gtk_container_add (GTK_CONTAINER (self), priv->frame);
 
   /* so that we get constructed with the right view even at startup */
   priv->current_type = MAIN_BOX_TYPE_INITIAL;
@@ -286,7 +274,6 @@ gd_main_box_class_init (GdMainBoxClass *klass)
   oclass->get_property = gd_main_box_get_property;
   oclass->set_property = gd_main_box_set_property;
   oclass->dispose = gd_main_box_dispose;
-  wclass->draw = gd_main_box_draw;
 
   properties[PROP_BOX_TYPE] = g_param_spec_int ("box-type",
                                                 "Box type",
