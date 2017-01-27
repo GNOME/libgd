@@ -344,6 +344,10 @@ gd_main_icon_box_child_set_property (GObject *object, guint property_id, const G
 static void
 gd_main_icon_box_child_init (GdMainIconBoxChild *self)
 {
+  GtkStyleContext *context;
+
+  context = gtk_widget_get_style_context (GTK_WIDGET (self));
+  gtk_style_context_add_class (context, "content-tile");
 }
 
 static void
