@@ -472,11 +472,8 @@ gd_main_box_generic_toggle_selection_for_child (GdMainBoxGeneric *self,
                                                 gboolean select_range)
 {
   GListModel *model;
-  const gchar *last_selected_id;
 
   model = gd_main_box_generic_get_model (self);
-  last_selected_id = gd_main_box_generic_get_last_selected_id (self);
-
   if (model == NULL)
     return;
 
