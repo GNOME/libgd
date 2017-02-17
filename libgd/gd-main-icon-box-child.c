@@ -289,9 +289,6 @@ static void
 gd_main_icon_box_child_get_property (GObject *object, guint property_id, GValue *value, GParamSpec *pspec)
 {
   GdMainIconBoxChild *self = GD_MAIN_ICON_BOX_CHILD (object);
-  GdMainIconBoxChildPrivate *priv;
-
-  priv = gd_main_icon_box_child_get_instance_private (self);
 
   switch (property_id)
     {
@@ -317,9 +314,6 @@ static void
 gd_main_icon_box_child_set_property (GObject *object, guint property_id, const GValue *value, GParamSpec *pspec)
 {
   GdMainIconBoxChild *self = GD_MAIN_ICON_BOX_CHILD (object);
-  GdMainIconBoxChildPrivate *priv;
-
-  priv = gd_main_icon_box_child_get_instance_private (self);
 
   switch (property_id)
     {
@@ -354,7 +348,6 @@ static void
 gd_main_icon_box_child_class_init (GdMainIconBoxChildClass *klass)
 {
   GObjectClass *oclass = G_OBJECT_CLASS (klass);
-  GtkWidgetClass *wclass = GTK_WIDGET_CLASS (klass);
 
   oclass->constructed = gd_main_icon_box_child_constructed;
   oclass->dispose = gd_main_icon_box_child_dispose;
