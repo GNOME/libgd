@@ -20,8 +20,7 @@ Static Library
 ```meson
 libgd = subproject('libgd',
   default_options: [
-    'with-tagged-entry=true',
-    'static=true'
+    'with-tagged-entry=true'
   ]
 )
 # Pass as dependency to another target
@@ -49,7 +48,8 @@ libgd = subproject('libgd',
     'pkglibdir=' + pkglibdir,
     'pkgdatadir=' + pkgdatadir,
     'with-tagged-entry=true',
-    'with-introspection=true'
+    'with-introspection=true',
+    'static=false',
   ]
 )
 ```

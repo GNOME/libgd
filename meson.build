@@ -1,5 +1,6 @@
 project('libgd', 'c',
-  meson_version: '>= 0.38.0'
+  meson_version: '>= 0.38.0',
+  default_options: ['static=true'],
 )
 
 if not meson.is_subproject()
