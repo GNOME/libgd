@@ -111,7 +111,7 @@ if get_option('with-tagged-entry')
   )
   built_sources += gdres[1]
   sources += [
-    gdres[0],
+    gdres,
     'gd-tagged-entry.c',
     'gd-tagged-entry.h',
   ]
