@@ -341,7 +341,7 @@ gd_main_icon_box_child_init (GdMainIconBoxChild *self)
   GtkStyleContext *context;
 
   context = gtk_widget_get_style_context (GTK_WIDGET (self));
-  gtk_style_context_add_class (context, "content-tile");
+  gtk_style_context_add_class (context, "tile");
 }
 
 static void
