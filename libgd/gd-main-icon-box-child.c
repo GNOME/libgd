@@ -21,6 +21,7 @@
 
 #include "gd-main-box-child.h"
 #include "gd-main-icon-box-child.h"
+#include "gd-main-icon-box-icon.h"
 
 #include <gio/gio.h>
 #include <glib.h>
@@ -169,16 +170,14 @@ gd_main_icon_box_child_update_layout (GdMainIconBoxChild *self)
 {
   GdMainIconBoxChildPrivate *priv;
   GtkWidget *grid;
-  GtkWidget *image;
+  GtkWidget *icon;
   GtkWidget *overlay;
-  cairo_surface_t *icon;
 
   priv = gd_main_icon_box_child_get_instance_private (self);
 
   gtk_container_foreach (GTK_CONTAINER (self), (GtkCallback) gtk_widget_destroy, NULL);
 
   grid = gtk_grid_new ();
-  gtk_widget_set_halign (grid, GTK_ALIGN_CENTER);
   gtk_widget_set_valign (grid, GTK_ALIGN_CENTER);
   gtk_orientable_set_orientation (GTK_ORIENTABLE (grid), GTK_ORIENTATION_VERTICAL);
   gtk_container_add (GTK_CONTAINER (self), grid);
@@ -186,10 +185,9 @@ gd_main_icon_box_child_update_layout (GdMainIconBoxChild *self)
   overlay = gtk_overlay_new ();
   gtk_container_add (GTK_CONTAINER (grid), overlay);
 
-  icon = gd_main_box_item_get_icon (priv->item);
-  image = gtk_image_new_from_surface (icon);
-  g_object_bind_property (priv->item, "icon", image, "surface", G_BINDING_DEFAULT);
-  gtk_container_add (GTK_CONTAINER (overlay), image);
+  icon = gd_main_icon_box_icon_new (priv->item);
+  gtk_widget_set_hexpand (icon, TRUE);
+  gtk_container_add (GTK_CONTAINER (overlay), icon);
 
   priv->check_button = gtk_check_button_new ();
   gtk_widget_set_can_focus (priv->check_button, FALSE);
