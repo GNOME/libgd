@@ -67,6 +67,8 @@ main_icon_box_sources =				\
 	libgd/gd-main-icon-box.h		\
 	libgd/gd-main-icon-box-child.c		\
 	libgd/gd-main-icon-box-child.h		\
+	libgd/gd-main-icon-box-icon.c		\
+	libgd/gd-main-icon-box-icon.h		\
 	$(NULL)
 
 nodist_libgd_la_SOURCES += $(main_icon_box_sources)
