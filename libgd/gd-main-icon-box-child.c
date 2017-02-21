@@ -184,7 +184,6 @@ gd_main_icon_box_child_update_layout (GdMainIconBoxChild *self)
   gtk_container_add (GTK_CONTAINER (self), grid);
 
   overlay = gtk_overlay_new ();
-  gtk_widget_set_margin_bottom (overlay, 4);
   gtk_container_add (GTK_CONTAINER (grid), overlay);
 
   icon = gd_main_box_item_get_icon (priv->item);
