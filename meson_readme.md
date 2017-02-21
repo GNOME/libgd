@@ -3,7 +3,10 @@ See README for general information. Read below for usage with Meson.
 Usage
 =====
 
-libgd is intended to be used as a submodule from other projects. This requires passing default_options to the subproject which was added in Meson 0.38.0. To see a full list of options you can run `mesonconf $your_build_dir`. If building a non-static library `pkglibdir` must be set to a private location to install to. For introspection files you also must set `pkgdatadir`.
+libgd is intended to be used as a submodule from other projects. This requires passing default_options to the subproject
+which was added in Meson 0.38.0. To see a full list of options you can run `mesonconf $your_build_dir`. If building a
+non-static library `pkglibdir` must be set to a private location to install to which you will also want to pass (an absolute path)
+with the `install_rpath` keyword to any executables. For introspection files you also must set `pkgdatadir`.
 
 So given a Meson project using git you would run this to do initial setup:
 
