@@ -287,7 +287,6 @@ gd_embed_surface_in_frame (cairo_surface_t *source_image,
   GtkCssProvider *provider;
   GtkStyleContext *context;
   GError *error = NULL;
-  GdkPixbuf *retval;
   GtkWidgetPath *path;
   gdouble scale_x, scale_y;
 
