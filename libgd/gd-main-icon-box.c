@@ -114,10 +114,7 @@ static GdMainBoxChild *
 gd_main_icon_box_get_child_at_index (GdMainBoxGeneric *generic, gint index)
 {
   GdMainIconBox *self = GD_MAIN_ICON_BOX (generic);
-  GdMainIconBoxPrivate *priv;
   GtkFlowBoxChild *child;
-
-  priv = gd_main_icon_box_get_instance_private (self);
 
   child = gtk_flow_box_get_child_at_index (GTK_FLOW_BOX (self), index);
   return GD_MAIN_BOX_CHILD (child);
@@ -147,10 +144,7 @@ static GList *
 gd_main_icon_box_get_selected_children (GdMainBoxGeneric *generic)
 {
   GdMainIconBox *self = GD_MAIN_ICON_BOX (generic);
-  GdMainIconBoxPrivate *priv;
   GList *selected_children;
-
-  priv = gd_main_icon_box_get_instance_private (self);
 
   selected_children = gtk_flow_box_get_selected_children (GTK_FLOW_BOX (self));
   return selected_children;
@@ -194,9 +188,6 @@ static void
 gd_main_icon_box_select_child (GdMainBoxGeneric *generic, GdMainBoxChild *child)
 {
   GdMainIconBox *self = GD_MAIN_ICON_BOX (generic);
-  GdMainIconBoxPrivate *priv;
-
-  priv = gd_main_icon_box_get_instance_private (self);
   gtk_flow_box_select_child (GTK_FLOW_BOX (self), GTK_FLOW_BOX_CHILD (child));
 }
 
@@ -291,9 +282,6 @@ static void
 gd_main_icon_box_unselect_child (GdMainBoxGeneric *generic, GdMainBoxChild *child)
 {
   GdMainIconBox *self = GD_MAIN_ICON_BOX (generic);
-  GdMainIconBoxPrivate *priv;
-
-  priv = gd_main_icon_box_get_instance_private (self);
   gtk_flow_box_unselect_child (GTK_FLOW_BOX (self), GTK_FLOW_BOX_CHILD (child));
 }
 
