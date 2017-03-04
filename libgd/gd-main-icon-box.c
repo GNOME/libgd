@@ -766,6 +766,23 @@ gd_main_icon_box_move_cursor (GtkFlowBox *flow_box, GtkMovementStep step, gint c
 }
 
 static void
+gd_main_icon_box_remove (GtkContainer *container, GtkWidget *widget)
+{
+  GdMainIconBox *self = GD_MAIN_ICON_BOX (container);
+  GdMainIconBoxPrivate *priv;
+
+  priv = gd_main_icon_box_get_instance_private (self);
+
+  GTK_CONTAINER_CLASS (gd_main_icon_box_parent_class)->remove (container, widget);
+
+  if (priv->selection_changed)
+    {
+      g_signal_emit_by_name (self, "selection-changed");
+      priv->selection_changed = FALSE;
+    }
+}
+
+static void
 gd_main_icon_box_select_all_flow_box (GtkFlowBox *flow_box)
 {
   GdMainIconBox *self = GD_MAIN_ICON_BOX (flow_box);
@@ -945,6 +962,7 @@ static void
 gd_main_icon_box_class_init (GdMainIconBoxClass *klass)
 {
   GObjectClass *oclass = G_OBJECT_CLASS (klass);
+  GtkContainerClass *cclass = GTK_CONTAINER_CLASS (klass);
   GtkFlowBoxClass *fbclass = GTK_FLOW_BOX_CLASS (klass);
   GtkWidgetClass *wclass = GTK_WIDGET_CLASS (klass);
   GtkBindingSet *binding_set;
@@ -966,6 +984,7 @@ gd_main_icon_box_class_init (GdMainIconBoxClass *klass)
   wclass->drag_data_get = gd_main_icon_box_drag_data_get;
   wclass->focus = gd_main_icon_box_focus;
   wclass->motion_notify_event = gd_main_icon_box_motion_notify_event;
+  cclass->remove = gd_main_icon_box_remove;
   fbclass->activate_cursor_child = gd_main_icon_box_activate_cursor_child;
   fbclass->child_activated = gd_main_icon_box_child_activated;
   fbclass->move_cursor = gd_main_icon_box_move_cursor;

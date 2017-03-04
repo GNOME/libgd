@@ -108,15 +108,6 @@ gd_main_box_item_activated_cb (GdMainBox *self, GdMainBoxChild *child)
 }
 
 static void
-gd_main_box_model_items_changed_cb (GdMainBox *self, guint position, guint removed, guint added)
-{
-  if (removed == 0)
-    return;
-
-  g_signal_emit (self, signals[SELECTION_CHANGED], 0);
-}
-
-static void
 gd_main_box_selection_changed_cb (GdMainBox *self)
 {
   g_signal_emit (self, signals[SELECTION_CHANGED], 0);
@@ -486,23 +477,8 @@ gd_main_box_set_model (GdMainBox *self, GListModel *model)
 
   priv = gd_main_box_get_instance_private (self);
 
-  if (model == priv->model)
+  if (!g_set_object (&priv->model, model))
     return;
-
-  if (priv->model)
-    g_signal_handlers_disconnect_by_func (priv->model, gd_main_box_model_items_changed_cb, self);
-
-  g_clear_object (&priv->model);
-
-  if (model != NULL)
-    {
-      priv->model = g_object_ref (model);
-      g_signal_connect_object (priv->model,
-                               "items-changed",
-                               G_CALLBACK (gd_main_box_model_items_changed_cb),
-                               self,
-                               G_CONNECT_SWAPPED);
-    }
 
   gd_main_box_generic_set_model (GD_MAIN_BOX_GENERIC (priv->current_box), priv->model);
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODEL]);
