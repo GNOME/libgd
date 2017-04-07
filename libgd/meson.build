@@ -105,13 +105,7 @@ if get_option('with-margin-container')
 endif
 
 if get_option('with-tagged-entry')
-  gdres = gnome.compile_resources(
-    'gd-tagged-entry-resources',
-    'gd-tagged-entry.gresource.xml'
-  )
-  built_sources += gdres[1]
   sources += [
-    gdres,
     'gd-tagged-entry.c',
     'gd-tagged-entry.h',
   ]
