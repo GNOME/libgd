@@ -37,8 +37,6 @@ EXTRA_DIST += $(catalog_sources)
 
 if LIBGD_GTK_HACKS
 gtk_hacks_sources =                             \
-        libgd/gd-entry-focus-hack.c             \
-        libgd/gd-entry-focus-hack.h             \
         libgd/gd-icon-utils.c		        \
         libgd/gd-icon-utils.h			\
         $(NULL)

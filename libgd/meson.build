@@ -13,8 +13,6 @@ private_c_args = [
 
 if get_option('with-gtk-hacks')
   sources += [
-    'gd-entry-focus-hack.c',
-    'gd-entry-focus-hack.h',
     'gd-icon-utils.c',
     'gd-icon-utils.h',
   ]

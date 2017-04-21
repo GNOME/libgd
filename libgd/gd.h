@@ -32,7 +32,6 @@ G_BEGIN_DECLS
 
 #ifdef LIBGD_GTK_HACKS
 # include <libgd/gd-icon-utils.h>
-# include <libgd/gd-entry-focus-hack.h>
 #endif
 
 #ifdef LIBGD__BOX_COMMON
