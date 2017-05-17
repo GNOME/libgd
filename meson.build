@@ -4,7 +4,7 @@ project('libgd', 'c',
 )
 
 if not meson.is_subproject()
-  error('This project is only intended to be used as a subproject!')
+  message('WARNING: This project is only intended to be used as a subproject!')
 endif
 
 pkglibdir = get_option('pkglibdir')
@@ -16,3 +16,9 @@ libm = cc.find_library('m', required: false)
 libgd_include = include_directories('.')
 
 subdir('libgd')
+
+if get_option('with-tagged-entry')
+  foreach t : ['test-tagged-entry', 'test-tagged-entry-2']
+    executable(t, t + '.c', dependencies : libgd_dep)
+  endforeach
+endif
