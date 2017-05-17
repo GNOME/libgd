@@ -37,6 +37,8 @@ if (get_option('with-main-box') or
       'gd-main-icon-box.h',
       'gd-main-icon-box-child.c',
       'gd-main-icon-box-child.h',
+      'gd-main-icon-box-icon.c',
+      'gd-main-icon-box-icon.h',
       'gd-icon-utils.c',
       'gd-icon-utils.h',
     ]
