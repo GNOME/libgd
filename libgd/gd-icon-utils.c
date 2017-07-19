@@ -321,7 +321,9 @@ gd_embed_surface_in_frame (cairo_surface_t *source_image,
   gtk_widget_path_append_type (path, GTK_TYPE_ICON_VIEW);
 
   gtk_style_context_set_path (context, path);
-  gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (provider), 600);
+  gtk_style_context_add_provider (context,
+                                  GTK_STYLE_PROVIDER (provider),
+                                  GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
   cairo_save (cr);
   cairo_rectangle (cr,
