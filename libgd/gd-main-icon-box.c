@@ -386,7 +386,7 @@ gd_main_icon_box_button_release_event (GtkWidget *widget, GdkEventButton *event)
     }
 
   if (!priv->selection_mode &&
-      (event->button == GDK_BUTTON_PRIMARY && (event->state & GDK_CONTROL_MASK) != 0 ||
+      ((event->button == GDK_BUTTON_PRIMARY && (event->state & GDK_CONTROL_MASK) != 0) ||
        event->button == GDK_BUTTON_SECONDARY))
     {
       g_signal_emit_by_name (self, "selection-mode-request");
