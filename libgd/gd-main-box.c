@@ -260,7 +260,6 @@ static void
 gd_main_box_class_init (GdMainBoxClass *klass)
 {
   GObjectClass *oclass = G_OBJECT_CLASS (klass);
-  GtkWidgetClass *wclass = GTK_WIDGET_CLASS (klass);
 
   oclass->get_property = gd_main_box_get_property;
   oclass->set_property = gd_main_box_set_property;
