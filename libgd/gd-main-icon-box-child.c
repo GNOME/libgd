@@ -51,6 +51,21 @@ G_DEFINE_TYPE_WITH_CODE (GdMainIconBoxChild, gd_main_icon_box_child, GTK_TYPE_FL
                          G_ADD_PRIVATE (GdMainIconBoxChild)
                          G_IMPLEMENT_INTERFACE (GD_TYPE_MAIN_BOX_CHILD, gd_main_box_child_interface_init))
 
+static gboolean
+gd_main_icon_box_child_bind_text_to_visible (GBinding *binding,
+                                             const GValue *from_value,
+                                             GValue *to_value,
+                                             gpointer user_data)
+{
+  gboolean to_visible;
+  const gchar *from_text;
+
+  from_text = g_value_get_string (from_value);
+  to_visible = from_text != NULL && from_text[0] != '\0' ? TRUE : FALSE;
+  g_value_set_boolean (to_value, to_visible);
+  return TRUE;
+}
+
 static void
 gd_main_icon_box_check_button_toggled (GdMainIconBoxChild *self)
 {
@@ -206,8 +221,18 @@ gd_main_icon_box_child_update_layout (GdMainIconBoxChild *self)
       GtkWidget *primary_label;
 
       primary_label = gtk_label_new (NULL);
+      gtk_widget_set_no_show_all (primary_label, TRUE);
       gtk_label_set_ellipsize (GTK_LABEL (primary_label), PANGO_ELLIPSIZE_MIDDLE);
       g_object_bind_property (priv->item, "primary-text", primary_label, "label", G_BINDING_SYNC_CREATE);
+      g_object_bind_property_full (priv->item,
+                                   "primary-text",
+                                   primary_label,
+                                   "visible",
+                                   G_BINDING_SYNC_CREATE,
+                                   gd_main_icon_box_child_bind_text_to_visible,
+                                   NULL,
+                                   NULL,
+                                   NULL);
       gtk_container_add (GTK_CONTAINER (grid), primary_label);
     }
 
@@ -217,10 +242,20 @@ gd_main_icon_box_child_update_layout (GdMainIconBoxChild *self)
       GtkWidget *secondary_label;
 
       secondary_label = gtk_label_new (NULL);
+      gtk_widget_set_no_show_all (secondary_label, TRUE);
       gtk_label_set_ellipsize (GTK_LABEL (secondary_label), PANGO_ELLIPSIZE_END);
       context = gtk_widget_get_style_context (secondary_label);
       gtk_style_context_add_class (context, "dim-label");
       g_object_bind_property (priv->item, "secondary-text", secondary_label, "label", G_BINDING_SYNC_CREATE);
+      g_object_bind_property_full (priv->item,
+                                   "secondary-text",
+                                   secondary_label,
+                                   "visible",
+                                   G_BINDING_SYNC_CREATE,
+                                   gd_main_icon_box_child_bind_text_to_visible,
+                                   NULL,
+                                   NULL,
+                                   NULL);
       gtk_container_add (GTK_CONTAINER (grid), secondary_label);
     }
 
