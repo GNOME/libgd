@@ -44,12 +44,6 @@ AC_DEFUN([LIBGD_INIT], [
 
     AM_CONDITIONAL([LIBGD_STATIC],[_LIBGD_IF_OPTION_SET([static],[true],[false])])
 
-    # gtk-hacks: collection of Gtk+ hacks and workarounds
-    AM_CONDITIONAL([LIBGD_GTK_HACKS],[_LIBGD_IF_OPTION_SET([gtk-hacks],[true],[false])])
-    _LIBGD_IF_OPTION_SET([gtk-hacks],[
-        AC_DEFINE([LIBGD_GTK_HACKS], [1], [Description])
-    ])
-
     # main-box:
     AM_CONDITIONAL([LIBGD_MAIN_BOX],[_LIBGD_IF_OPTION_SET([main-box],[true],[false])])
     _LIBGD_IF_OPTION_SET([main-box],[
@@ -120,6 +114,12 @@ AC_DEFUN([LIBGD_INIT], [
     AM_CONDITIONAL([LIBGD_GIR],[ _LIBGD_IF_OPTION_SET([gir],[true],[false])])
     _LIBGD_IF_OPTION_SET([gir],[
         GOBJECT_INTROSPECTION_REQUIRE([0.9.6])
+    ])
+
+    # gtk-hacks: collection of Gtk+ hacks and workarounds
+    AM_CONDITIONAL([LIBGD_GTK_HACKS],[_LIBGD_IF_OPTION_SET([gtk-hacks],[true],[false])])
+    _LIBGD_IF_OPTION_SET([gtk-hacks],[
+        AC_DEFINE([LIBGD_GTK_HACKS], [1], [Description])
     ])
 
     # _box-common:
