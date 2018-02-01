@@ -474,14 +474,11 @@ gd_two_lines_renderer_get_aligned_area (GtkCellRenderer      *cell,
                                         const GdkRectangle   *cell_area,
                                         GdkRectangle         *aligned_area)
 {
-  GdTwoLinesRenderer *self = GD_TWO_LINES_RENDERER (cell);
   gint x_offset, x_offset_1, x_offset_2, y_offset;
-  PangoLayout *layout_one, *layout_two;
 
   /* fetch common information */
-  gd_two_lines_renderer_prepare_layouts (self, cell_area, widget, &layout_one, &layout_two);
   gd_two_lines_renderer_get_size (cell, widget,
-                                  layout_one, layout_two,
+                                  NULL, NULL,
                                   &aligned_area->width, &aligned_area->height,
                                   cell_area,
                                   &x_offset_1, &x_offset_2, &y_offset);
@@ -490,9 +487,6 @@ gd_two_lines_renderer_get_aligned_area (GtkCellRenderer      *cell,
 
   aligned_area->x = cell_area->x + x_offset;
   aligned_area->y = cell_area->y;
-
-  g_clear_object (&layout_one);
-  g_clear_object (&layout_two);
 }
 
 static void
