@@ -486,7 +486,7 @@ gd_two_lines_renderer_get_aligned_area (GtkCellRenderer      *cell,
   x_offset = MIN (x_offset_1, x_offset_2);
 
   aligned_area->x = cell_area->x + x_offset;
-  aligned_area->y = cell_area->y;
+  aligned_area->y = cell_area->y + y_offset;
 }
 
 static void
