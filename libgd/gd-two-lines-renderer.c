@@ -305,6 +305,7 @@ gd_two_lines_renderer_render (GtkCellRenderer      *cell,
 
   render_area = area;
   render_area.x += x_offset_1 - layout_rect.x;
+  render_area.y += y_offset;
 
   gtk_render_layout (context, cr,
                      render_area.x,
@@ -328,7 +329,7 @@ gd_two_lines_renderer_render (GtkCellRenderer      *cell,
 
       render_area = area;
       render_area.x += x_offset_2 - layout_rect.x;
-      render_area.y += line_one_height;
+      render_area.y += y_offset + line_one_height;
 
       gtk_render_layout (context, cr,
                          render_area.x,
