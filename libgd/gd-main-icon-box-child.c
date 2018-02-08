@@ -84,6 +84,106 @@ gd_main_icon_box_check_button_toggled (GdMainIconBoxChild *self)
     gtk_flow_box_unselect_child (GTK_FLOW_BOX (parent), GTK_FLOW_BOX_CHILD (self));
 }
 
+static void
+gd_main_icon_box_child_update_layout (GdMainIconBoxChild *self)
+{
+  GdMainIconBoxChildPrivate *priv;
+  GtkWidget *grid;
+  GtkWidget *icon;
+  GtkWidget *overlay;
+
+  priv = gd_main_icon_box_child_get_instance_private (self);
+
+  gtk_container_foreach (GTK_CONTAINER (self), (GtkCallback) gtk_widget_destroy, NULL);
+
+  grid = gtk_grid_new ();
+  gtk_widget_set_valign (grid, GTK_ALIGN_CENTER);
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (grid), GTK_ORIENTATION_VERTICAL);
+  gtk_container_add (GTK_CONTAINER (self), grid);
+
+  overlay = gtk_overlay_new ();
+  gtk_container_add (GTK_CONTAINER (grid), overlay);
+
+  icon = gd_main_icon_box_icon_new (priv->item);
+  gtk_widget_set_hexpand (icon, TRUE);
+  gtk_container_add (GTK_CONTAINER (overlay), icon);
+
+  if (gd_main_box_item_get_pulse (priv->item))
+    {
+      GtkWidget *spinner;
+
+      spinner = gtk_spinner_new ();
+      gtk_widget_set_halign (spinner, GTK_ALIGN_CENTER);
+      gtk_widget_set_size_request (spinner, 32, 32);
+      gtk_widget_set_valign (spinner, GTK_ALIGN_CENTER);
+      gtk_spinner_start (GTK_SPINNER (spinner));
+      gtk_overlay_add_overlay (GTK_OVERLAY (overlay), spinner);
+    }
+
+  priv->check_button = gtk_check_button_new ();
+  gtk_widget_set_can_focus (priv->check_button, FALSE);
+  gtk_widget_set_halign (priv->check_button, GTK_ALIGN_END);
+  gtk_widget_set_valign (priv->check_button, GTK_ALIGN_END);
+  gtk_widget_set_no_show_all (priv->check_button, TRUE);
+  g_object_bind_property (self, "selection-mode", priv->check_button, "visible", G_BINDING_SYNC_CREATE);
+  gtk_overlay_add_overlay (GTK_OVERLAY (overlay), priv->check_button);
+  g_signal_connect_swapped (priv->check_button,
+                            "toggled",
+                            G_CALLBACK (gd_main_icon_box_check_button_toggled),
+                            self);
+
+  if (priv->show_primary_text)
+    {
+      GtkWidget *primary_label;
+
+      primary_label = gtk_label_new (NULL);
+      gtk_widget_set_no_show_all (primary_label, TRUE);
+      gtk_label_set_ellipsize (GTK_LABEL (primary_label), PANGO_ELLIPSIZE_MIDDLE);
+      g_object_bind_property (priv->item, "primary-text", primary_label, "label", G_BINDING_SYNC_CREATE);
+      g_object_bind_property_full (priv->item,
+                                   "primary-text",
+                                   primary_label,
+                                   "visible",
+                                   G_BINDING_SYNC_CREATE,
+                                   gd_main_icon_box_child_bind_text_to_visible,
+                                   NULL,
+                                   NULL,
+                                   NULL);
+      gtk_container_add (GTK_CONTAINER (grid), primary_label);
+    }
+
+  if (priv->show_secondary_text)
+    {
+      GtkStyleContext *context;
+      GtkWidget *secondary_label;
+
+      secondary_label = gtk_label_new (NULL);
+      gtk_widget_set_no_show_all (secondary_label, TRUE);
+      gtk_label_set_ellipsize (GTK_LABEL (secondary_label), PANGO_ELLIPSIZE_END);
+      context = gtk_widget_get_style_context (secondary_label);
+      gtk_style_context_add_class (context, "dim-label");
+      g_object_bind_property (priv->item, "secondary-text", secondary_label, "label", G_BINDING_SYNC_CREATE);
+      g_object_bind_property_full (priv->item,
+                                   "secondary-text",
+                                   secondary_label,
+                                   "visible",
+                                   G_BINDING_SYNC_CREATE,
+                                   gd_main_icon_box_child_bind_text_to_visible,
+                                   NULL,
+                                   NULL,
+                                   NULL);
+      gtk_container_add (GTK_CONTAINER (grid), secondary_label);
+    }
+
+  gtk_widget_show_all (grid);
+}
+
+static void
+gd_main_icon_box_child_notify_pulse (GdMainIconBoxChild *self)
+{
+  gd_main_icon_box_child_update_layout (self);
+}
+
 static GdMainBoxItem *
 gd_main_icon_box_child_get_item (GdMainBoxChild *child)
 {
@@ -148,8 +248,20 @@ gd_main_icon_box_child_set_item (GdMainIconBoxChild *self, GdMainBoxItem *item)
 
   priv = gd_main_icon_box_child_get_instance_private (self);
 
+  if (priv->item != NULL)
+    g_signal_handlers_disconnect_by_func (priv->item, gd_main_icon_box_child_notify_pulse, self);
+
   if (!g_set_object (&priv->item, item))
     return;
+
+  if (priv->item != NULL)
+    {
+      g_signal_connect_object (priv->item,
+                               "notify::pulse",
+                               G_CALLBACK (gd_main_icon_box_child_notify_pulse),
+                               self,
+                               G_CONNECT_SWAPPED);
+    }
 
   g_object_notify (G_OBJECT (self), "item");
   gtk_widget_queue_draw (GTK_WIDGET (self));
@@ -178,88 +290,6 @@ gd_main_icon_box_child_set_selection_mode (GdMainIconBoxChild *self, gboolean se
   priv->selection_mode = selection_mode;
   g_object_notify (G_OBJECT (self), "selection-mode");
   gtk_widget_queue_draw (GTK_WIDGET (self));
-}
-
-static void
-gd_main_icon_box_child_update_layout (GdMainIconBoxChild *self)
-{
-  GdMainIconBoxChildPrivate *priv;
-  GtkWidget *grid;
-  GtkWidget *icon;
-  GtkWidget *overlay;
-
-  priv = gd_main_icon_box_child_get_instance_private (self);
-
-  gtk_container_foreach (GTK_CONTAINER (self), (GtkCallback) gtk_widget_destroy, NULL);
-
-  grid = gtk_grid_new ();
-  gtk_widget_set_valign (grid, GTK_ALIGN_CENTER);
-  gtk_orientable_set_orientation (GTK_ORIENTABLE (grid), GTK_ORIENTATION_VERTICAL);
-  gtk_container_add (GTK_CONTAINER (self), grid);
-
-  overlay = gtk_overlay_new ();
-  gtk_container_add (GTK_CONTAINER (grid), overlay);
-
-  icon = gd_main_icon_box_icon_new (priv->item);
-  gtk_widget_set_hexpand (icon, TRUE);
-  gtk_container_add (GTK_CONTAINER (overlay), icon);
-
-  priv->check_button = gtk_check_button_new ();
-  gtk_widget_set_can_focus (priv->check_button, FALSE);
-  gtk_widget_set_halign (priv->check_button, GTK_ALIGN_END);
-  gtk_widget_set_valign (priv->check_button, GTK_ALIGN_END);
-  gtk_widget_set_no_show_all (priv->check_button, TRUE);
-  g_object_bind_property (self, "selection-mode", priv->check_button, "visible", G_BINDING_SYNC_CREATE);
-  gtk_overlay_add_overlay (GTK_OVERLAY (overlay), priv->check_button);
-  g_signal_connect_swapped (priv->check_button,
-                            "toggled",
-                            G_CALLBACK (gd_main_icon_box_check_button_toggled),
-                            self);
-
-  if (priv->show_primary_text)
-    {
-      GtkWidget *primary_label;
-
-      primary_label = gtk_label_new (NULL);
-      gtk_widget_set_no_show_all (primary_label, TRUE);
-      gtk_label_set_ellipsize (GTK_LABEL (primary_label), PANGO_ELLIPSIZE_MIDDLE);
-      g_object_bind_property (priv->item, "primary-text", primary_label, "label", G_BINDING_SYNC_CREATE);
-      g_object_bind_property_full (priv->item,
-                                   "primary-text",
-                                   primary_label,
-                                   "visible",
-                                   G_BINDING_SYNC_CREATE,
-                                   gd_main_icon_box_child_bind_text_to_visible,
-                                   NULL,
-                                   NULL,
-                                   NULL);
-      gtk_container_add (GTK_CONTAINER (grid), primary_label);
-    }
-
-  if (priv->show_secondary_text)
-    {
-      GtkStyleContext *context;
-      GtkWidget *secondary_label;
-
-      secondary_label = gtk_label_new (NULL);
-      gtk_widget_set_no_show_all (secondary_label, TRUE);
-      gtk_label_set_ellipsize (GTK_LABEL (secondary_label), PANGO_ELLIPSIZE_END);
-      context = gtk_widget_get_style_context (secondary_label);
-      gtk_style_context_add_class (context, "dim-label");
-      g_object_bind_property (priv->item, "secondary-text", secondary_label, "label", G_BINDING_SYNC_CREATE);
-      g_object_bind_property_full (priv->item,
-                                   "secondary-text",
-                                   secondary_label,
-                                   "visible",
-                                   G_BINDING_SYNC_CREATE,
-                                   gd_main_icon_box_child_bind_text_to_visible,
-                                   NULL,
-                                   NULL,
-                                   NULL);
-      gtk_container_add (GTK_CONTAINER (grid), secondary_label);
-    }
-
-  gtk_widget_show_all (grid);
 }
 
 static void
