@@ -108,6 +108,18 @@ gd_main_icon_box_child_update_layout (GdMainIconBoxChild *self)
   gtk_widget_set_hexpand (icon, TRUE);
   gtk_container_add (GTK_CONTAINER (overlay), icon);
 
+  if (gd_main_box_item_get_pulse (priv->item))
+    {
+      GtkWidget *spinner;
+
+      spinner = gtk_spinner_new ();
+      gtk_widget_set_halign (spinner, GTK_ALIGN_CENTER);
+      gtk_widget_set_size_request (spinner, 32, 32);
+      gtk_widget_set_valign (spinner, GTK_ALIGN_CENTER);
+      gtk_spinner_start (GTK_SPINNER (spinner));
+      gtk_overlay_add_overlay (GTK_OVERLAY (overlay), spinner);
+    }
+
   priv->check_button = gtk_check_button_new ();
   gtk_widget_set_can_focus (priv->check_button, FALSE);
   gtk_widget_set_halign (priv->check_button, GTK_ALIGN_END);
@@ -164,6 +176,12 @@ gd_main_icon_box_child_update_layout (GdMainIconBoxChild *self)
     }
 
   gtk_widget_show_all (grid);
+}
+
+static void
+gd_main_icon_box_child_notify_pulse (GdMainIconBoxChild *self)
+{
+  gd_main_icon_box_child_update_layout (self);
 }
 
 static GdMainBoxItem *
@@ -230,8 +248,20 @@ gd_main_icon_box_child_set_item (GdMainIconBoxChild *self, GdMainBoxItem *item)
 
   priv = gd_main_icon_box_child_get_instance_private (self);
 
+  if (priv->item != NULL)
+    g_signal_handlers_disconnect_by_func (priv->item, gd_main_icon_box_child_notify_pulse, self);
+
   if (!g_set_object (&priv->item, item))
     return;
+
+  if (priv->item != NULL)
+    {
+      g_signal_connect_object (priv->item,
+                               "notify::pulse",
+                               G_CALLBACK (gd_main_icon_box_child_notify_pulse),
+                               self,
+                               G_CONNECT_SWAPPED);
+    }
 
   g_object_notify (G_OBJECT (self), "item");
   gtk_widget_queue_draw (GTK_WIDGET (self));
