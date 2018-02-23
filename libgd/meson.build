@@ -11,7 +11,9 @@ private_c_args = [
   '-DG_DISABLE_DEPRECATED',
 ]
 
-if get_option('with-gtk-hacks')
+if (get_option('with-gtk-hacks') or
+    get_option('with-main-icon-box') or
+    get_option('with-main-view'))
   sources += [
     'gd-icon-utils.c',
     'gd-icon-utils.h',
