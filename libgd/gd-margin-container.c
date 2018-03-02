@@ -19,8 +19,6 @@
  *
  */
 
-#include "config.h"
-
 #include "gd-margin-container.h"
 
 G_DEFINE_TYPE_WITH_CODE (GdMarginContainer, gd_margin_container, GTK_TYPE_BIN,
