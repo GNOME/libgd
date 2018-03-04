@@ -265,6 +265,20 @@ gd_create_symbolic_icon (const gchar *name,
   return gd_create_symbolic_icon_for_scale (name, base_size, 1);
 }
 
+static void
+on_parsing_error (GtkCssProvider *provider,
+                  GtkCssSection  *section,
+                  GError         *error,
+                  gpointer        user_data)
+{
+  g_warning ("Parsing CSS failed at %u:%u – %u:%u: %s",
+             gtk_css_section_get_start_line (section),
+             gtk_css_section_get_start_position (section),
+             gtk_css_section_get_end_line (section),
+             gtk_css_section_get_end_position (section),
+             error->message);
+}
+
 /**
  * gd_embed_surface_in_frame:
  * @source_image:
@@ -286,7 +300,6 @@ gd_embed_surface_in_frame (cairo_surface_t *source_image,
   gchar *css_str;
   GtkCssProvider *provider;
   GtkStyleContext *context;
-  GError *error = NULL;
   GtkWidgetPath *path;
   gdouble scale_x, scale_y;
 
@@ -300,16 +313,10 @@ gd_embed_surface_in_frame (cairo_surface_t *source_image,
                              slice_width->top, slice_width->right, slice_width->bottom, slice_width->left,
                              border_width->top, border_width->right, border_width->bottom, border_width->left);
   provider = gtk_css_provider_new ();
-  gtk_css_provider_load_from_data (provider, css_str, -1, &error);
 
-  if (error != NULL)
-    {
-      g_warning ("Unable to create the thumbnail frame image: %s", error->message);
-      g_error_free (error);
-      g_free (css_str);
+  g_signal_connect (provider, "parsing-error", G_CALLBACK (on_parsing_error), NULL);
 
-      return g_object_ref (source_image);
-    }
+  gtk_css_provider_load_from_data (provider, css_str, -1);
 
   surface = cairo_surface_create_similar (source_image,
                                           CAIRO_CONTENT_COLOR_ALPHA,
