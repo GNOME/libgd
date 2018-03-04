@@ -58,7 +58,7 @@ main (gint argc,
   GtkWidget *window, *box, *entry, *toggle_visible_button, *toggle_tag_button;
   GdTaggedEntryTag *tag;
 
-  gtk_init (&argc, &argv);
+  gtk_init ();
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_size_request (window, 300, 0);
@@ -102,7 +102,8 @@ main (gint argc,
                     G_CALLBACK (on_toggle_tag), entry);
   gtk_container_add (GTK_CONTAINER (box), toggle_tag_button);
 
-  gtk_widget_show_all (window);
+  gtk_widget_show (window);
+
   gtk_main ();
 
   gtk_widget_destroy (window);
