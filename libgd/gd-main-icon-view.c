@@ -284,7 +284,6 @@ gd_main_icon_view_draw (GtkWidget *widget,
 
       if (lines->len > 0)
 	{
-	  GtkStateFlags state;
 	  cairo_path_t *path;
 	  GtkBorder border;
 	  GdkRGBA border_color;
@@ -306,12 +305,8 @@ gd_main_icon_view_draw (GtkWidget *widget,
 	  cairo_append_path (cr, path);
 	  cairo_path_destroy (path);
 
-	  state = gtk_widget_get_state_flags (widget);
-	  gtk_style_context_get_border_color (context,
-					      state,
-					      &border_color);
-	  gtk_style_context_get_border (context, state,
-					&border);
+	  gtk_style_context_get_border_color (context, &border_color);
+	  gtk_style_context_get_border (context, &border);
 
 	  cairo_set_line_width (cr, border.left);
 	  gdk_cairo_set_source_rgba (cr, &border_color);

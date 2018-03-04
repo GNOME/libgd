@@ -545,15 +545,13 @@ get_padding_and_border (GdNotification *notification,
                         GtkBorder *border)
 {
   GtkStyleContext *context;
-  GtkStateFlags state;
   GtkBorder tmp;
 
   context = gtk_widget_get_style_context (GTK_WIDGET (notification));
-  state = gtk_widget_get_state_flags (GTK_WIDGET (notification));
 
-  gtk_style_context_get_padding (context, state, border);
+  gtk_style_context_get_padding (context, border);
 
-  gtk_style_context_get_border (context, state, &tmp);
+  gtk_style_context_get_border (context, &tmp);
   border->top += tmp.top;
   border->right += tmp.right;
   border->bottom += tmp.bottom;

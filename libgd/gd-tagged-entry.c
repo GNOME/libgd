@@ -95,9 +95,7 @@ gd_tagged_entry_tag_get_margin (GdTaggedEntryTag *tag,
 
   context = gd_tagged_entry_tag_get_context (tag, entry);
   gtk_style_context_set_state (context, GTK_STATE_FLAG_NORMAL);
-  gtk_style_context_get_margin (context,
-                                gtk_style_context_get_state (context),
-                                margin);
+  gtk_style_context_get_margin (context, margin);
   gtk_style_context_restore (context);
 }
 
@@ -274,15 +272,9 @@ gd_tagged_entry_tag_get_width (GdTaggedEntryTag *tag,
   state = gd_tagged_entry_tag_get_state (tag, entry);
 
   gtk_style_context_set_state (context, state);
-  gtk_style_context_get_padding (context,
-                                 gtk_style_context_get_state (context),
-                                 &button_padding);
-  gtk_style_context_get_border (context,
-                                gtk_style_context_get_state (context),
-                                &button_border);
-  gtk_style_context_get_margin (context,
-                                gtk_style_context_get_state (context),
-                                &button_margin);
+  gtk_style_context_get_padding (context, &button_padding);
+  gtk_style_context_get_border (context, &button_border);
+  gtk_style_context_get_margin (context, &button_margin);
 
   gd_tagged_entry_tag_ensure_close_surface (tag, context);
 
@@ -341,9 +333,7 @@ gd_tagged_entry_tag_get_relative_allocations (GdTaggedEntryTag *tag,
   state = gd_tagged_entry_tag_get_state (tag, entry);
   gtk_style_context_save (context);
   gtk_style_context_set_state (context, state);
-  gtk_style_context_get_margin (context,
-                                gtk_style_context_get_state (context),
-                                &padding);
+  gtk_style_context_get_margin (context, &padding);
   gtk_style_context_restore (context);
 
   width -= padding.left + padding.right;
@@ -360,12 +350,8 @@ gd_tagged_entry_tag_get_relative_allocations (GdTaggedEntryTag *tag,
 
   gtk_style_context_save (context);
   gtk_style_context_set_state (context, state);
-  gtk_style_context_get_padding (context,
-                                 gtk_style_context_get_state (context),
-                                 &padding);
-  gtk_style_context_get_border (context,
-                                gtk_style_context_get_state (context),
-                                &border);
+  gtk_style_context_get_padding (context, &padding);
+  gtk_style_context_get_border (context, &border);
   gtk_style_context_restore (context);
 
   gd_tagged_entry_tag_ensure_layout (tag, entry);

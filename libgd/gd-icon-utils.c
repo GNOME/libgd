@@ -137,11 +137,11 @@ gd_create_surface_with_counter (GtkWidget *widget, cairo_surface_t *base, gint n
   pango_attr_list_insert (attr_list, attr);
   pango_layout_set_attributes (layout, attr_list);
 
-  gtk_style_context_get (context, GTK_STATE_FLAG_NORMAL, "font", &desc, NULL);
+  gtk_style_context_get (context, "font", &desc, NULL);
   pango_layout_set_font_description (layout, desc);
   pango_font_description_free (desc);
 
-  gtk_style_context_get_color (context, 0, &color);
+  gtk_style_context_get_color (context, &color);
   gdk_cairo_set_source_rgba (emblem_cr, &color);
 
   /* update these values */
