@@ -270,12 +270,12 @@ gd_two_lines_renderer_get_size (GtkCellRenderer *cell,
 }
 
 static void
-gd_two_lines_renderer_render (GtkCellRenderer      *cell,
-                              cairo_t              *cr,
-                              GtkWidget            *widget,
-                              const GdkRectangle   *background_area,
-                              const GdkRectangle   *cell_area,
-                              GtkCellRendererState  flags)
+gd_two_lines_renderer_snapshot (GtkCellRenderer      *cell,
+                                GtkSnapshot          *snapshot,
+                                GtkWidget            *widget,
+                                const GdkRectangle   *background_area,
+                                const GdkRectangle   *cell_area,
+                                GtkCellRendererState  flags)
 {
   GdTwoLinesRenderer *self = GD_TWO_LINES_RENDERER (cell);
   GtkStyleContext *context;
@@ -307,10 +307,10 @@ gd_two_lines_renderer_render (GtkCellRenderer      *cell,
   render_area.x += x_offset_1 - layout_rect.x;
   render_area.y += y_offset;
 
-  gtk_render_layout (context, cr,
-                     render_area.x,
-                     render_area.y,
-                     layout_one);
+  gtk_snapshot_render_layout (snapshot, context,
+                              render_area.x,
+                              render_area.y,
+                              layout_one);
 
   /* render the second layout */
   if (layout_two != NULL)
@@ -331,10 +331,10 @@ gd_two_lines_renderer_render (GtkCellRenderer      *cell,
       render_area.x += x_offset_2 - layout_rect.x;
       render_area.y += y_offset + line_one_height;
 
-      gtk_render_layout (context, cr,
-                         render_area.x,
-                         render_area.y,
-                         layout_two);
+      gtk_snapshot_render_layout (snapshot, context,
+                                  render_area.x,
+                                  render_area.y,
+                                  layout_two);
 
       gtk_style_context_restore (context);
     }
@@ -575,7 +575,7 @@ gd_two_lines_renderer_class_init (GdTwoLinesRendererClass *klass)
   GtkCellRendererClass *cclass = GTK_CELL_RENDERER_CLASS (klass);
   GObjectClass *oclass = G_OBJECT_CLASS (klass);
 
-  cclass->render = gd_two_lines_renderer_render;
+  cclass->snapshot = gd_two_lines_renderer_snapshot;
   cclass->get_preferred_width = gd_two_lines_renderer_get_preferred_width;
   cclass->get_preferred_height = gd_two_lines_renderer_get_preferred_height;
   cclass->get_preferred_height_for_width = gd_two_lines_renderer_get_preferred_height_for_width;
