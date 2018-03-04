@@ -219,7 +219,7 @@ VAPIS = $(srcdir)/gd-1.0.vapi
 $(srcdir)/gd-1.0.vapi: $(srcdir)/Gd-1.0.gir
 	$(AM_V_GEN)$(VAPIGEN)			\
 		--library gd-1.0		\
-		--pkg gtk+-3.0			\
+		--pkg gtk+-4.0			\
 		$<
 #This 'touch' is a workaround for vapigen not touching the dest file if
 #its content hasn't changed, which causes the rule to generate the .vapi

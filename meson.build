@@ -10,7 +10,7 @@ endif
 pkglibdir = get_option('pkglibdir')
 pkgdatadir = get_option('pkgdatadir')
 
-libgtk = dependency('gtk+-3.0', version: '>= 3.7.10')
+libgtk = dependency('gtk+-4.0', version: '>= 3.93.0')
 cc = meson.get_compiler('c')
 libm = cc.find_library('m', required: false)
 libgd_include = include_directories('.')

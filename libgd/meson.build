@@ -188,7 +188,7 @@ if install_introspection or with_vapi
   if get_option('with-vapi')
     libgd_vapi_dep = gnome.generate_vapi('gd-1.0',
       sources: libgd_gir[0],
-      packages: ['gtk+-3.0']
+      packages: ['gtk+-4.0']
     )
   endif
 endif
