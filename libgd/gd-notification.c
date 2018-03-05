@@ -90,8 +90,10 @@ static void     gd_notification_get_preferred_width_for_height (GtkWidget       
                                                                  gint             height,
                                                                  gint            *minimum_width,
                                                                  gint            *natural_width);
-static void     gd_notification_size_allocate                  (GtkWidget       *widget,
-                                                                 GtkAllocation   *allocation);
+static void     gd_notification_size_allocate                  (GtkWidget             *widget,
+                                                                const GtkAllocation   *allocation,
+                                                                gint                   baseline,
+                                                                GtkAllocation         *out_clip);
 static gboolean gd_notification_timeout_cb                     (gpointer         user_data);
 static void     gd_notification_show                           (GtkWidget       *widget);
 static void     gd_notification_add                            (GtkContainer    *container,
@@ -752,8 +754,10 @@ gd_notification_get_preferred_height (GtkWidget *widget,
 }
 
 static void
-gd_notification_size_allocate (GtkWidget *widget,
-                                GtkAllocation *allocation)
+gd_notification_size_allocate (GtkWidget           *widget,
+                               const GtkAllocation *allocation,
+                               gint                 baseline,
+                               GtkAllocation       *out_clip)
 {
   GdNotification *notification = GD_NOTIFICATION (widget);
   GdNotificationPrivate *priv = notification->priv;
@@ -801,7 +805,7 @@ gd_notification_size_allocate (GtkWidget *widget,
 
   child = gtk_bin_get_child (bin);
   if (child && gtk_widget_get_visible (child))
-    gtk_widget_size_allocate (child, &child_allocation);
+    gtk_widget_size_allocate (child, &child_allocation, baseline, out_clip);
 
   if (priv->show_close_button)
     {
@@ -810,7 +814,7 @@ gd_notification_size_allocate (GtkWidget *widget,
       child_allocation.y += (child_allocation.height - button_req.height) / 2;
       child_allocation.height = button_req.height;
 
-      gtk_widget_size_allocate (priv->close_button, &child_allocation);
+      gtk_widget_size_allocate (priv->close_button, &child_allocation, baseline, out_clip);
     }
 }
 

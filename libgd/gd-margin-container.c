@@ -142,8 +142,10 @@ gd_margin_container_get_property (GObject    *object,
 }
 
 static void
-gd_margin_container_size_allocate (GtkWidget *widget,
-                                   GtkAllocation *allocation)
+gd_margin_container_size_allocate (GtkWidget           *widget,
+                                   const GtkAllocation *allocation,
+                                   gint                 baseline,
+                                   GtkAllocation       *out_clip)
 {
   GdMarginContainer *self = GD_MARGIN_CONTAINER (widget);
   GtkWidget *child;

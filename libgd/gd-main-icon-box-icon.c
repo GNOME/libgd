@@ -159,7 +159,10 @@ gd_main_icon_box_icon_get_preferred_width (GtkWidget *widget, gint *minimum, gin
 }
 
 static void
-gd_main_icon_box_icon_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
+gd_main_icon_box_icon_size_allocate (GtkWidget           *widget,
+                                     const GtkAllocation *allocation,
+                                     gint                 baseline,
+                                     GtkAllocation       *out_clip)
 {
   GdMainIconBoxIcon *self = GD_MAIN_ICON_BOX_ICON (widget);
   cairo_surface_t *surface;
@@ -173,7 +176,7 @@ gd_main_icon_box_icon_size_allocate (GtkWidget *widget, GtkAllocation *allocatio
   gint width_scaled;
   gint width_zoomed_scaled;
 
-  GTK_WIDGET_CLASS (gd_main_icon_box_icon_parent_class)->size_allocate (widget, allocation);
+  GTK_WIDGET_CLASS (gd_main_icon_box_icon_parent_class)->size_allocate (widget, allocation, baseline, out_clip);
 
   surface = gd_main_box_item_get_icon (self->item);
   if (surface == NULL)
