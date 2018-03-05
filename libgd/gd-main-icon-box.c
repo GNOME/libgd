@@ -681,7 +681,7 @@ gd_main_icon_box_motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 {
   GdMainIconBox *self = GD_MAIN_ICON_BOX (widget);
   GdMainIconBoxPrivate *priv;
-  GtkTargetList *targets;
+  GdkContentFormats *formats;
   gboolean res;
   gint button;
 
@@ -701,10 +701,10 @@ gd_main_icon_box_motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
   priv->dnd_button = -1;
   priv->dnd_started = TRUE;
 
-  targets = gtk_drag_source_get_target_list (GTK_WIDGET (self));
+  formats = gtk_drag_source_get_target_list (GTK_WIDGET (self));
 
   gtk_drag_begin_with_coordinates (GTK_WIDGET (self),
-                                   targets,
+                                   formats,
                                    GDK_ACTION_COPY,
                                    button,
                                    (GdkEvent *) event,
@@ -932,7 +932,10 @@ static void
 gd_main_icon_box_init (GdMainIconBox *self)
 {
   GdMainIconBoxPrivate *priv;
-  const GtkTargetEntry targets[] = { { (gchar *) "text/uri-list", GTK_TARGET_OTHER_APP, 0 } };
+  const gchar *targets[] = { 
+      "text/uri-list",
+  };
+  g_autoptr (GdkContentFormats) formats = NULL;
 
   priv = gd_main_icon_box_get_instance_private (self);
 
@@ -941,11 +944,13 @@ gd_main_icon_box_init (GdMainIconBox *self)
   gtk_flow_box_set_min_children_per_line (GTK_FLOW_BOX (self), 3);
   gtk_flow_box_set_selection_mode (GTK_FLOW_BOX (self), GTK_SELECTION_NONE);
 
+  formats = gdk_content_formats_new (targets, G_N_ELEMENTS (targets));
+
   /* We need to ensure that rubberband selection and DnD don't step
    * on each others toes. We set start_button_mask to 0 to retain
    * control over when to begin a drag.
    */
-  gtk_drag_source_set (GTK_WIDGET (self), 0, targets, G_N_ELEMENTS (targets), GDK_ACTION_COPY);
+  gtk_drag_source_set (GTK_WIDGET (self), 0, formats, GDK_ACTION_COPY);
 
   priv->dnd_button = -1;
   priv->dnd_start_x = -1.0;

@@ -111,9 +111,10 @@ gd_main_list_view_constructed (GObject *obj)
   GdMainListView *self = GD_MAIN_LIST_VIEW (obj);
   GtkCellRenderer *cell;
   GtkTreeSelection *selection;
-  const GtkTargetEntry targets[] = {
-    { "text/uri-list", GTK_TARGET_OTHER_APP, 0 }
+  const gchar *targets[] = {
+    "text/uri-list"
   };
+  g_autoptr (GdkContentFormats) formats = NULL;
 
   G_OBJECT_CLASS (gd_main_list_view_parent_class)->constructed (obj);
 
@@ -159,9 +160,11 @@ gd_main_list_view_constructed (GObject *obj)
 
   set_attributes_from_model (self);
 
+  formats = gdk_content_formats_new (targets, G_N_ELEMENTS (targets));
+
   gtk_tree_view_enable_model_drag_source (GTK_TREE_VIEW (self),
                                           GDK_BUTTON1_MASK,
-                                          targets, 1,
+                                          formats,
                                           GDK_ACTION_COPY);
 }
 

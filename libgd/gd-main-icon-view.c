@@ -120,9 +120,10 @@ gd_main_icon_view_constructed (GObject *obj)
   GdMainIconView *self = GD_MAIN_ICON_VIEW (obj);
   GdMainIconViewPrivate *priv;
   GtkCellRenderer *cell;
-  const GtkTargetEntry targets[] = {
-    { (char *) "text/uri-list", GTK_TARGET_OTHER_APP, 0 }
+  const gchar *targets[] = {
+    "text/uri-list",
   };
+  g_autoptr (GdkContentFormats) formats = NULL;
 
   priv = gd_main_icon_view_get_instance_private (self);
 
@@ -157,9 +158,11 @@ gd_main_icon_view_constructed (GObject *obj)
 
   set_attributes_from_model (self);
 
+  formats = gdk_content_formats_new (targets, G_N_ELEMENTS (targets));
+
   gtk_icon_view_enable_model_drag_source (GTK_ICON_VIEW (self),
                                           GDK_BUTTON1_MASK,
-                                          targets, 1,
+                                          formats,
                                           GDK_ACTION_COPY);
 }
 
