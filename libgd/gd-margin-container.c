@@ -348,8 +348,6 @@ gd_margin_container_class_init (GdMarginContainerClass *klass)
   wclass->get_preferred_width_for_height = gd_margin_container_get_preferred_width_for_height;
   wclass->get_preferred_height_for_width = gd_margin_container_get_preferred_height_for_width;
 
-  gtk_container_class_handle_border_width (GTK_CONTAINER_CLASS (klass));
-
   g_object_class_install_property (oclass, PROP_MIN_MARGIN,
                                    g_param_spec_int ("min-margin",
                                                      "Min margin",

@@ -506,7 +506,6 @@ gd_notification_class_init (GdNotificationClass *klass)
 
   container_class->add = gd_notification_add;
   container_class->forall = gd_notification_forall;
-  gtk_container_class_handle_border_width (container_class);
 
 
   /**
