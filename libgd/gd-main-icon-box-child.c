@@ -174,8 +174,6 @@ gd_main_icon_box_child_update_layout (GdMainIconBoxChild *self)
                                    NULL);
       gtk_container_add (GTK_CONTAINER (grid), secondary_label);
     }
-
-  gtk_widget_show_all (grid);
 }
 
 static void

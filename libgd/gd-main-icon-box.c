@@ -82,7 +82,6 @@ gd_main_icon_box_create_widget_func (gpointer item, gpointer user_data)
   child = gd_main_icon_box_child_new (GD_MAIN_BOX_ITEM (item), priv->selection_mode);
   g_object_bind_property (self, "show-primary-text", child, "show-primary-text", G_BINDING_SYNC_CREATE);
   g_object_bind_property (self, "show-secondary-text", child, "show-secondary-text", G_BINDING_SYNC_CREATE);
-  gtk_widget_show_all (child);
 
   return child;
 }

@@ -166,8 +166,6 @@ gd_main_box_rebuild (GdMainBox *self)
 
   gd_main_box_generic_set_model (GD_MAIN_BOX_GENERIC (priv->current_box), priv->model);
   gd_main_box_apply_selection_mode (self);
-
-  gtk_widget_show_all (GTK_WIDGET (self));
 }
 
 static void

@@ -972,8 +972,6 @@ gd_main_view_rebuild (GdMainView *self)
 
   gd_main_view_apply_model (self);
   gd_main_view_apply_selection_mode (self);
-
-  gtk_widget_show_all (GTK_WIDGET (self));
 }
 
 GdMainView *
