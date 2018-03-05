@@ -153,7 +153,6 @@ gd_margin_container_size_allocate (GtkWidget           *widget,
   gint avail_width, avail_height;
 
   child = gtk_bin_get_child (GTK_BIN (widget));
-  gtk_widget_set_allocation (widget, allocation);
 
   if (child && gtk_widget_get_visible (child))
     {

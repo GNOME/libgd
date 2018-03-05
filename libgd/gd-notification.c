@@ -767,8 +767,6 @@ gd_notification_size_allocate (GtkWidget           *widget,
   GtkRequisition button_req;
   GtkWidget *child;
 
-  gtk_widget_set_allocation (widget, allocation);
-
   /* If somehow the notification changes while not hidden
      and we're not animating, immediately follow the resize */
   if (priv->animate_y > 0 &&
