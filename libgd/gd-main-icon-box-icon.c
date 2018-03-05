@@ -88,8 +88,15 @@ gd_zoom_image_surface (cairo_surface_t *surface, gint width_zoomed, gint height_
 }
 
 static void
-gd_main_icon_box_icon_get_preferred_size (GdMainIconBoxIcon *self, gint *minimum, gint *natural)
+gd_main_icon_box_icon_measure (GtkWidget      *widget,
+                               GtkOrientation  orientation,
+                               gint            for_size,
+                               gint           *minimum,
+                               gint           *natural,
+                               gint           *minimum_baseline,
+                               gint           *natural_baseline)
 {
+  GdMainIconBoxIcon *self;
   cairo_surface_t *surface;
   cairo_surface_type_t surface_type;
   gint height_scaled;
@@ -98,6 +105,7 @@ gd_main_icon_box_icon_get_preferred_size (GdMainIconBoxIcon *self, gint *minimum
   gint size = 0;
   gint size_scaled;
 
+  self = GD_MAIN_ICON_BOX_ICON (widget);
   surface = gd_main_box_item_get_icon (self->item);
   if (surface == NULL)
     goto out;
@@ -142,20 +150,6 @@ gd_main_icon_box_icon_draw (GtkWidget *widget, cairo_t *cr)
 
  out:
   return GDK_EVENT_PROPAGATE;
-}
-
-static void
-gd_main_icon_box_icon_get_preferred_height (GtkWidget *widget, gint *minimum, gint *natural)
-{
-  GdMainIconBoxIcon *self = GD_MAIN_ICON_BOX_ICON (widget);
-  gd_main_icon_box_icon_get_preferred_size (self, minimum, natural);
-}
-
-static void
-gd_main_icon_box_icon_get_preferred_width (GtkWidget *widget, gint *minimum, gint *natural)
-{
-  GdMainIconBoxIcon *self = GD_MAIN_ICON_BOX_ICON (widget);
-  gd_main_icon_box_icon_get_preferred_size (self, minimum, natural);
 }
 
 static void
@@ -311,8 +305,7 @@ gd_main_icon_box_icon_class_init (GdMainIconBoxIconClass *klass)
   oclass->get_property = gd_main_icon_box_icon_get_property;
   oclass->set_property = gd_main_icon_box_icon_set_property;
   wclass->draw = gd_main_icon_box_icon_draw;
-  wclass->get_preferred_height = gd_main_icon_box_icon_get_preferred_height;
-  wclass->get_preferred_width = gd_main_icon_box_icon_get_preferred_width;
+  wclass->measure = gd_main_icon_box_icon_measure;
   wclass->size_allocate = gd_main_icon_box_icon_size_allocate;
 
   properties[PROP_ITEM] = g_param_spec_object ("item",
