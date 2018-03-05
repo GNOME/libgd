@@ -171,12 +171,14 @@ gd_margin_container_size_allocate (GtkWidget           *widget,
         avail_height = MAX (1, avail_height - 2 * self->priv->min_margin);
 
       if (gtk_widget_get_request_mode (child) == GTK_SIZE_REQUEST_HEIGHT_FOR_WIDTH)
-	{
-	  gtk_widget_get_preferred_width (child, NULL, &child_nat_width);
-	  child_width = MIN (avail_width, child_nat_width);
+        {
+          gtk_widget_measure (child, GTK_ORIENTATION_HORIZONTAL, -1,
+                              NULL, &child_nat_width, NULL, NULL);
+          child_width = MIN (avail_width, child_nat_width);
 
-	  gtk_widget_get_preferred_height_for_width (child, child_width, NULL, &child_nat_height);
-	  child_height = MIN (avail_height, child_nat_height);
+          gtk_widget_measure (child, GTK_ORIENTATION_VERTICAL, child_width,
+                              NULL, &child_nat_height, NULL, NULL);
+          child_height = MIN (avail_height, child_nat_height);
 
           offset = MIN ((gint) ((avail_height - child_height) / 2), self->priv->max_margin);
 
@@ -186,14 +188,16 @@ gd_margin_container_size_allocate (GtkWidget           *widget,
             child_allocation.height = avail_height;
 
           child_allocation.width = MIN (avail_width, child_nat_width);
-	}
+        }
       else
-	{
-	  gtk_widget_get_preferred_height (child, NULL, &child_nat_height);
-	  child_height = MIN (avail_height, child_nat_height);
+        {
+          gtk_widget_measure (child, GTK_ORIENTATION_VERTICAL, -1,
+                              NULL, &child_nat_height, NULL, NULL);
+          child_height = MIN (avail_height, child_nat_height);
 
-	  gtk_widget_get_preferred_width_for_height (child, child_height, NULL, &child_nat_width);
-	  child_width = MIN (avail_width, child_nat_width);
+          gtk_widget_measure (child, GTK_ORIENTATION_HORIZONTAL, child_nat_height,
+                              NULL, &child_nat_width, NULL, NULL);
+          child_width = MIN (avail_width, child_nat_width);
 
           offset = MIN ((gint) ((avail_width - child_width) / 2), self->priv->max_margin);
 
@@ -203,7 +207,7 @@ gd_margin_container_size_allocate (GtkWidget           *widget,
             child_allocation.width = avail_width;
 
           child_allocation.height = MIN (avail_height, child_nat_height);
-	}
+        }
 
       child_allocation.x = offset + allocation->x;
       child_allocation.y = (avail_height - child_allocation.height) + allocation->y;
@@ -213,16 +217,18 @@ gd_margin_container_size_allocate (GtkWidget           *widget,
       else
         child_allocation.y += self->priv->min_margin;
 
-      gtk_widget_size_allocate (child, &child_allocation);
+      gtk_widget_size_allocate (child, &child_allocation, baseline, out_clip);
     }
 }
 
 static void
-gd_margin_container_get_preferred_size (GtkWidget *widget,
-                                        GtkOrientation orientation,
-                                        gint for_size,
-                                        gint *minimum_size,
-                                        gint *natural_size)
+gd_margin_container_measure (GtkWidget      *widget,
+                             GtkOrientation  orientation,
+                             gint            for_size,
+                             gint           *minimum_size,
+                             gint           *natural_size,
+                             gint           *minimum_baseline,
+                             gint           *natural_baseline)
 {
   GdMarginContainer *self = GD_MARGIN_CONTAINER (widget);
   guint natural, minimum;
@@ -245,31 +251,37 @@ gd_margin_container_get_preferred_size (GtkWidget *widget,
 
       if (orientation == GTK_ORIENTATION_HORIZONTAL)
         {
-	  if (for_size < 0)
-	    gtk_widget_get_preferred_width (child, &child_min, &child_nat);
-	  else
-	    {
-	      gint min_height;
+          if (for_size < 0)
+            gtk_widget_measure (child, GTK_ORIENTATION_HORIZONTAL, -1,
+                                &child_min, &child_nat, NULL, NULL);
+          else
+            {
+              gint min_height;
 
-	      gtk_widget_get_preferred_height (child, &min_height, NULL);
-	      for_size -= 2 * self->priv->min_margin;
+              gtk_widget_measure (child, GTK_ORIENTATION_VERTICAL, -1,
+                                  &min_height, NULL, NULL, NULL);
+              for_size -= 2 * self->priv->min_margin;
 
-	      gtk_widget_get_preferred_width_for_height (child, for_size, &child_min, &child_nat);
-	    }
+              gtk_widget_measure (child, GTK_ORIENTATION_HORIZONTAL, for_size,
+                                  &child_min, &child_nat, NULL, NULL);
+            }
         }
       else
         {
-	  if (for_size < 0)
-	    gtk_widget_get_preferred_height (child, &child_min, &child_nat);
-	  else
-	    {
-	      gint min_width;
+          if (for_size < 0)
+            gtk_widget_measure (child, GTK_ORIENTATION_VERTICAL, -1,
+                                &child_min, &child_nat, NULL, NULL);
+          else
+            {
+              gint min_width;
 
-	      gtk_widget_get_preferred_width (child, &min_width, NULL);
-	      for_size -= 2 * self->priv->min_margin;
+              gtk_widget_measure (child, GTK_ORIENTATION_HORIZONTAL, -1,
+                                  &min_width, NULL, NULL, NULL);
+              for_size -= 2 * self->priv->min_margin;
 
-	      gtk_widget_get_preferred_height_for_width (child, for_size, &child_min, &child_nat);
-	    }
+              gtk_widget_measure (child, GTK_ORIENTATION_VERTICAL, for_size,
+                                  &child_min, &child_nat, NULL, NULL);
+            }
         }
 
       natural += child_nat;
@@ -282,44 +294,6 @@ gd_margin_container_get_preferred_size (GtkWidget *widget,
     *minimum_size = minimum;
   if (natural_size != NULL)
     *natural_size = natural;
-}
-
-static void
-gd_margin_container_get_preferred_width (GtkWidget *widget,
-                                         gint      *minimum_size,
-                                         gint      *natural_size)
-{
-  gd_margin_container_get_preferred_size (widget, GTK_ORIENTATION_HORIZONTAL,
-                                          -1, minimum_size, natural_size);
-}
-
-static void
-gd_margin_container_get_preferred_height (GtkWidget *widget,
-                                          gint      *minimum_size,
-                                          gint      *natural_size)
-{
-  gd_margin_container_get_preferred_size (widget, GTK_ORIENTATION_VERTICAL,
-                                          -1, minimum_size, natural_size);
-}
-
-static void 
-gd_margin_container_get_preferred_width_for_height (GtkWidget *widget,
-                                                    gint       for_size,
-                                                    gint      *minimum_size,
-                                                    gint      *natural_size)
-{
-  gd_margin_container_get_preferred_size (widget, GTK_ORIENTATION_HORIZONTAL,
-                                          for_size, minimum_size, natural_size);
-}
-
-static void 
-gd_margin_container_get_preferred_height_for_width (GtkWidget *widget,
-                                                    gint       for_size,
-                                                    gint      *minimum_size,
-                                                    gint      *natural_size)
-{
-  gd_margin_container_get_preferred_size (widget, GTK_ORIENTATION_VERTICAL,
-                                          for_size, minimum_size, natural_size);
 }
 
 static void
@@ -343,10 +317,7 @@ gd_margin_container_class_init (GdMarginContainerClass *klass)
   oclass->set_property = gd_margin_container_set_property;
 
   wclass->size_allocate = gd_margin_container_size_allocate;
-  wclass->get_preferred_width = gd_margin_container_get_preferred_width;
-  wclass->get_preferred_height = gd_margin_container_get_preferred_height;
-  wclass->get_preferred_width_for_height = gd_margin_container_get_preferred_width_for_height;
-  wclass->get_preferred_height_for_width = gd_margin_container_get_preferred_height_for_width;
+  wclass->measure = gd_margin_container_measure;
 
   g_object_class_install_property (oclass, PROP_MIN_MARGIN,
                                    g_param_spec_int ("min-margin",
