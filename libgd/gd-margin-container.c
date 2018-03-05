@@ -331,7 +331,6 @@ gd_margin_container_init (GdMarginContainer *self)
   self->priv->orientation = GTK_ORIENTATION_HORIZONTAL;
 
   gtk_widget_set_has_window (GTK_WIDGET (self), FALSE);
-  gtk_widget_set_redraw_on_allocate (GTK_WIDGET (self), FALSE);
 }
 
 static void
