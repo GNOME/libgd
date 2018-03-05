@@ -11,5 +11,9 @@ if (get_option('with-main-icon-view') or
     executable(t, t + '.c', dependencies: libgd_dep)
   endforeach
 endif
+
+if get_option('with-margin-container')
+  executable('test-margin-container',
+    'test-margin-container.c',
     dependencies: libgd_dep)
 endif
