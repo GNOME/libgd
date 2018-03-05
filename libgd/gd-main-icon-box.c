@@ -588,7 +588,6 @@ static void
 gd_main_icon_box_drag_data_get (GtkWidget *widget,
                                 GdkDragContext *context,
                                 GtkSelectionData *data,
-                                guint info,
                                 guint time)
 {
   GdMainIconBox *self = GD_MAIN_ICON_BOX (widget);
@@ -596,9 +595,6 @@ gd_main_icon_box_drag_data_get (GtkWidget *widget,
   GPtrArray *uri_array = NULL;
 
   priv = gd_main_icon_box_get_instance_private (self);
-
-  if (info != 0)
-    goto out;
 
   if (priv->dnd_start_x < 0.0 || priv->dnd_start_y < 0.0)
     goto out;

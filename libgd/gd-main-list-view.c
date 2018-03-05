@@ -92,21 +92,17 @@ static void
 gd_main_list_view_drag_data_get (GtkWidget *widget,
                                  GdkDragContext *drag_context,
                                  GtkSelectionData *data,
-                                 guint info,
                                  guint time)
 {
   GdMainListView *self = GD_MAIN_LIST_VIEW (widget);
   GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (self));
-
-  if (info != 0)
-    return;
 
   _gd_main_view_generic_dnd_common (model,
                                     self->priv->selection_mode,
                                     get_source_row (drag_context), data);
 
   GTK_WIDGET_CLASS (gd_main_list_view_parent_class)->drag_data_get (widget, drag_context,
-                                                                    data, info, time);
+                                                                    data, time);
 }
 
 static void
