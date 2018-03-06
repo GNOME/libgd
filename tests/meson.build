@@ -17,3 +17,10 @@ if get_option('with-margin-container')
     'test-margin-container.c',
     dependencies: libgd_dep)
 endif
+
+if (get_option('with-main-box') and
+    get_option('with-main-icon-box'))
+  executable('test-main-box',
+    'test-main-box.c',
+    dependencies: libgd_dep)
+endif
