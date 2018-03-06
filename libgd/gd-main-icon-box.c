@@ -640,7 +640,6 @@ gd_main_icon_box_focus (GtkWidget *widget, GtkDirectionType direction)
   GdMainIconBox *self = GD_MAIN_ICON_BOX (widget);
   GdMainIconBoxPrivate *priv;
   GdkEvent *event = NULL;
-  GdkEvent *fake_event = NULL;
   gboolean res;
 
   priv = gd_main_icon_box_get_instance_private (self);
@@ -664,14 +663,9 @@ gd_main_icon_box_focus (GtkWidget *widget, GtkDirectionType direction)
       goto out;
     }
 
-  fake_event = gdk_event_copy (event);
-  fake_event->key.state |= GDK_CONTROL_MASK;
-
-  gtk_main_do_event (fake_event);
   res = GDK_EVENT_STOP;
 
  out:
-  g_clear_pointer (&fake_event, (GDestroyNotify) gdk_event_free);
   g_clear_pointer (&event, (GDestroyNotify) gdk_event_free);
   return res;
 }
@@ -722,7 +716,6 @@ gd_main_icon_box_move_cursor (GtkFlowBox *flow_box, GtkMovementStep step, gint c
   GdMainIconBox *self = GD_MAIN_ICON_BOX (flow_box);
   GdMainIconBoxPrivate *priv;
   GdkEvent *event = NULL;
-  GdkEvent *fake_event = NULL;
   gboolean res;
 
   priv = gd_main_icon_box_get_instance_private (self);
@@ -746,15 +739,9 @@ gd_main_icon_box_move_cursor (GtkFlowBox *flow_box, GtkMovementStep step, gint c
       goto out;
     }
 
-  fake_event = gdk_event_copy (event);
-  fake_event->key.state |= GDK_CONTROL_MASK;
-  fake_event->key.state &= ~GDK_SHIFT_MASK;
-
-  gtk_main_do_event (fake_event);
   res = GDK_EVENT_STOP;
 
  out:
-  g_clear_pointer (&fake_event, (GDestroyNotify) gdk_event_free);
   g_clear_pointer (&event, (GDestroyNotify) gdk_event_free);
   return res;
 }
