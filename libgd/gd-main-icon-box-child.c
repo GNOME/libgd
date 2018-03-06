@@ -124,7 +124,6 @@ gd_main_icon_box_child_update_layout (GdMainIconBoxChild *self)
   gtk_widget_set_can_focus (priv->check_button, FALSE);
   gtk_widget_set_halign (priv->check_button, GTK_ALIGN_END);
   gtk_widget_set_valign (priv->check_button, GTK_ALIGN_END);
-  gtk_widget_set_no_show_all (priv->check_button, TRUE);
   g_object_bind_property (self, "selection-mode", priv->check_button, "visible", G_BINDING_SYNC_CREATE);
   gtk_overlay_add_overlay (GTK_OVERLAY (overlay), priv->check_button);
   g_signal_connect_swapped (priv->check_button,
@@ -137,7 +136,6 @@ gd_main_icon_box_child_update_layout (GdMainIconBoxChild *self)
       GtkWidget *primary_label;
 
       primary_label = gtk_label_new (NULL);
-      gtk_widget_set_no_show_all (primary_label, TRUE);
       gtk_label_set_ellipsize (GTK_LABEL (primary_label), PANGO_ELLIPSIZE_MIDDLE);
       g_object_bind_property (priv->item, "primary-text", primary_label, "label", G_BINDING_SYNC_CREATE);
       g_object_bind_property_full (priv->item,
@@ -158,7 +156,6 @@ gd_main_icon_box_child_update_layout (GdMainIconBoxChild *self)
       GtkWidget *secondary_label;
 
       secondary_label = gtk_label_new (NULL);
-      gtk_widget_set_no_show_all (secondary_label, TRUE);
       gtk_label_set_ellipsize (GTK_LABEL (secondary_label), PANGO_ELLIPSIZE_END);
       context = gtk_widget_get_style_context (secondary_label);
       gtk_style_context_add_class (context, "dim-label");
