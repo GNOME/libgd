@@ -50,7 +50,8 @@ struct _GdMainIconBoxPrivate
   gchar *last_selected_id;
   gdouble dnd_start_x;
   gdouble dnd_start_y;
-  gint dnd_button;
+  GtkGesture *drag_gesture;
+  GtkGesture *multi_press_gesture;
 };
 
 enum
@@ -290,6 +291,7 @@ gd_main_icon_box_activate_cursor_child (GtkFlowBox *flow_box)
   GdMainIconBox *self = GD_MAIN_ICON_BOX (flow_box);
   GdMainIconBoxPrivate *priv;
   GdkEvent *event = NULL;
+  GdkModifierType event_state;
   gboolean initiating = FALSE;
 
   priv = gd_main_icon_box_get_instance_private (self);
@@ -303,10 +305,12 @@ gd_main_icon_box_activate_cursor_child (GtkFlowBox *flow_box)
   if (event == NULL)
     goto out;
 
-  if (event->type != GDK_KEY_PRESS)
+  if (gdk_event_get_event_type (event) != GDK_KEY_PRESS)
     goto out;
 
-  if (!priv->selection_mode && (event->key.state & GDK_CONTROL_MASK) != 0)
+  gdk_event_get_state (event, &event_state);
+
+  if (!priv->selection_mode && (event_state & GDK_CONTROL_MASK) != 0)
     {
       g_signal_emit_by_name (self, "selection-mode-request");
       initiating = TRUE;
@@ -314,7 +318,7 @@ gd_main_icon_box_activate_cursor_child (GtkFlowBox *flow_box)
 
   if (priv->selection_mode)
     {
-      if (!initiating && (event->key.state & GDK_SHIFT_MASK) != 0)
+      if (!initiating && (event_state & GDK_SHIFT_MASK) != 0)
         priv->key_shift_pressed = TRUE;
 
       priv->key_pressed = TRUE;
@@ -325,68 +329,97 @@ gd_main_icon_box_activate_cursor_child (GtkFlowBox *flow_box)
   g_clear_pointer (&event, (GDestroyNotify) gdk_event_free);
 }
 
-static gboolean
-gd_main_icon_box_button_press_event (GtkWidget *widget, GdkEventButton *event)
+static void
+gd_main_icon_box_drag_update (GtkGestureDrag *gesture,
+                              gdouble         offset_x,
+                              gdouble         offset_y,
+                              gpointer        user_data)
 {
-  GdMainIconBox *self = GD_MAIN_ICON_BOX (widget);
+  GdMainIconBox *self;
   GdMainIconBoxPrivate *priv;
+  gdouble start_x;
+  gdouble start_y;
   GtkFlowBoxChild *child;
-  gboolean res;
+  GdkContentFormats *formats;
+  GdkDevice *device;
 
+  self = user_data;
   priv = gd_main_icon_box_get_instance_private (self);
 
-  if (event->type != GDK_BUTTON_PRESS)
-    {
-      res = GDK_EVENT_STOP;
-      goto out;
-    }
+  if (!gtk_gesture_drag_get_start_point (gesture, &start_x, &start_y))
+    return;
 
-  if (event->button != GDK_BUTTON_PRIMARY)
-    goto default_behavior;
-
-  child = gtk_flow_box_get_child_at_pos (GTK_FLOW_BOX (self), (gint) event->x, (gint) event->y);
+  child = gtk_flow_box_get_child_at_pos (GTK_FLOW_BOX (self), (gint) start_x, (gint) start_y);
   if (child == NULL)
-    goto default_behavior;
+    return;
 
   if (priv->selection_mode && !gtk_flow_box_child_is_selected (child))
-    goto default_behavior;
+    return;
 
-  priv->dnd_button = (gint) event->button;
-  priv->dnd_start_x = event->x;
-  priv->dnd_start_y = event->y;
+  if (!gtk_drag_check_threshold (GTK_WIDGET (self),
+                                 (gint) start_x,
+                                 (gint) start_y,
+                                 (gint) start_x + offset_x,
+                                 (gint) start_y + offset_y))
+    return;
 
- default_behavior:
-  res = GTK_WIDGET_CLASS (gd_main_icon_box_parent_class)->button_press_event (widget, event);
+  priv->dnd_start_x = start_x;
+  priv->dnd_start_y = start_y;
+  priv->dnd_started = TRUE;
 
- out:
-  return res;
+  formats = gtk_drag_source_get_target_list (GTK_WIDGET (self));
+  device = gtk_gesture_get_device (GTK_GESTURE (gesture));
+
+  gtk_drag_begin_with_coordinates (GTK_WIDGET (self),
+                                   device,
+                                   formats,
+                                   GDK_ACTION_COPY,
+                                   (gint) start_x,
+                                   (gint) start_y);
 }
 
-static gboolean
-gd_main_icon_box_button_release_event (GtkWidget *widget, GdkEventButton *event)
+static void
+gd_main_icon_box_drag_end (GtkGestureDrag *gesture,
+                           gdouble         offset_x,
+                           gdouble         offset_y,
+                           gpointer        user_data)
 {
-  GdMainIconBox *self = GD_MAIN_ICON_BOX (widget);
+  GdMainIconBox *self;
   GdMainIconBoxPrivate *priv;
-  GtkFlowBoxChild *child = NULL;
-  gboolean initiating = FALSE;
-  gboolean res;
 
+  self = user_data;
   priv = gd_main_icon_box_get_instance_private (self);
 
-  priv->dnd_button = -1;
   priv->dnd_start_x = -1.0;
   priv->dnd_start_y = -1.0;
   priv->dnd_started = FALSE;
+}
 
-  if (event->type != GDK_BUTTON_RELEASE)
-    {
-      res = GDK_EVENT_STOP;
-      goto out;
-    }
+static void
+gd_main_icon_box_released (GtkGestureMultiPress *gesture,
+                           gint                  n_press,
+                           gdouble               x,
+                           gdouble               y,
+                           gpointer              user_data)
+{
+  GdMainIconBox *self;
+  GdMainIconBoxPrivate *priv;
+  g_autoptr (GdkEvent) event = NULL;
+  guint button;
+  GdkModifierType event_state;
+  GtkFlowBoxChild *child = NULL;
+  gboolean initiating = FALSE;
+
+  self = user_data;
+  priv = gd_main_icon_box_get_instance_private (self);
+  event = gtk_get_current_event ();
+  button = gtk_gesture_single_get_current_button (GTK_GESTURE_SINGLE (gesture));
+
+  gdk_event_get_state (event, &event_state);
 
   if (!priv->selection_mode &&
-      ((event->button == GDK_BUTTON_PRIMARY && (event->state & GDK_CONTROL_MASK) != 0) ||
-       event->button == GDK_BUTTON_SECONDARY))
+      ((button == GDK_BUTTON_PRIMARY && (event_state & GDK_CONTROL_MASK) != 0) ||
+       button == GDK_BUTTON_SECONDARY))
     {
       g_signal_emit_by_name (self, "selection-mode-request");
       initiating = TRUE;
@@ -394,7 +427,7 @@ gd_main_icon_box_button_release_event (GtkWidget *widget, GdkEventButton *event)
 
   if (priv->selection_mode)
     {
-      if (event->button == GDK_BUTTON_PRIMARY)
+      if (button == GDK_BUTTON_PRIMARY)
         {
           /* GtkFlowBox doesn't do range selection. It will simply
            * select a single child for shift + left-click. We need to
@@ -404,24 +437,24 @@ gd_main_icon_box_button_release_event (GtkWidget *widget, GdkEventButton *event)
            * already in the selection mode. Therefore, skip it if we
            * have just requested the selection mode.
            */
-          if (!initiating && (event->state & GDK_SHIFT_MASK) != 0)
+          if (!initiating && (event_state & GDK_SHIFT_MASK) != 0)
             priv->left_button_shift_released = TRUE;
 
           priv->left_button_released = TRUE;
         }
-      else if (event->button == GDK_BUTTON_SECONDARY)
+      else if (button == GDK_BUTTON_SECONDARY)
         {
           /* GtkFlowBox completely ignores the right mouse
            * button.
            */
 
-          child = gtk_flow_box_get_child_at_pos (GTK_FLOW_BOX (self), (gint) event->x, (gint) event->y);
+          child = gtk_flow_box_get_child_at_pos (GTK_FLOW_BOX (self), (gint) x, (gint) y);
           if (child != NULL)
             {
               gd_main_box_generic_toggle_selection_for_child (GD_MAIN_BOX_GENERIC (self),
                                                               GD_MAIN_BOX_CHILD (child),
                                                               (!initiating &&
-                                                               (event->state & GDK_SHIFT_MASK) != 0));
+                                                               (event_state & GDK_SHIFT_MASK) != 0));
             }
         }
     }
@@ -438,11 +471,6 @@ gd_main_icon_box_button_release_event (GtkWidget *widget, GdkEventButton *event)
       gd_main_icon_box_update_last_selected_id (self, GD_MAIN_BOX_CHILD (child));
       priv->selection_changed = FALSE;
     }
-
-  res = GTK_WIDGET_CLASS (gd_main_icon_box_parent_class)->button_release_event (widget, event);
-
- out:
-  return res;
 }
 
 static void
@@ -640,6 +668,8 @@ gd_main_icon_box_focus (GtkWidget *widget, GtkDirectionType direction)
   GdMainIconBox *self = GD_MAIN_ICON_BOX (widget);
   GdMainIconBoxPrivate *priv;
   GdkEvent *event = NULL;
+  GdkEventType event_type;
+  GdkModifierType event_state;
   gboolean res;
 
   priv = gd_main_icon_box_get_instance_private (self);
@@ -651,13 +681,16 @@ gd_main_icon_box_focus (GtkWidget *widget, GtkDirectionType direction)
     }
 
   event = gtk_get_current_event ();
-  if (event->type != GDK_KEY_PRESS && event->type != GDK_KEY_RELEASE)
+  event_type = gdk_event_get_event_type (event);
+  if (event_type != GDK_KEY_PRESS && event_type != GDK_KEY_RELEASE)
     {
       res = GTK_WIDGET_CLASS (gd_main_icon_box_parent_class)->focus (widget, direction);
       goto out;
     }
 
-  if ((event->key.state & GDK_CONTROL_MASK) != 0)
+  gdk_event_get_state (event, &event_state);
+
+  if ((event_state & GDK_CONTROL_MASK) != 0)
     {
       res = GTK_WIDGET_CLASS (gd_main_icon_box_parent_class)->focus (widget, direction);
       goto out;
@@ -671,51 +704,13 @@ gd_main_icon_box_focus (GtkWidget *widget, GtkDirectionType direction)
 }
 
 static gboolean
-gd_main_icon_box_motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
-{
-  GdMainIconBox *self = GD_MAIN_ICON_BOX (widget);
-  GdMainIconBoxPrivate *priv;
-  GdkContentFormats *formats;
-  gboolean res;
-  gint button;
-
-  priv = gd_main_icon_box_get_instance_private (self);
-
-  if (priv->dnd_button < 0)
-    goto out;
-
-  if (!gtk_drag_check_threshold (GTK_WIDGET (self),
-                                 (gint) priv->dnd_start_x,
-                                 (gint) priv->dnd_start_y,
-                                 (gint) event->x,
-                                 (gint) event->y))
-      goto out;
-
-  button = priv->dnd_button;
-  priv->dnd_button = -1;
-  priv->dnd_started = TRUE;
-
-  formats = gtk_drag_source_get_target_list (GTK_WIDGET (self));
-
-  gtk_drag_begin_with_coordinates (GTK_WIDGET (self),
-                                   formats,
-                                   GDK_ACTION_COPY,
-                                   button,
-                                   (GdkEvent *) event,
-                                   (gint) priv->dnd_start_x,
-                                   (gint) priv->dnd_start_y);
-
- out:
-  res = GTK_WIDGET_CLASS (gd_main_icon_box_parent_class)->motion_notify_event (widget, event);
-  return res;
-}
-
-static gboolean
 gd_main_icon_box_move_cursor (GtkFlowBox *flow_box, GtkMovementStep step, gint count)
 {
   GdMainIconBox *self = GD_MAIN_ICON_BOX (flow_box);
   GdMainIconBoxPrivate *priv;
   GdkEvent *event = NULL;
+  GdkEventType event_type;
+  GdkModifierType event_state;
   gboolean res;
 
   priv = gd_main_icon_box_get_instance_private (self);
@@ -727,13 +722,16 @@ gd_main_icon_box_move_cursor (GtkFlowBox *flow_box, GtkMovementStep step, gint c
     }
 
   event = gtk_get_current_event ();
-  if (event->type != GDK_KEY_PRESS && event->type != GDK_KEY_RELEASE)
+  event_type = gdk_event_get_event_type (event);
+  if (event_type != GDK_KEY_PRESS && event_type != GDK_KEY_RELEASE)
     {
       res = GTK_FLOW_BOX_CLASS (gd_main_icon_box_parent_class)->move_cursor (flow_box, step, count);
       goto out;
     }
 
-  if ((event->key.state & GDK_CONTROL_MASK) != 0 && (event->key.state & GDK_SHIFT_MASK) == 0)
+  gdk_event_get_state (event, &event_state);
+
+  if ((event_state & GDK_CONTROL_MASK) != 0 && (event_state & GDK_SHIFT_MASK) == 0)
     {
       res = GTK_FLOW_BOX_CLASS (gd_main_icon_box_parent_class)->move_cursor (flow_box, step, count);
       goto out;
@@ -939,9 +937,19 @@ gd_main_icon_box_init (GdMainIconBox *self)
    */
   gtk_drag_source_set (GTK_WIDGET (self), 0, formats, GDK_ACTION_COPY);
 
-  priv->dnd_button = -1;
   priv->dnd_start_x = -1.0;
   priv->dnd_start_y = -1.0;
+
+  priv->drag_gesture = gtk_gesture_drag_new (GTK_WIDGET (self));
+  g_signal_connect (priv->drag_gesture, "drag-update",
+                    G_CALLBACK (gd_main_icon_box_drag_update), self);
+  g_signal_connect (priv->drag_gesture, "drag-end",
+                    G_CALLBACK (gd_main_icon_box_drag_end), self);
+
+  priv->multi_press_gesture = gtk_gesture_multi_press_new (GTK_WIDGET (self));
+  g_signal_connect (priv->multi_press_gesture, "released",
+                    G_CALLBACK (gd_main_icon_box_released), self);
+  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (priv->multi_press_gesture), 0);
 }
 
 static void
@@ -964,12 +972,9 @@ gd_main_icon_box_class_init (GdMainIconBoxClass *klass)
   oclass->finalize = gd_main_icon_box_finalize;
   oclass->get_property = gd_main_icon_box_get_property;
   oclass->set_property = gd_main_icon_box_set_property;
-  wclass->button_press_event = gd_main_icon_box_button_press_event;
-  wclass->button_release_event = gd_main_icon_box_button_release_event;
   wclass->drag_begin = gd_main_icon_box_drag_begin;
   wclass->drag_data_get = gd_main_icon_box_drag_data_get;
   wclass->focus = gd_main_icon_box_focus;
-  wclass->motion_notify_event = gd_main_icon_box_motion_notify_event;
   cclass->remove = gd_main_icon_box_remove;
   fbclass->activate_cursor_child = gd_main_icon_box_activate_cursor_child;
   fbclass->child_activated = gd_main_icon_box_child_activated;
