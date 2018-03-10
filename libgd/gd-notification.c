@@ -108,7 +108,6 @@ G_DEFINE_TYPE(GdNotification, gd_notification, GTK_TYPE_BIN);
 static void
 gd_notification_init (GdNotification *notification)
 {
-  GtkWidget *close_button_image;
   GtkStyleContext *context;
   GdNotificationPrivate *priv;
 
@@ -127,7 +126,7 @@ gd_notification_init (GdNotification *notification)
                                  GdNotificationPrivate);
 
   priv->animate_y = 0;
-  priv->close_button = gtk_button_new ();
+  priv->close_button = gtk_button_new_from_icon_name ("window-close-symbolic");
   gtk_widget_set_parent (priv->close_button, GTK_WIDGET (notification));
   gtk_widget_show (priv->close_button);
   g_object_set (priv->close_button,
@@ -138,8 +137,6 @@ gd_notification_init (GdNotification *notification)
                     "clicked",
                     G_CALLBACK (gd_notification_close_button_clicked_cb),
                     notification);
-  close_button_image = gtk_image_new_from_icon_name ("window-close-symbolic", GTK_ICON_SIZE_BUTTON);
-  gtk_button_set_image (GTK_BUTTON (notification->priv->close_button), close_button_image);
 
   priv->timeout_source_id = 0;
 }
