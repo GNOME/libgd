@@ -378,7 +378,6 @@ gd_notification_get_property (GObject *object, guint prop_id, GValue *value, GPa
 
 static void
 gd_notification_forall (GtkContainer *container,
-                         gboolean      include_internals,
                          GtkCallback   callback,
                          gpointer      callback_data)
 {
@@ -391,7 +390,7 @@ gd_notification_forall (GtkContainer *container,
   if (child)
     (* callback) (child, callback_data);
 
-  if (include_internals)
+  if (priv->close_button)
     (* callback) (priv->close_button, callback_data);
 }
 
