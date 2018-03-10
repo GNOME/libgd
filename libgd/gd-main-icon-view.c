@@ -353,13 +353,6 @@ gd_main_icon_view_class_init (GdMainIconViewClass *klass)
   wclass->drag_data_get = gd_main_icon_view_drag_data_get;
   wclass->snapshot = gd_main_icon_view_snapshot;
 
-  gtk_widget_class_install_style_property (wclass,
-                                           g_param_spec_int ("check-icon-size",
-                                                             "Check icon size",
-                                                             "Check icon size",
-                                                             -1, G_MAXINT, 40,
-                                                             G_PARAM_READWRITE));
-
   for (i = 0; i < G_N_ELEMENTS (activate_modifiers); i++)
     {
       gtk_binding_entry_add_signal (binding_set, GDK_KEY_space, activate_modifiers[i],
