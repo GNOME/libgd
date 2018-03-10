@@ -24,3 +24,9 @@ if (get_option('with-main-box') and
     'test-main-box.c',
     dependencies: libgd_dep)
 endif
+
+if get_option('with-main-view')
+  executable('test-main-view',
+    'test-main-view.c',
+    dependencies: libgd_dep)
+endif
