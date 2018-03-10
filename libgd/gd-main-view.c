@@ -493,10 +493,10 @@ activate_item_for_path (GdMainView *self,
   priv = gd_main_view_get_instance_private (self);
 
   if (priv->model == NULL)
-    return FALSE;
+    return GDK_EVENT_PROPAGATE;
 
   if (!gtk_tree_model_get_iter (priv->model, &iter, path))
-    return FALSE;
+    return GDK_EVENT_PROPAGATE;
 
   gtk_tree_model_get (priv->model, &iter,
                       GD_MAIN_COLUMN_ID, &id,
@@ -505,40 +505,59 @@ activate_item_for_path (GdMainView *self,
   g_signal_emit (self, signals[ITEM_ACTIVATED], 0, id, path);
   g_free (id);
 
-  return FALSE;
+  return GDK_EVENT_PROPAGATE;
 }
 
 static gboolean
 on_button_release_selection_mode (GdMainView *self,
-                                  GdkEventButton *event,
+                                  GdkEvent *event,
                                   GtkTreePath *path)
 {
-  return toggle_selection_for_path (self, path, ((event->state & GDK_SHIFT_MASK) != 0));
+  GdkModifierType state;
+
+  if (!gdk_event_get_state (event, &state))
+    return GDK_EVENT_PROPAGATE;
+
+  return toggle_selection_for_path (self, path, ((state & GDK_SHIFT_MASK) != 0));
 }
 
 static gboolean
 on_button_release_view_mode (GdMainView *self,
-                             GdkEventButton *event,
+                             GdkEvent *event,
                              GtkTreePath *path)
 {
   return activate_item_for_path (self, path);
 }
 
 static gboolean
-event_triggers_selection_mode (GdkEventButton *event)
+event_triggers_selection_mode (GdkEvent *event)
 {
-  return
-    (event->button == 3) ||
-    ((event->button == 1) && (event->state & GDK_CONTROL_MASK));
+  guint button;
+  GdkModifierType state;
+
+  if (!gdk_event_get_button (event, &button))
+    return FALSE;
+
+  if (button == GDK_BUTTON_SECONDARY)
+    return TRUE;
+
+  if (!gdk_event_get_state (event, &state))
+    return FALSE;
+
+  return (button == GDK_BUTTON_PRIMARY) && (state & GDK_CONTROL_MASK);
 }
 
 static gboolean
 on_button_release_event (GtkWidget *view,
-                         GdkEventButton *event,
+                         GdkEvent *event,
                          gpointer user_data)
 {
   GdMainView *self = user_data;
   GdMainViewPrivate *priv;
+  gdouble event_x;
+  gdouble event_y;
+  GtkAdjustment *hadjustment;
+  GtkAdjustment *vadjustment;
   GdMainViewGeneric *generic = get_generic (self);
   GtkTreePath *path, *start_path, *end_path, *tmp_path;
   GtkTreeIter iter;
@@ -549,11 +568,16 @@ on_button_release_event (GtkWidget *view,
 
   priv = gd_main_view_get_instance_private (self);
 
-  /* eat double/triple click events */
-  if (event->type != GDK_BUTTON_RELEASE)
-    return TRUE;
+  if (!gdk_event_get_coords (event, &event_x, &event_y))
+    return GDK_EVENT_PROPAGATE;
 
-  path = gd_main_view_generic_get_path_at_pos (generic, event->x, event->y);
+  hadjustment = gtk_scrolled_window_get_hadjustment (GTK_SCROLLED_WINDOW (self));
+  vadjustment = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self));
+
+  event_x += gtk_adjustment_get_value (hadjustment);
+  event_y += gtk_adjustment_get_value (vadjustment);
+
+  path = gd_main_view_generic_get_path_at_pos (generic, event_x, event_y);
 
   if (path != NULL)
     {
@@ -578,7 +602,7 @@ on_button_release_event (GtkWidget *view,
 	    g_signal_emit (self, signals[SELECTION_MODE_REQUEST], 0);
 	  if (!priv->selection_mode)
 	    {
-	      res = FALSE;
+	      res = GDK_EVENT_PROPAGATE;
 	      goto out;
 	    }
 
@@ -616,13 +640,13 @@ on_button_release_event (GtkWidget *view,
       g_clear_pointer (&priv->rubberband_select_last_path,
 		       gtk_tree_path_free);
 
-      res = TRUE;
+      res = GDK_EVENT_STOP;
       goto out;
     }
 
   if (!same_item)
     {
-      res = FALSE;
+      res = GDK_EVENT_PROPAGATE;
       goto out;
     }
 
@@ -635,7 +659,7 @@ on_button_release_event (GtkWidget *view,
           g_signal_emit (self, signals[SELECTION_MODE_REQUEST], 0);
           if (!priv->selection_mode)
             {
-              res = FALSE;
+              res = GDK_EVENT_PROPAGATE;
               goto out;
             }
           selection_mode = priv->selection_mode;
@@ -654,11 +678,15 @@ on_button_release_event (GtkWidget *view,
 
 static gboolean
 on_button_press_event (GtkWidget *view,
-                       GdkEventButton *event,
+                       GdkEvent *event,
                        gpointer user_data)
 {
   GdMainView *self = user_data;
   GdMainViewPrivate *priv;
+  gdouble event_x;
+  gdouble event_y;
+  GtkAdjustment *hadjustment;
+  GtkAdjustment *vadjustment;
   GdMainViewGeneric *generic = get_generic (self);
   GtkTreePath *path;
   GList *selection, *l;
@@ -668,7 +696,16 @@ on_button_press_event (GtkWidget *view,
 
   priv = gd_main_view_get_instance_private (self);
 
-  path = gd_main_view_generic_get_path_at_pos (generic, event->x, event->y);
+  if (!gdk_event_get_coords (event, &event_x, &event_y))
+    return GDK_EVENT_PROPAGATE;
+
+  hadjustment = gtk_scrolled_window_get_hadjustment (GTK_SCROLLED_WINDOW (self));
+  vadjustment = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self));
+
+  event_x += gtk_adjustment_get_value (hadjustment);
+  event_y += gtk_adjustment_get_value (vadjustment);
+
+  path = gd_main_view_generic_get_path_at_pos (generic, event_x, event_y);
 
   if (path != NULL)
     priv->button_press_item_path = gtk_tree_path_to_string (path);
@@ -677,7 +714,7 @@ on_button_press_event (GtkWidget *view,
   if (!priv->selection_mode && !force_selection)
     {
       gtk_tree_path_free (path);
-      return FALSE;
+      return GDK_EVENT_PROPAGATE;
     }
 
   if (path && !force_selection)
@@ -707,17 +744,17 @@ on_button_press_event (GtkWidget *view,
       priv->rubberband_select = FALSE;
       priv->rubberband_select_first_path = NULL;
       priv->rubberband_select_last_path = NULL;
-      priv->button_down_x = event->x;
-      priv->button_down_y = event->y;
-      return TRUE;
+      priv->button_down_x = event_x;
+      priv->button_down_y = event_y;
+      return GDK_EVENT_STOP;
     }
   else
-    return FALSE;
+    return GDK_EVENT_PROPAGATE;
 }
 
 static gboolean
 on_motion_event (GtkWidget      *widget,
-		 GdkEventMotion *event,
+		 GdkEvent *event,
 		 gpointer user_data)
 {
   GdMainView *self = user_data;
@@ -728,9 +765,23 @@ on_motion_event (GtkWidget      *widget,
 
   if (priv->track_motion)
     {
+      GtkAdjustment *hadjustment;
+      GtkAdjustment *vadjustment;
+      gdouble event_x;
+      gdouble event_y;
+
+      if (!gdk_event_get_coords (event, &event_x, &event_y))
+        return GDK_EVENT_PROPAGATE;
+
+      hadjustment = gtk_scrolled_window_get_hadjustment (GTK_SCROLLED_WINDOW (self));
+      vadjustment = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self));
+
+      event_x += gtk_adjustment_get_value (hadjustment);
+      event_y += gtk_adjustment_get_value (vadjustment);
+
       if (!priv->rubberband_select &&
-	  (event->x - priv->button_down_x) * (event->x - priv->button_down_x) +
-	  (event->y - priv->button_down_y) * (event->y - priv->button_down_y)  >
+	  (event_x - priv->button_down_x) * (event_x - priv->button_down_x) +
+	  (event_y - priv->button_down_y) * (event_y - priv->button_down_y)  >
 	  MAIN_VIEW_RUBBERBAND_SELECT_TRIGGER_LENGTH * MAIN_VIEW_RUBBERBAND_SELECT_TRIGGER_LENGTH)
 	{
 	  priv->rubberband_select = TRUE;
@@ -743,7 +794,7 @@ on_motion_event (GtkWidget      *widget,
 
       if (priv->rubberband_select)
 	{
-	  path = gd_main_view_generic_get_path_at_pos (get_generic (self), event->x, event->y);
+	  path = gd_main_view_generic_get_path_at_pos (get_generic (self), event_x, event_y);
 	  if (path != NULL)
 	    {
 	      if (priv->rubberband_select_first_path == NULL)
@@ -765,7 +816,25 @@ on_motion_event (GtkWidget      *widget,
 	    }
 	}
     }
-  return FALSE;
+  return GDK_EVENT_PROPAGATE;
+}
+
+static gboolean
+on_event (GtkWidget *widget,
+          GdkEvent  *event,
+          gpointer   user_data)
+{
+  GdkEventType event_type;
+
+  event_type = gdk_event_get_event_type (event);
+  if (event_type == GDK_MOTION_NOTIFY)
+    return on_motion_event (widget, event, user_data);
+  if (event_type == GDK_BUTTON_PRESS)
+    return on_button_press_event (widget, event, user_data);
+  if (event_type == GDK_BUTTON_RELEASE)
+    return on_button_release_event (widget, event, user_data);
+
+  return GDK_EVENT_PROPAGATE;
 }
 
 static void
@@ -959,12 +1028,8 @@ gd_main_view_rebuild (GdMainView *self)
 
   gtk_container_add (GTK_CONTAINER (self), priv->current_view);
 
-  g_signal_connect (priv->current_view, "button-press-event",
-                    G_CALLBACK (on_button_press_event), self);
-  g_signal_connect (priv->current_view, "button-release-event",
-                    G_CALLBACK (on_button_release_event), self);
-  g_signal_connect (priv->current_view, "motion-notify-event",
-                    G_CALLBACK (on_motion_event), self);
+  g_signal_connect (priv->current_view, "event",
+                    G_CALLBACK (on_event), self);
   g_signal_connect_after (priv->current_view, "drag-begin",
                           G_CALLBACK (on_drag_begin), self);
   g_signal_connect (priv->current_view, "view-selection-changed",
