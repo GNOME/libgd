@@ -86,6 +86,71 @@ render_check (GdTogglePixbufRenderer *self,
   gtk_style_context_restore (context);
 }
 
+/* Taken from GTK+. */
+static void
+_gtk_paint_spinner (GtkStyleContext *context,
+                   cairo_t         *cr,
+                   guint            step,
+                   gint             x,
+                   gint             y,
+                   gint             width,
+                   gint             height)
+{
+  GdkRGBA color;
+  guint num_steps;
+  gdouble dx, dy;
+  gdouble radius;
+  gdouble half;
+  gint i;
+  guint real_step;
+
+  num_steps = 12;
+  real_step = step % num_steps;
+
+  /* set a clip region for the expose event */
+  cairo_rectangle (cr, x, y, width, height);
+  cairo_clip (cr);
+
+  cairo_translate (cr, x, y);
+
+  /* draw clip region */
+  cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
+
+  gtk_style_context_get_color (context, &color);
+  dx = width / 2;
+  dy = height / 2;
+  radius = MIN (width / 2, height / 2);
+  half = num_steps / 2;
+
+  for (i = 0; i < num_steps; i++)
+    {
+      gint inset = 0.7 * radius;
+
+      /* transparency is a function of time and intial value */
+      gdouble t = (gdouble) ((i + num_steps - real_step)
+                             % num_steps) / num_steps;
+
+      cairo_save (cr);
+
+      cairo_set_source_rgba (cr,
+                             color.red / 65535.,
+                             color.green / 65535.,
+                             color.blue / 65535.,
+                             color.alpha * t);
+
+      cairo_set_line_width (cr, 2.0);
+      cairo_move_to (cr,
+                     dx + (radius - inset) * cos (i * G_PI / half),
+                     dy + (radius - inset) * sin (i * G_PI / half));
+      cairo_line_to (cr,
+                     dx + radius * cos (i * G_PI / half),
+                     dy + radius * sin (i * G_PI / half));
+      cairo_stroke (cr);
+
+      cairo_restore (cr);
+    }
+}
+
 static void
 render_activity (GdTogglePixbufRenderer *self,
                  cairo_t                *cr,
@@ -96,6 +161,7 @@ render_activity (GdTogglePixbufRenderer *self,
                  gint                    ypad)
 {
   gint x, y, width, height;
+  GtkStyleContext *context;
 
   if (self->priv->pulse == 0)
     return;
@@ -105,17 +171,9 @@ render_activity (GdTogglePixbufRenderer *self,
 
   x = cell_area->x + (cell_area->width / 2) - (width / 2) - xpad;
   y = cell_area->y + (cell_area->height / 2) - (height / 2) - ypad;
+  context = gtk_widget_get_style_context (widget);
 
-  G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
-  gtk_paint_spinner (gtk_widget_get_style (widget),
-                     cr,
-                     GTK_STATE_FLAG_ACTIVE,
-                     widget,
-                     NULL,
-                     (guint) self->priv->pulse - 1,
-                     x, y,
-                     width, height);
-  G_GNUC_END_IGNORE_DEPRECATIONS;
+  _gtk_paint_spinner (context, cr, self->priv->pulse, x, y, width, height);
 }
 
 static void
