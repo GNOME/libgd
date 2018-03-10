@@ -177,25 +177,34 @@ render_activity (GdTogglePixbufRenderer *self,
 }
 
 static void
-gd_toggle_pixbuf_renderer_render (GtkCellRenderer      *cell,
-                                  cairo_t              *cr,
-                                  GtkWidget            *widget,
-                                  const GdkRectangle   *background_area,
-                                  const GdkRectangle   *cell_area,
-                                  GtkCellRendererState  flags)
+gd_toggle_pixbuf_renderer_snapshot (GtkCellRenderer      *cell,
+                                    GtkSnapshot          *snapshot,
+                                    GtkWidget            *widget,
+                                    const GdkRectangle   *background_area,
+                                    const GdkRectangle   *cell_area,
+                                    GtkCellRendererState  flags)
 {
   GdTogglePixbufRenderer *self = GD_TOGGLE_PIXBUF_RENDERER (cell);
   gint xpad, ypad;
+  graphene_rect_t bounds;
+  cairo_t *cr;
 
-  GTK_CELL_RENDERER_CLASS (gd_toggle_pixbuf_renderer_parent_class)->render
-    (cell, cr, widget,
+  GTK_CELL_RENDERER_CLASS (gd_toggle_pixbuf_renderer_parent_class)->snapshot
+    (cell, snapshot, widget,
      background_area, cell_area, flags);
 
   gtk_cell_renderer_get_padding (cell, &xpad, &ypad);
 
+  bounds = GRAPHENE_RECT_INIT (cell_area->x, cell_area->y,
+                               cell_area->width, cell_area->height);
 
+  cr = gtk_snapshot_append_cairo (snapshot, &bounds, "GdTogglePixbufRenderer Activity");
   render_activity (self, cr, widget, cell_area, CHECK_ICON_SIZE, xpad, ypad);
+  cairo_destroy (cr);
+
+  cr = gtk_snapshot_append_cairo (snapshot, &bounds, "GdTogglePixbufRenderer Check");
   render_check (self, cr, widget, cell_area, CHECK_ICON_SIZE, xpad, ypad);
+  cairo_destroy (cr);
 }
 
 static void
@@ -270,7 +279,7 @@ gd_toggle_pixbuf_renderer_class_init (GdTogglePixbufRendererClass *klass)
   GObjectClass *oclass = G_OBJECT_CLASS (klass);
   GtkCellRendererClass *crclass = GTK_CELL_RENDERER_CLASS (klass);
 
-  crclass->render = gd_toggle_pixbuf_renderer_render;
+  crclass->snapshot = gd_toggle_pixbuf_renderer_snapshot;
   crclass->get_size = gd_toggle_pixbuf_renderer_get_size;
   oclass->get_property = gd_toggle_pixbuf_renderer_get_property;
   oclass->set_property = gd_toggle_pixbuf_renderer_set_property;
