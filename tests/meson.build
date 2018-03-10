@@ -30,3 +30,9 @@ if get_option('with-main-view')
     'test-main-view.c',
     dependencies: libgd_dep)
 endif
+
+if get_option('with-notification')
+  executable('test-notification',
+    'test-notification.c',
+    dependencies: libgd_dep)
+endif
