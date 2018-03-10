@@ -224,12 +224,11 @@ path_from_line_rects (cairo_t *cr,
   while (end_line < n_lines);
 }
 
-static gboolean
-gd_main_icon_view_draw (GtkWidget *widget,
-			cairo_t   *cr)
+static void
+gd_main_icon_view_snapshot (GtkWidget *widget,
+                            GtkSnapshot *snapshot)
 {
   GdMainIconView *self = GD_MAIN_ICON_VIEW (widget);
-  GtkAllocation allocation;
   GtkStyleContext *context;
   GdkRectangle line_rect;
   GdkRectangle rect;
@@ -237,15 +236,13 @@ gd_main_icon_view_draw (GtkWidget *widget,
   GArray *lines;
   GtkTreePath *rubberband_start, *rubberband_end;
 
-  GTK_WIDGET_CLASS (gd_main_icon_view_parent_class)->draw (widget, cr);
+  GTK_WIDGET_CLASS (gd_main_icon_view_parent_class)->snapshot (widget, snapshot);
 
   _gd_main_view_generic_get_rubberband_range (GD_MAIN_VIEW_GENERIC (self),
 					      &rubberband_start, &rubberband_end);
 
   if (rubberband_start)
     {
-      cairo_save (cr);
-
       context = gtk_widget_get_style_context (widget);
 
       gtk_style_context_save (context);
@@ -283,9 +280,29 @@ gd_main_icon_view_draw (GtkWidget *widget,
 
       if (lines->len > 0)
 	{
+          GtkAllocation allocation;
+          GtkAdjustment *hadjustment;
+          GtkAdjustment *vadjustment;
+          graphene_rect_t bounds;
+          cairo_t *cr;
 	  cairo_path_t *path;
 	  GtkBorder border;
 	  GdkRGBA border_color;
+
+          gtk_widget_get_allocation (widget, &allocation);
+
+          hadjustment = gtk_scrollable_get_hadjustment (GTK_SCROLLABLE (widget));
+          vadjustment = gtk_scrollable_get_vadjustment (GTK_SCROLLABLE (widget));
+          bounds = GRAPHENE_RECT_INIT (0, 0,
+                                       allocation.width + gtk_adjustment_get_value (hadjustment),
+                                       allocation.height + gtk_adjustment_get_value (vadjustment));
+
+          gtk_snapshot_push_clip (snapshot, &bounds, "GdMainIconView Clip");
+          gtk_snapshot_offset (snapshot,
+                               -gtk_adjustment_get_value (hadjustment),
+                               -gtk_adjustment_get_value (vadjustment));
+
+          cr = gtk_snapshot_append_cairo (snapshot, &bounds, "GdMainIconView Rubberband");
 
 	  path_from_line_rects (cr, (GdkRectangle *)lines->data, lines->len);
 
@@ -295,31 +312,30 @@ gd_main_icon_view_draw (GtkWidget *widget,
 
 	  cairo_save (cr);
 	  cairo_clip (cr);
-	  gtk_widget_get_allocation (widget, &allocation);
 	  gtk_render_background (context, cr,
 				 0, 0,
-				 allocation.width, allocation.height);
+				 bounds.size.width, bounds.size.height);
 	  cairo_restore (cr);
 
 	  cairo_append_path (cr, path);
 	  cairo_path_destroy (path);
-
 	  gtk_style_context_get_border_color (context, &border_color);
 	  gtk_style_context_get_border (context, &border);
 
 	  cairo_set_line_width (cr, border.left);
 	  gdk_cairo_set_source_rgba (cr, &border_color);
 	  cairo_stroke (cr);
+
+          cairo_destroy (cr);
+
+          gtk_snapshot_pop (snapshot);
 	}
       g_array_free (lines, TRUE);
 
       gtk_tree_path_free (path);
 
       gtk_style_context_restore (context);
-      cairo_restore (cr);
     }
-
-  return FALSE;
 }
 
 static void
@@ -335,7 +351,7 @@ gd_main_icon_view_class_init (GdMainIconViewClass *klass)
 
   oclass->constructed = gd_main_icon_view_constructed;
   wclass->drag_data_get = gd_main_icon_view_drag_data_get;
-  wclass->draw = gd_main_icon_view_draw;
+  wclass->snapshot = gd_main_icon_view_snapshot;
 
   gtk_widget_class_install_style_property (wclass,
                                            g_param_spec_int ("check-icon-size",
