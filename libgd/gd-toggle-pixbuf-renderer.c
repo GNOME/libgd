@@ -21,6 +21,8 @@
 
 #include "gd-toggle-pixbuf-renderer.h"
 
+#define CHECK_ICON_SIZE 40
+
 G_DEFINE_TYPE (GdTogglePixbufRenderer, gd_toggle_pixbuf_renderer, GTK_TYPE_CELL_RENDERER_PIXBUF);
 
 enum {
@@ -124,7 +126,6 @@ gd_toggle_pixbuf_renderer_render (GtkCellRenderer      *cell,
                                   const GdkRectangle   *cell_area,
                                   GtkCellRendererState  flags)
 {
-  gint icon_size = -1;
   GdTogglePixbufRenderer *self = GD_TOGGLE_PIXBUF_RENDERER (cell);
   gint xpad, ypad;
 
@@ -133,15 +134,10 @@ gd_toggle_pixbuf_renderer_render (GtkCellRenderer      *cell,
      background_area, cell_area, flags);
 
   gtk_cell_renderer_get_padding (cell, &xpad, &ypad);
-  gtk_widget_style_get (widget,
-                        "check-icon-size", &icon_size,
-                        NULL);
 
-  if (icon_size == -1)
-    icon_size = 40;
 
-  render_activity (self, cr, widget, cell_area, icon_size, xpad, ypad);
-  render_check (self, cr, widget, cell_area, icon_size, xpad, ypad);
+  render_activity (self, cr, widget, cell_area, CHECK_ICON_SIZE, xpad, ypad);
+  render_check (self, cr, widget, cell_area, CHECK_ICON_SIZE, xpad, ypad);
 }
 
 static void
@@ -153,17 +149,11 @@ gd_toggle_pixbuf_renderer_get_size (GtkCellRenderer *cell,
                                     gint *width,
                                     gint *height)
 {
-  gint icon_size;
-
-  gtk_widget_style_get (widget,
-                        "check-icon-size", &icon_size,
-                        NULL);
-
   GTK_CELL_RENDERER_CLASS (gd_toggle_pixbuf_renderer_parent_class)->get_size
     (cell, widget, cell_area,
      x_offset, y_offset, width, height);
 
-  *width += icon_size / 4;
+  *width += CHECK_ICON_SIZE / 4;
 }
 
 static void
