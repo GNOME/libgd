@@ -308,10 +308,8 @@ start_animation (GdNotification *notification)
 
   target = animation_target (notification);
   if (priv->animate_y != target)
-    notification->priv->animate_timeout =
-      gdk_threads_add_timeout (ANIMATION_STEP,
-                               animation_timeout_cb,
-                               notification);
+    priv->animate_timeout =
+      g_timeout_add (ANIMATION_STEP, animation_timeout_cb, notification);
 }
 
 static void
@@ -417,9 +415,7 @@ queue_autohide (GdNotification *notification)
   if (priv->timeout_source_id == 0 &&
       priv->timeout != -1)
     priv->timeout_source_id =
-      gdk_threads_add_timeout (priv->timeout * 1000,
-                               gd_notification_timeout_cb,
-                               notification);
+      g_timeout_add (priv->timeout * 1000, gd_notification_timeout_cb, notification);
 }
 
 static gboolean
