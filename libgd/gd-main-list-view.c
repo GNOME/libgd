@@ -260,6 +260,11 @@ gd_main_list_view_snapshot (GtkWidget *widget,
 
   if (rubberband_start)
     {
+      GtkAllocation allocation;
+      GtkAdjustment *hadjustment;
+      GtkAdjustment *vadjustment;
+      graphene_rect_t bounds;
+
       context = gtk_widget_get_style_context (widget);
 
       gtk_style_context_save (context);
@@ -282,6 +287,19 @@ gd_main_list_view_snapshot (GtkWidget *widget,
 	}
       gtk_tree_path_free (path);
 
+      gtk_widget_get_allocation (widget, &allocation);
+
+      hadjustment = gtk_scrollable_get_hadjustment (GTK_SCROLLABLE (widget));
+      vadjustment = gtk_scrollable_get_vadjustment (GTK_SCROLLABLE (widget));
+      bounds = GRAPHENE_RECT_INIT (0, 0,
+                                   allocation.width + gtk_adjustment_get_value (hadjustment),
+                                   allocation.height + gtk_adjustment_get_value (vadjustment));
+
+      gtk_snapshot_push_clip (snapshot, &bounds, "GdMainListView Rubberband Clip");
+      gtk_snapshot_offset (snapshot,
+                           -gtk_adjustment_get_value (hadjustment),
+                           -gtk_adjustment_get_value (vadjustment));
+
       gtk_snapshot_render_background (snapshot, context,
                                       lines_rect.x, lines_rect.y,
                                       lines_rect.width, lines_rect.height);
@@ -289,6 +307,7 @@ gd_main_list_view_snapshot (GtkWidget *widget,
                                  lines_rect.x, lines_rect.y,
                                  lines_rect.width, lines_rect.height);
 
+      gtk_snapshot_pop (snapshot);
 
       gtk_style_context_restore (context);
     }
