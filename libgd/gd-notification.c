@@ -55,7 +55,6 @@ struct _GdNotificationPrivate {
   gboolean show_close_button;
 
   gdouble animate_y; /* ∈ [0.0; 1.0] */
-  gboolean waiting_for_viewable;
   gboolean revealed;
   gboolean dismissed;
   gboolean sent_dismissed;
@@ -282,7 +281,9 @@ gd_notification_show (GtkWidget *widget)
 
   GTK_WIDGET_CLASS (gd_notification_parent_class)->show (widget);
   priv->revealed = TRUE;
-  priv->waiting_for_viewable = TRUE;
+
+  start_animation (notification);
+  queue_autohide (notification);
 }
 
 static void
@@ -291,9 +292,12 @@ gd_notification_hide (GtkWidget *widget)
   GdNotification *notification = GD_NOTIFICATION (widget);
   GdNotificationPrivate *priv = notification->priv;
 
+  unqueue_autohide (notification);
+
   GTK_WIDGET_CLASS (gd_notification_parent_class)->hide (widget);
   priv->revealed = FALSE;
-  priv->waiting_for_viewable = FALSE;
+
+  start_animation (notification);
 }
 
 static void
@@ -356,27 +360,6 @@ gd_notification_forall (GtkContainer *container,
     (* callback) (priv->close_button, callback_data);
 }
 
-static gboolean
-gd_notification_visibility_notify_event (GtkWidget          *widget,
-                                          GdkEventVisibility  *event)
-{
-  GdNotification *notification = GD_NOTIFICATION (widget);
-  GdNotificationPrivate *priv = notification->priv;
-
-  if (!gtk_widget_get_visible (widget))
-    return FALSE;
-
-  if (priv->waiting_for_viewable)
-    {
-      start_animation (notification);
-      priv->waiting_for_viewable = FALSE;
-    }
-
-  queue_autohide (notification);
-
-  return FALSE;
-}
-
 static void
 gd_notification_snapshot (GtkWidget   *widget,
                           GtkSnapshot *snapshot)
@@ -421,7 +404,6 @@ gd_notification_class_init (GdNotificationClass *klass)
   widget_class->measure = gd_notification_measure;
   widget_class->size_allocate = gd_notification_size_allocate;
   widget_class->snapshot = gd_notification_snapshot;
-  widget_class->visibility_notify_event = gd_notification_visibility_notify_event;
 
   container_class->forall = gd_notification_forall;
 
