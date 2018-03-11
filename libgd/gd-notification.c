@@ -694,5 +694,5 @@ gd_notification_close_button_clicked_cb (GtkWidget *widget, gpointer user_data)
 GtkWidget *
 gd_notification_new (void)
 {
-  return g_object_new (GD_TYPE_NOTIFICATION, NULL);
+  return g_object_new (GD_TYPE_NOTIFICATION, "visible", FALSE, NULL);
 }
