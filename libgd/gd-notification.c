@@ -54,8 +54,6 @@ struct _GdNotificationPrivate {
   GtkWidget *close_button;
   gboolean show_close_button;
 
-  GdkWindow *bin_window;
-
   gdouble animate_y; /* ∈ [0.0; 1.0] */
   gboolean waiting_for_viewable;
   gboolean revealed;
@@ -65,6 +63,8 @@ struct _GdNotificationPrivate {
 
   gint timeout;
   guint timeout_source_id;
+
+  GtkEventController *motion_controller;
 };
 
 enum {
@@ -87,14 +87,53 @@ static void     gd_notification_size_allocate                  (GtkWidget       
                                                                 GtkAllocation         *out_clip);
 static gboolean gd_notification_timeout_cb                     (gpointer         user_data);
 static void     gd_notification_show                           (GtkWidget       *widget);
-static void     gd_notification_add                            (GtkContainer    *container,
-                                                                 GtkWidget       *child);
 
 /* signals handlers */
 static void     gd_notification_close_button_clicked_cb        (GtkWidget       *widget,
                                                                  gpointer         user_data);
 
 G_DEFINE_TYPE(GdNotification, gd_notification, GTK_TYPE_BIN);
+
+static void
+unqueue_autohide (GdNotification *notification)
+{
+  GdNotificationPrivate *priv = notification->priv;
+
+  if (priv->timeout_source_id)
+    {
+      g_source_remove (priv->timeout_source_id);
+      priv->timeout_source_id = 0;
+    }
+}
+
+static void
+queue_autohide (GdNotification *notification)
+{
+  GdNotificationPrivate *priv = notification->priv;
+
+  if (priv->timeout_source_id == 0 &&
+      priv->timeout != -1)
+    priv->timeout_source_id =
+      g_timeout_add (priv->timeout * 1000, gd_notification_timeout_cb, notification);
+}
+
+static void
+on_enter (GtkEventControllerMotion *controller,
+          gdouble                   x,
+          gdouble                   y,
+          gpointer                  user_data)
+{
+  unqueue_autohide (user_data);
+}
+
+static void
+on_leave (GtkEventControllerMotion *controller,
+          gdouble                   x,
+          gdouble                   y,
+          gpointer                  user_data)
+{
+  queue_autohide (user_data);
+}
 
 static void
 gd_notification_init (GdNotification *notification)
@@ -109,7 +148,7 @@ gd_notification_init (GdNotification *notification)
   gtk_widget_set_halign (GTK_WIDGET (notification), GTK_ALIGN_CENTER);
   gtk_widget_set_valign (GTK_WIDGET (notification), GTK_ALIGN_START);
 
-  gtk_widget_set_has_window (GTK_WIDGET (notification), TRUE);
+  gtk_widget_set_has_window (GTK_WIDGET (notification), FALSE);
 
   priv = notification->priv =
     G_TYPE_INSTANCE_GET_PRIVATE (notification,
@@ -130,6 +169,11 @@ gd_notification_init (GdNotification *notification)
                     notification);
 
   priv->timeout_source_id = 0;
+
+  priv->motion_controller = gtk_event_controller_motion_new (GTK_WIDGET (notification));
+
+  g_signal_connect (priv->motion_controller, "enter", G_CALLBACK (on_enter), notification);
+  g_signal_connect (priv->motion_controller, "leave", G_CALLBACK (on_leave), notification);
 }
 
 static void
@@ -171,71 +215,6 @@ gd_notification_destroy (GtkWidget *widget)
     }
 
   GTK_WIDGET_CLASS (gd_notification_parent_class)->destroy (widget);
-}
-
-static void
-gd_notification_realize (GtkWidget *widget)
-{
-  GdNotification *notification = GD_NOTIFICATION (widget);
-  GdNotificationPrivate *priv = notification->priv;
-  GtkBin *bin = GTK_BIN (widget);
-  GtkAllocation allocation;
-  GtkWidget *child;
-  GdkWindow *window;
-  GdkWindowAttr attributes;
-  gint attributes_mask;
-
-  gtk_widget_set_realized (widget, TRUE);
-
-  gtk_widget_get_allocation (widget, &allocation);
-
-  attributes.x = allocation.x;
-  attributes.y = allocation.y;
-  attributes.width = allocation.width;
-  attributes.height = allocation.height;
-  attributes.window_type = GDK_WINDOW_CHILD;
-  attributes.wclass = GDK_INPUT_OUTPUT;
-  attributes.visual = gtk_widget_get_visual (widget);
-
-  attributes.event_mask = GDK_VISIBILITY_NOTIFY_MASK | GDK_EXPOSURE_MASK;
-
-  attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL;
-
-  window = gdk_window_new (gtk_widget_get_parent_window (widget),
-                           &attributes, attributes_mask);
-  gtk_widget_set_window (widget, window);
-  gtk_widget_register_window (widget, window);
-
-  attributes.x = 0;
-  attributes.y = attributes.height + priv->animate_y;
-  attributes.event_mask = gtk_widget_get_events (widget) |
-                          GDK_EXPOSURE_MASK |
-                          GDK_VISIBILITY_NOTIFY_MASK |
-                          GDK_ENTER_NOTIFY_MASK |
-                          GDK_LEAVE_NOTIFY_MASK;
-
-  priv->bin_window = gdk_window_new (window, &attributes, attributes_mask);
-  gtk_widget_register_window (widget, priv->bin_window);
-
-  child = gtk_bin_get_child (bin);
-  if (child)
-    gtk_widget_set_parent_window (child, priv->bin_window);
-  gtk_widget_set_parent_window (priv->close_button, priv->bin_window);
-
-  gdk_window_show (priv->bin_window);
-}
-
-static void
-gd_notification_unrealize (GtkWidget *widget)
-{
-  GdNotification *notification = GD_NOTIFICATION (widget);
-  GdNotificationPrivate *priv = notification->priv;
-
-  gtk_widget_unregister_window (widget, priv->bin_window);
-  gdk_window_destroy (priv->bin_window);
-  priv->bin_window = NULL;
-
-  GTK_WIDGET_CLASS (gd_notification_parent_class)->unrealize (widget);
 }
 
 static gdouble
@@ -377,29 +356,6 @@ gd_notification_forall (GtkContainer *container,
     (* callback) (priv->close_button, callback_data);
 }
 
-static void
-unqueue_autohide (GdNotification *notification)
-{
-  GdNotificationPrivate *priv = notification->priv;
-
-  if (priv->timeout_source_id)
-    {
-      g_source_remove (priv->timeout_source_id);
-      priv->timeout_source_id = 0;
-    }
-}
-
-static void
-queue_autohide (GdNotification *notification)
-{
-  GdNotificationPrivate *priv = notification->priv;
-
-  if (priv->timeout_source_id == 0 &&
-      priv->timeout != -1)
-    priv->timeout_source_id =
-      g_timeout_add (priv->timeout * 1000, gd_notification_timeout_cb, notification);
-}
-
 static gboolean
 gd_notification_visibility_notify_event (GtkWidget          *widget,
                                           GdkEventVisibility  *event)
@@ -420,37 +376,6 @@ gd_notification_visibility_notify_event (GtkWidget          *widget,
 
   return FALSE;
 }
-
-static gboolean
-gd_notification_enter_notify (GtkWidget        *widget,
-                              GdkEventCrossing *event)
-{
-  GdNotification *notification = GD_NOTIFICATION (widget);
-  GdNotificationPrivate *priv = notification->priv;
-
-  if ((event->window == priv->bin_window) &&
-      (event->detail != GDK_NOTIFY_INFERIOR))
-    {
-      unqueue_autohide (notification);
-    }
-
-  return FALSE;
-}
-
-static gboolean
-gd_notification_leave_notify (GtkWidget        *widget,
-                              GdkEventCrossing *event)
-{
-  GdNotification *notification = GD_NOTIFICATION (widget);
-  GdNotificationPrivate *priv = notification->priv;
-
-  if ((event->window == priv->bin_window) &&
-      (event->detail != GDK_NOTIFY_INFERIOR))
-    {
-      queue_autohide (notification);
-    }
-
-  return FALSE;
 
 static void
 gd_notification_snapshot (GtkWidget   *widget,
@@ -496,13 +421,8 @@ gd_notification_class_init (GdNotificationClass *klass)
   widget_class->measure = gd_notification_measure;
   widget_class->size_allocate = gd_notification_size_allocate;
   widget_class->snapshot = gd_notification_snapshot;
-  widget_class->realize = gd_notification_realize;
-  widget_class->unrealize = gd_notification_unrealize;
   widget_class->visibility_notify_event = gd_notification_visibility_notify_event;
-  widget_class->enter_notify_event = gd_notification_enter_notify;
-  widget_class->leave_notify_event = gd_notification_leave_notify;
 
-  container_class->add = gd_notification_add;
   container_class->forall = gd_notification_forall;
 
 
@@ -556,22 +476,6 @@ get_padding_and_border (GdNotification *notification,
   border->bottom += tmp.bottom;
   border->left += tmp.left;
 }
-
-static void
-gd_notification_add (GtkContainer *container,
-                      GtkWidget    *child)
-{
-  GtkBin *bin = GTK_BIN (container);
-  GdNotification *notification = GD_NOTIFICATION (bin);
-  GdNotificationPrivate *priv = notification->priv;
-
-  g_return_if_fail (gtk_bin_get_child (bin) == NULL);
-
-  gtk_widget_set_parent_window (child, priv->bin_window);
-
-  GTK_CONTAINER_CLASS (gd_notification_parent_class)->add (container, child);
-}
-
 
 static void
 gd_notification_measure (GtkWidget      *widget,
