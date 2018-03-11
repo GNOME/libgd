@@ -74,20 +74,13 @@ enum {
 
 static guint notification_signals[LAST_SIGNAL] = { 0 };
 
-static void     gd_notification_get_preferred_width            (GtkWidget       *widget,
-                                                                 gint            *minimum_size,
-                                                                 gint            *natural_size);
-static void     gd_notification_get_preferred_height_for_width (GtkWidget       *widget,
-                                                                 gint             width,
-                                                                 gint            *minimum_height,
-                                                                 gint            *natural_height);
-static void     gd_notification_get_preferred_height           (GtkWidget       *widget,
-                                                                 gint            *minimum_size,
-                                                                 gint            *natural_size);
-static void     gd_notification_get_preferred_width_for_height (GtkWidget       *widget,
-                                                                 gint             height,
-                                                                 gint            *minimum_width,
-                                                                 gint            *natural_width);
+static void     gd_notification_measure                        (GtkWidget       *widget,
+                                                                GtkOrientation   orientation,
+                                                                gint             for_size,
+                                                                gint            *minimum,
+                                                                gint            *natural,
+                                                                gint            *minimum_baseline,
+                                                                gint            *natural_baseline);
 static void     gd_notification_size_allocate                  (GtkWidget             *widget,
                                                                 const GtkAllocation   *allocation,
                                                                 gint                   baseline,
@@ -500,10 +493,7 @@ gd_notification_class_init (GdNotificationClass *klass)
   widget_class->show = gd_notification_show;
   widget_class->hide = gd_notification_hide;
   widget_class->destroy = gd_notification_destroy;
-  widget_class->get_preferred_width = gd_notification_get_preferred_width;
-  widget_class->get_preferred_height_for_width = gd_notification_get_preferred_height_for_width;
-  widget_class->get_preferred_height = gd_notification_get_preferred_height;
-  widget_class->get_preferred_width_for_height = gd_notification_get_preferred_width_for_height;
+  widget_class->measure = gd_notification_measure;
   widget_class->size_allocate = gd_notification_size_allocate;
   widget_class->snapshot = gd_notification_snapshot;
   widget_class->realize = gd_notification_realize;
@@ -584,152 +574,134 @@ gd_notification_add (GtkContainer *container,
 
 
 static void
-gd_notification_get_preferred_width (GtkWidget *widget, gint *minimum_size, gint *natural_size)
+gd_notification_measure (GtkWidget      *widget,
+                         GtkOrientation  orientation,
+                         gint            for_size,
+                         gint           *minimum,
+                         gint           *natural,
+                         gint           *minimum_baseline,
+                         gint           *natural_baseline)
 {
-  GdNotification *notification = GD_NOTIFICATION (widget);
-  GdNotificationPrivate *priv = notification->priv;
-  GtkBin *bin = GTK_BIN (widget);
-  gint child_min, child_nat;
-  GtkWidget *child;
+  gint minimum_size;
+  gint natural_size;
+  GdNotification *notification;
+  GdNotificationPrivate *priv;
   GtkBorder padding;
-  gint minimum, natural;
+  GtkWidget *child;
+  gint child_minimum;
+  gint child_natural;
+
+  minimum_size = 0;
+  natural_size = 0;
+  notification = GD_NOTIFICATION (widget);
+  priv = notification->priv;
 
   get_padding_and_border (notification, &padding);
 
-  minimum = 0;
-  natural = 0;
-
-  child = gtk_bin_get_child (bin);
-  if (child && gtk_widget_get_visible (child))
+  if (orientation == GTK_ORIENTATION_HORIZONTAL)
     {
-      gtk_widget_get_preferred_width (child,
-                                      &child_min, &child_nat);
-      minimum += child_min;
-      natural += child_nat;
+      child = gtk_bin_get_child (GTK_BIN (widget));
+      if (child && gtk_widget_get_visible (child))
+        {
+          gtk_widget_measure (child, GTK_ORIENTATION_HORIZONTAL, -1,
+                              &child_minimum, &child_natural, NULL, NULL);
+
+          minimum_size += child_minimum;
+          natural_size += child_natural;
+        }
+
+      if (priv->show_close_button)
+        {
+          gtk_widget_measure (priv->close_button, GTK_ORIENTATION_HORIZONTAL, -1,
+                              &child_minimum, &child_natural, NULL, NULL);
+
+          minimum_size += child_minimum;
+          natural_size += child_natural;
+        }
+
+      minimum_size += padding.left + padding.right + 2 * SHADOW_OFFSET_X;
+      natural_size += padding.left + padding.right + 2 * SHADOW_OFFSET_X;
+    }
+  else
+    {
+      GtkSizeRequestMode request_mode;
+
+      request_mode = gtk_widget_get_request_mode (widget);
+      if (request_mode == GTK_SIZE_REQUEST_HEIGHT_FOR_WIDTH)
+        {
+          gint button_width;
+          gint child_width;
+
+          if (priv->show_close_button)
+            {
+              gtk_widget_measure (priv->close_button, GTK_ORIENTATION_VERTICAL, -1,
+                                  &minimum_size, &natural_size, NULL, NULL);
+              gtk_widget_measure (priv->close_button, GTK_ORIENTATION_HORIZONTAL, -1,
+                                  NULL, &button_width, NULL, NULL);
+            }
+
+          child = gtk_bin_get_child (GTK_BIN (widget));
+          if (child && gtk_widget_get_visible (child))
+            {
+              child_width = for_size - button_width -
+                2 * SHADOW_OFFSET_X - padding.left - padding.right;
+
+              gtk_widget_measure (child, GTK_ORIENTATION_VERTICAL, child_width,
+                                  &child_minimum, &child_natural, NULL, NULL);
+              minimum_size = MAX (minimum_size, child_minimum);
+              natural_size = MAX (natural_size, child_natural);
+            }
+
+          minimum_size += padding.top + padding.bottom + SHADOW_OFFSET_Y;
+          natural_size += padding.top + padding.bottom + SHADOW_OFFSET_Y;
+        }
+      else if (request_mode == GTK_SIZE_REQUEST_WIDTH_FOR_HEIGHT)
+        {
+          gint child_height;
+
+          child_height = for_size - SHADOW_OFFSET_Y - padding.top - padding.bottom;
+
+          child = gtk_bin_get_child (GTK_BIN (widget));
+          if (child && gtk_widget_get_visible (child))
+            {
+              gtk_widget_measure (child, GTK_ORIENTATION_HORIZONTAL, child_height,
+                                  &child_minimum, &child_natural, NULL, NULL);
+              minimum_size += child_minimum;
+              natural_size += child_natural;
+            }
+
+          if (priv->show_close_button)
+            {
+              gtk_widget_measure (priv->close_button, GTK_ORIENTATION_HORIZONTAL, child_height,
+                                  &child_minimum, &child_natural, NULL, NULL);
+              minimum_size += child_minimum;
+              natural_size += child_natural;
+            }
+
+          minimum_size += padding.left + padding.right + 2 * SHADOW_OFFSET_X;
+          natural_size += padding.left + padding.right + 2 * SHADOW_OFFSET_X;
+        }
+      else
+        {
+          GtkWidgetClass *widget_class;
+          gint unused;
+
+          widget_class = GTK_WIDGET_CLASS (gd_notification_parent_class);
+
+          widget_class->measure (widget, GTK_ORIENTATION_HORIZONTAL, -1,
+                                 &minimum_size, &unused, NULL, NULL);
+          widget_class->measure (widget, GTK_ORIENTATION_VERTICAL, minimum_size,
+                                 &minimum_size, &natural_size, NULL, NULL);
+
+          minimum_size += padding.top + padding.bottom + SHADOW_OFFSET_Y;
+          natural_size += padding.top + padding.bottom + SHADOW_OFFSET_Y;
+        }
     }
 
-  if (priv->show_close_button)
-    {
-      gtk_widget_get_preferred_width (priv->close_button,
-                                      &child_min, &child_nat);
-      minimum += child_min;
-      natural += child_nat;
-    }
-
-  minimum += padding.left + padding.right + 2 * SHADOW_OFFSET_X;
-  natural += padding.left + padding.right + 2 * SHADOW_OFFSET_X;
-
- if (minimum_size)
-    *minimum_size = minimum;
-
-  if (natural_size)
-    *natural_size = natural;
-}
-
-static void
-gd_notification_get_preferred_width_for_height (GtkWidget *widget,
-                                                 gint height,
-                                                 gint *minimum_width,
-                                                 gint *natural_width)
-{
-  GdNotification *notification = GD_NOTIFICATION (widget);
-  GdNotificationPrivate *priv = notification->priv;
-  GtkBin *bin = GTK_BIN (widget);
-  gint child_min, child_nat, child_height;
-  GtkWidget *child;
-  GtkBorder padding;
-  gint minimum, natural;
-
-  get_padding_and_border (notification, &padding);
-
-  minimum = 0;
-  natural = 0;
-
-  child_height = height - SHADOW_OFFSET_Y - padding.top - padding.bottom;
-
-  child = gtk_bin_get_child (bin);
-  if (child && gtk_widget_get_visible (child))
-    {
-      gtk_widget_get_preferred_width_for_height (child, child_height,
-                                                 &child_min, &child_nat);
-      minimum += child_min;
-      natural += child_nat;
-    }
-
-  if (priv->show_close_button)
-    {
-      gtk_widget_get_preferred_width_for_height (priv->close_button, child_height,
-                                                 &child_min, &child_nat);
-      minimum += child_min;
-      natural += child_nat;
-    }
-
-  minimum += padding.left + padding.right + 2 * SHADOW_OFFSET_X;
-  natural += padding.left + padding.right + 2 * SHADOW_OFFSET_X;
-
- if (minimum_width)
-    *minimum_width = minimum;
-
-  if (natural_width)
-    *natural_width = natural;
-}
-
-static void
-gd_notification_get_preferred_height_for_width (GtkWidget *widget,
-                                                 gint width,
-                                                 gint *minimum_height,
-                                                 gint *natural_height)
-{
-  GdNotification *notification = GD_NOTIFICATION (widget);
-  GdNotificationPrivate *priv = notification->priv;
-  GtkBin *bin = GTK_BIN (widget);
-  gint child_min, child_nat, child_width, button_width = 0;
-  GtkWidget *child;
-  GtkBorder padding;
-  gint minimum = 0, natural = 0;
-
-  get_padding_and_border (notification, &padding);
-
-  if (priv->show_close_button)
-    {
-      gtk_widget_get_preferred_height (priv->close_button,
-                                       &minimum, &natural);
-      gtk_widget_get_preferred_width (priv->close_button,
-                                      NULL, &button_width);
-    }
-
-  child = gtk_bin_get_child (bin);
-  if (child && gtk_widget_get_visible (child))
-    {
-      child_width = width - button_width -
-        2 * SHADOW_OFFSET_X - padding.left - padding.right;
-
-      gtk_widget_get_preferred_height_for_width (child, child_width,
-                                                 &child_min, &child_nat);
-      minimum = MAX (minimum, child_min);
-      natural = MAX (natural, child_nat);
-    }
-
-  minimum += padding.top + padding.bottom + SHADOW_OFFSET_Y;
-  natural += padding.top + padding.bottom + SHADOW_OFFSET_Y;
-
- if (minimum_height)
-    *minimum_height = minimum;
-
-  if (natural_height)
-    *natural_height = natural;
-}
-
-static void
-gd_notification_get_preferred_height (GtkWidget *widget, 
-                                      gint *minimum_height, 
-                                      gint *natural_height)
-{
-  gint width;
-
-  gd_notification_get_preferred_width (widget, &width, NULL);
-  gd_notification_get_preferred_height_for_width (widget, width,
-                                                  minimum_height, natural_height);
+  if (minimum != NULL)
+    *minimum = minimum_size;
+  if (natural != NULL)
+    *natural = natural_size;
 }
 
 static void
