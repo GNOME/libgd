@@ -42,7 +42,7 @@
 #define SHADOW_OFFSET_X 2
 #define SHADOW_OFFSET_Y 3
 #define ANIMATION_TIME 200 /* msec */
-#define ANIMATION_STEP 40 /* msec */
+#define ANIMATION_STEP 20 /* msec */
 
 enum {
   PROP_0,
@@ -56,7 +56,7 @@ struct _GdNotificationPrivate {
 
   GdkWindow *bin_window;
 
-  int animate_y; /* from 0 to allocation.height */
+  gdouble animate_y; /* ∈ [0.0; 1.0] */
   gboolean waiting_for_viewable;
   gboolean revealed;
   gboolean dismissed;
@@ -74,8 +74,6 @@ enum {
 
 static guint notification_signals[LAST_SIGNAL] = { 0 };
 
-static gboolean gd_notification_draw                           (GtkWidget       *widget,
-                                                                 cairo_t         *cr);
 static void     gd_notification_get_preferred_width            (GtkWidget       *widget,
                                                                  gint            *minimum_size,
                                                                  gint            *natural_size);
@@ -125,7 +123,7 @@ gd_notification_init (GdNotification *notification)
                                  GD_TYPE_NOTIFICATION,
                                  GdNotificationPrivate);
 
-  priv->animate_y = 0;
+  priv->animate_y = 0.0;
   priv->close_button = gtk_button_new_from_icon_name ("window-close-symbolic");
   gtk_widget_set_parent (priv->close_button, GTK_WIDGET (notification));
   gtk_widget_show (priv->close_button);
@@ -247,18 +245,12 @@ gd_notification_unrealize (GtkWidget *widget)
   GTK_WIDGET_CLASS (gd_notification_parent_class)->unrealize (widget);
 }
 
-static int
+static gdouble
 animation_target (GdNotification *notification)
 {
   GdNotificationPrivate *priv = notification->priv;
-  GtkAllocation allocation;
 
-  if (priv->revealed) {
-    gtk_widget_get_allocation (GTK_WIDGET (notification), &allocation);
-    return allocation.height;
-  } else {
-    return 0;
-  }
+  return priv->revealed? 1.0 : 0.0;
 }
 
 static gboolean
@@ -267,30 +259,28 @@ animation_timeout_cb (gpointer user_data)
   GdNotification *notification = GD_NOTIFICATION (user_data);
   GdNotificationPrivate *priv = notification->priv;
   GtkAllocation allocation;
-  int target, delta;
+  gdouble target, delta;
 
   target = animation_target (notification);
 
   if (priv->animate_y != target) {
     gtk_widget_get_allocation (GTK_WIDGET (notification), &allocation);
 
-    delta = allocation.height * ANIMATION_STEP / ANIMATION_TIME;
+    delta = (gdouble) ANIMATION_STEP / (gdouble) ANIMATION_TIME;
 
     if (priv->revealed)
       priv->animate_y += delta;
     else
       priv->animate_y -= delta;
 
-    priv->animate_y = CLAMP (priv->animate_y, 0, allocation.height);
+    priv->animate_y = CLAMP (priv->animate_y, 0.0, 1.0);
 
-    if (priv->bin_window != NULL)
-      gdk_window_move (priv->bin_window,
-                       0,
-                       -allocation.height + priv->animate_y);
+    gtk_widget_queue_draw (GTK_WIDGET (notification));
+
     return G_SOURCE_CONTINUE;
   }
 
-  if (priv->dismissed && priv->animate_y == 0)
+  if (priv->dismissed && priv->animate_y == 0.0)
     gtk_widget_destroy (GTK_WIDGET (notification));
 
   priv->animate_timeout = 0;
@@ -468,6 +458,32 @@ gd_notification_leave_notify (GtkWidget        *widget,
     }
 
   return FALSE;
+
+static void
+gd_notification_snapshot (GtkWidget   *widget,
+                          GtkSnapshot *snapshot)
+{
+  GdNotification *self;
+  GdNotificationPrivate *priv;
+  GtkAllocation allocation;
+  graphene_rect_t bounds;
+
+  self = GD_NOTIFICATION (widget);
+  priv = self->priv;
+
+  gtk_widget_get_allocation (widget, &allocation);
+
+  bounds = GRAPHENE_RECT_INIT (0, 0,
+                               allocation.width, allocation.height);
+
+  gtk_snapshot_push_clip (snapshot, &bounds, "GdNotification Clip");
+  gtk_snapshot_offset (snapshot,
+                       0,
+                       -allocation.height * (1.0 - priv->animate_y));
+
+  GTK_WIDGET_CLASS (gd_notification_parent_class)->snapshot (widget, snapshot);
+
+  gtk_snapshot_pop (snapshot);
 }
 
 static void
@@ -489,7 +505,7 @@ gd_notification_class_init (GdNotificationClass *klass)
   widget_class->get_preferred_height = gd_notification_get_preferred_height;
   widget_class->get_preferred_width_for_height = gd_notification_get_preferred_width_for_height;
   widget_class->size_allocate = gd_notification_size_allocate;
-  widget_class->draw = gd_notification_draw;
+  widget_class->snapshot = gd_notification_snapshot;
   widget_class->realize = gd_notification_realize;
   widget_class->unrealize = gd_notification_unrealize;
   widget_class->visibility_notify_event = gd_notification_visibility_notify_event;
@@ -549,34 +565,6 @@ get_padding_and_border (GdNotification *notification,
   border->right += tmp.right;
   border->bottom += tmp.bottom;
   border->left += tmp.left;
-}
-
-static gboolean
-gd_notification_draw (GtkWidget *widget, cairo_t *cr)
-{
-  GdNotification *notification = GD_NOTIFICATION (widget);
-  GdNotificationPrivate *priv = notification->priv;
-  GtkStyleContext *context;
-
-  if (gtk_cairo_should_draw_window (cr, priv->bin_window))
-    {
-      context = gtk_widget_get_style_context (widget);
-
-      gtk_render_background (context,  cr,
-                             0, 0,
-                             gtk_widget_get_allocated_width (widget),
-                             gtk_widget_get_allocated_height (widget));
-      gtk_render_frame (context,cr,
-                        0, 0,
-                        gtk_widget_get_allocated_width (widget),
-                        gtk_widget_get_allocated_height (widget));
-
-
-      if (GTK_WIDGET_CLASS (gd_notification_parent_class)->draw)
-        GTK_WIDGET_CLASS (gd_notification_parent_class)->draw(widget, cr);
-    }
-
-  return FALSE;
 }
 
 static void
@@ -760,25 +748,11 @@ gd_notification_size_allocate (GtkWidget           *widget,
 
   /* If somehow the notification changes while not hidden
      and we're not animating, immediately follow the resize */
-  if (priv->animate_y > 0 &&
+  if (priv->animate_y > 0.0 &&
       !priv->animate_timeout)
-    priv->animate_y = allocation->height;
+    priv->animate_y = 1.0;
 
   get_padding_and_border (notification, &padding);
-
-  if (gtk_widget_get_realized (widget))
-    {
-      gdk_window_move_resize (gtk_widget_get_window (widget),
-                              allocation->x,
-                              allocation->y,
-                              allocation->width,
-                              allocation->height);
-      gdk_window_move_resize (priv->bin_window,
-                              0,
-                              -allocation->height + priv->animate_y,
-                              allocation->width,
-                              allocation->height);
-    }
 
   child_allocation.x = SHADOW_OFFSET_X + padding.left;
   child_allocation.y = padding.top;
