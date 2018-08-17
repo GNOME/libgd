@@ -28,42 +28,14 @@
 G_BEGIN_DECLS
 
 #define GD_TYPE_MAIN_ICON_VIEW gd_main_icon_view_get_type()
+G_DECLARE_DERIVABLE_TYPE (GdMainIconView, gd_main_icon_view, GD, MAIN_ICON_VIEW, GtkIconView)
 
-#define GD_MAIN_ICON_VIEW(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-   GD_TYPE_MAIN_ICON_VIEW, GdMainIconView))
-
-#define GD_MAIN_ICON_VIEW_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), \
-   GD_TYPE_MAIN_ICON_VIEW, GdMainIconViewClass))
-
-#define GD_IS_MAIN_ICON_VIEW(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-   GD_TYPE_MAIN_ICON_VIEW))
-
-#define GD_IS_MAIN_ICON_VIEW_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-   GD_TYPE_MAIN_ICON_VIEW))
-
-#define GD_MAIN_ICON_VIEW_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-   GD_TYPE_MAIN_ICON_VIEW, GdMainIconViewClass))
-
-typedef struct _GdMainIconView GdMainIconView;
-typedef struct _GdMainIconViewClass GdMainIconViewClass;
 typedef struct _GdMainIconViewPrivate GdMainIconViewPrivate;
-
-struct _GdMainIconView
-{
-  GtkIconView parent;
-};
 
 struct _GdMainIconViewClass
 {
   GtkIconViewClass parent_class;
 };
-
-GType gd_main_icon_view_get_type (void) G_GNUC_CONST;
 
 GtkWidget * gd_main_icon_view_new (void);
 
