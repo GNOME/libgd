@@ -57,8 +57,6 @@ typedef struct _GdStyledTextRendererPrivate GdStyledTextRendererPrivate;
 struct _GdStyledTextRenderer
 {
   GtkCellRendererText parent;
-
-  GdStyledTextRendererPrivate *priv;
 };
 
 struct _GdStyledTextRendererClass
