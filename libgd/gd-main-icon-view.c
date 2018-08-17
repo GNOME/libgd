@@ -33,6 +33,8 @@
 #define VIEW_COLUMN_SPACING 20
 #define VIEW_MARGIN 16
 
+typedef struct _GdMainIconViewPrivate GdMainIconViewPrivate;
+
 struct _GdMainIconViewPrivate {
   GtkCellRenderer *pixbuf_cell;
   GtkCellRenderer *text_cell;

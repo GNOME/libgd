@@ -30,8 +30,6 @@ G_BEGIN_DECLS
 #define GD_TYPE_MAIN_ICON_VIEW gd_main_icon_view_get_type()
 G_DECLARE_DERIVABLE_TYPE (GdMainIconView, gd_main_icon_view, GD, MAIN_ICON_VIEW, GtkIconView)
 
-typedef struct _GdMainIconViewPrivate GdMainIconViewPrivate;
-
 struct _GdMainIconViewClass
 {
   GtkIconViewClass parent_class;
