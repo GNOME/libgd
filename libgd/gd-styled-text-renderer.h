@@ -35,8 +35,6 @@ G_DECLARE_DERIVABLE_TYPE (GdStyledTextRenderer,
                           STYLED_TEXT_RENDERER,
                           GtkCellRendererText)
 
-typedef struct _GdStyledTextRendererPrivate GdStyledTextRendererPrivate;
-
 struct _GdStyledTextRendererClass
 {
   GtkCellRendererTextClass parent_class;

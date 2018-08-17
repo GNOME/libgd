@@ -21,6 +21,8 @@
 
 #include "gd-styled-text-renderer.h"
 
+typedef struct _GdStyledTextRendererPrivate GdStyledTextRendererPrivate;
+
 struct _GdStyledTextRendererPrivate {
   GList *style_classes;
 };
