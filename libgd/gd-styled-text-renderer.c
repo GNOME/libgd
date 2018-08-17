@@ -21,11 +21,11 @@
 
 #include "gd-styled-text-renderer.h"
 
-G_DEFINE_TYPE (GdStyledTextRenderer, gd_styled_text_renderer, GTK_TYPE_CELL_RENDERER_TEXT);
-
 struct _GdStyledTextRendererPrivate {
   GList *style_classes;
 };
+
+G_DEFINE_TYPE_WITH_PRIVATE (GdStyledTextRenderer, gd_styled_text_renderer, GTK_TYPE_CELL_RENDERER_TEXT);
 
 static void
 gd_styled_text_renderer_render (GtkCellRenderer      *cell,
@@ -78,15 +78,12 @@ gd_styled_text_renderer_class_init (GdStyledTextRendererClass *klass)
 
   oclass->finalize = gd_styled_text_renderer_finalize;
   crclass->render = gd_styled_text_renderer_render;
-
-  g_type_class_add_private (klass, sizeof (GdStyledTextRendererPrivate));
 }
 
 static void
 gd_styled_text_renderer_init (GdStyledTextRenderer *self)
 {
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_STYLED_TEXT_RENDERER,
-                                            GdStyledTextRendererPrivate);
+  self->priv = gd_styled_text_renderer_get_instance_private (self);
 }
 
 GtkCellRenderer *
