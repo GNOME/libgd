@@ -29,42 +29,18 @@
 G_BEGIN_DECLS
 
 #define GD_TYPE_STYLED_TEXT_RENDERER gd_styled_text_renderer_get_type()
+G_DECLARE_DERIVABLE_TYPE (GdStyledTextRenderer,
+                          gd_styled_text_renderer,
+                          GD,
+                          STYLED_TEXT_RENDERER,
+                          GtkCellRendererText)
 
-#define GD_STYLED_TEXT_RENDERER(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-   GD_TYPE_STYLED_TEXT_RENDERER, GdStyledTextRenderer))
-
-#define GD_STYLED_TEXT_RENDERER_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), \
-   GD_TYPE_STYLED_TEXT_RENDERER, GdStyledTextRendererClass))
-
-#define GD_IS_STYLED_TEXT_RENDERER(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-   GD_TYPE_STYLED_TEXT_RENDERER))
-
-#define GD_IS_STYLED_TEXT_RENDERER_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-   GD_TYPE_STYLED_TEXT_RENDERER))
-
-#define GD_STYLED_TEXT_RENDERER_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-   GD_TYPE_STYLED_TEXT_RENDERER, GdStyledTextRendererClass))
-
-typedef struct _GdStyledTextRenderer GdStyledTextRenderer;
-typedef struct _GdStyledTextRendererClass GdStyledTextRendererClass;
 typedef struct _GdStyledTextRendererPrivate GdStyledTextRendererPrivate;
-
-struct _GdStyledTextRenderer
-{
-  GtkCellRendererText parent;
-};
 
 struct _GdStyledTextRendererClass
 {
   GtkCellRendererTextClass parent_class;
 };
-
-GType gd_styled_text_renderer_get_type (void) G_GNUC_CONST;
 
 GtkCellRenderer *gd_styled_text_renderer_new (void);
 void gd_styled_text_renderer_add_class (GdStyledTextRenderer *self,
