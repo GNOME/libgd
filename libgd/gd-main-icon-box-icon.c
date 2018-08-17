@@ -123,7 +123,7 @@ gd_main_icon_box_icon_get_preferred_size (GdMainIconBoxIcon *self, gint *minimum
 static void
 gd_main_icon_box_icon_notify_icon (GdMainIconBoxIcon *self)
 {
-  g_clear_pointer (&self->surface_zoomed, (GDestroyNotify) cairo_surface_destroy);
+  g_clear_pointer (&self->surface_zoomed, cairo_surface_destroy);
   gtk_widget_queue_resize (GTK_WIDGET (self));
 }
 
@@ -233,7 +233,7 @@ gd_main_icon_box_icon_size_allocate (GtkWidget *widget, GtkAllocation *allocatio
       width_zoomed_scaled = width_scaled;
     }
 
-  g_clear_pointer (&self->surface_zoomed, (GDestroyNotify) cairo_surface_destroy);
+  g_clear_pointer (&self->surface_zoomed, cairo_surface_destroy);
   self->surface_zoomed = gd_zoom_image_surface (surface, width_zoomed_scaled, height_zoomed_scaled);
 
   self->x = (gdouble) (allocation_width_scaled - width_zoomed_scaled) / (2.0 * (gdouble) scale_factor);
@@ -255,7 +255,7 @@ gd_main_icon_box_icon_finalize (GObject *obj)
 {
   GdMainIconBoxIcon *self = GD_MAIN_ICON_BOX_ICON (obj);
 
-  g_clear_pointer (&self->surface_zoomed, (GDestroyNotify) cairo_surface_destroy);
+  g_clear_pointer (&self->surface_zoomed, cairo_surface_destroy);
 
   G_OBJECT_CLASS (gd_main_icon_box_icon_parent_class)->finalize (obj);
 }
@@ -349,7 +349,7 @@ gd_main_icon_box_icon_set_item (GdMainIconBoxIcon *self, GdMainBoxItem *item)
   if (self->item != NULL)
     g_signal_handlers_disconnect_by_func (self->item, gd_main_icon_box_icon_notify_icon, self);
 
-  g_clear_pointer (&self->surface_zoomed, (GDestroyNotify) cairo_surface_destroy);
+  g_clear_pointer (&self->surface_zoomed, cairo_surface_destroy);
   g_set_object (&self->item, item);
 
   if (self->item != NULL)
