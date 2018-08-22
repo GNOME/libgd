@@ -57,8 +57,6 @@ typedef struct _GdTwoLinesRendererPrivate GdTwoLinesRendererPrivate;
 struct _GdTwoLinesRenderer
 {
   GtkCellRendererText parent;
-
-  GdTwoLinesRendererPrivate *priv;
 };
 
 struct _GdTwoLinesRendererClass

@@ -118,9 +118,12 @@ gd_two_lines_renderer_prepare_layouts (GdTwoLinesRenderer *self,
                                        PangoLayout **layout_one,
                                        PangoLayout **layout_two)
 {
+  GdTwoLinesRendererPrivate *priv;
   PangoLayout *line_one;
   PangoLayout *line_two = NULL;
   gchar *text = NULL;
+
+  priv = gd_two_lines_renderer_get_instance_private (self);
 
   g_object_get (self,
                 "text", &text,
@@ -129,10 +132,10 @@ gd_two_lines_renderer_prepare_layouts (GdTwoLinesRenderer *self,
   line_one = create_layout_with_attrs (widget, cell_area,
                                        self, PANGO_ELLIPSIZE_MIDDLE);
 
-  if (self->priv->line_two == NULL ||
-      g_strcmp0 (self->priv->line_two, "") == 0)
+  if (priv->line_two == NULL ||
+      g_strcmp0 (priv->line_two, "") == 0)
     {
-      pango_layout_set_height (line_one, - (self->priv->text_lines));
+      pango_layout_set_height (line_one, - (priv->text_lines));
 
       if (text != NULL)
         pango_layout_set_text (line_one, text, -1);
@@ -149,9 +152,9 @@ gd_two_lines_renderer_prepare_layouts (GdTwoLinesRenderer *self,
       apply_subtitle_style_to_layout (context, line_two, GTK_STATE_FLAG_NORMAL);
       gtk_style_context_restore (context);
 
-      pango_layout_set_height (line_one, - (self->priv->text_lines - 1));
+      pango_layout_set_height (line_one, - (priv->text_lines - 1));
       pango_layout_set_height (line_two, -1);
-      pango_layout_set_text (line_two, self->priv->line_two, -1);
+      pango_layout_set_text (line_two, priv->line_two, -1);
 
       if (text != NULL)
         pango_layout_set_text (line_one, text, -1);
@@ -494,11 +497,15 @@ static void
 gd_two_lines_renderer_set_line_two (GdTwoLinesRenderer *self,
                                     const gchar *line_two)
 {
-  if (g_strcmp0 (self->priv->line_two, line_two) == 0)
+  GdTwoLinesRendererPrivate *priv;
+
+  priv = gd_two_lines_renderer_get_instance_private (self);
+
+  if (g_strcmp0 (priv->line_two, line_two) == 0)
     return;
 
-  g_free (self->priv->line_two);
-  self->priv->line_two = g_strdup (line_two);
+  g_free (priv->line_two);
+  priv->line_two = g_strdup (line_two);
 
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_LINE_TWO]);
 }
@@ -507,10 +514,14 @@ static void
 gd_two_lines_renderer_set_text_lines (GdTwoLinesRenderer *self,
                                       gint text_lines)
 {
-  if (self->priv->text_lines == text_lines)
+  GdTwoLinesRendererPrivate *priv;
+
+  priv = gd_two_lines_renderer_get_instance_private (self);
+
+  if (priv->text_lines == text_lines)
     return;
 
-  self->priv->text_lines = text_lines;
+  priv->text_lines = text_lines;
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_TEXT_LINES]);
 }
 
@@ -543,14 +554,17 @@ gd_two_lines_renderer_get_property (GObject    *object,
                                     GParamSpec *pspec)
 {
   GdTwoLinesRenderer *self = GD_TWO_LINES_RENDERER (object);
+  GdTwoLinesRendererPrivate *priv;
+
+  priv = gd_two_lines_renderer_get_instance_private (self);
 
   switch (property_id)
     {
     case PROP_TEXT_LINES:
-      g_value_set_int (value, self->priv->text_lines);
+      g_value_set_int (value, priv->text_lines);
       break;
     case PROP_LINE_TWO:
-      g_value_set_string (value, self->priv->line_two);
+      g_value_set_string (value, priv->line_two);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -562,8 +576,11 @@ static void
 gd_two_lines_renderer_finalize (GObject *object)
 {
   GdTwoLinesRenderer *self = GD_TWO_LINES_RENDERER (object);
+  GdTwoLinesRendererPrivate *priv;
 
-  g_free (self->priv->line_two);
+  priv = gd_two_lines_renderer_get_instance_private (self);
+
+  g_free (priv->line_two);
 
   G_OBJECT_CLASS (gd_two_lines_renderer_parent_class)->finalize (object);
 }
@@ -604,7 +621,6 @@ gd_two_lines_renderer_class_init (GdTwoLinesRendererClass *klass)
 static void
 gd_two_lines_renderer_init (GdTwoLinesRenderer *self)
 {
-  self->priv = gd_two_lines_renderer_get_instance_private (self);
 }
 
 GtkCellRenderer *
