@@ -25,8 +25,6 @@
 #define SUBTITLE_DIM_PERCENTAGE 0.55
 #define SUBTITLE_SIZE_PERCENTAGE 0.82
 
-G_DEFINE_TYPE (GdTwoLinesRenderer, gd_two_lines_renderer, GTK_TYPE_CELL_RENDERER_TEXT)
-
 struct _GdTwoLinesRendererPrivate {
   gchar *line_two;
   gint text_lines;
@@ -39,6 +37,8 @@ enum {
 };
 
 static GParamSpec *properties[NUM_PROPERTIES] = { NULL, };
+
+G_DEFINE_TYPE_WITH_PRIVATE (GdTwoLinesRenderer, gd_two_lines_renderer, GTK_TYPE_CELL_RENDERER_TEXT)
 
 static PangoLayout *
 create_layout_with_attrs (GtkWidget *widget,
@@ -598,15 +598,13 @@ gd_two_lines_renderer_class_init (GdTwoLinesRendererClass *klass)
                          NULL,
                          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
-  g_type_class_add_private (klass, sizeof (GdTwoLinesRendererPrivate));
   g_object_class_install_properties (oclass, NUM_PROPERTIES, properties);
 }
 
 static void
 gd_two_lines_renderer_init (GdTwoLinesRenderer *self)
 {
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_TWO_LINES_RENDERER,
-                                            GdTwoLinesRendererPrivate);
+  self->priv = gd_two_lines_renderer_get_instance_private (self);
 }
 
 GtkCellRenderer *
