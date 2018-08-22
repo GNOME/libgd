@@ -31,8 +31,6 @@ G_BEGIN_DECLS
 #define GD_TYPE_TWO_LINES_RENDERER gd_two_lines_renderer_get_type()
 G_DECLARE_DERIVABLE_TYPE (GdTwoLinesRenderer, gd_two_lines_renderer, GD, TWO_LINES_RENDERER, GtkCellRendererText)
 
-typedef struct _GdTwoLinesRendererPrivate GdTwoLinesRendererPrivate;
-
 struct _GdTwoLinesRendererClass
 {
   GtkCellRendererTextClass parent_class;

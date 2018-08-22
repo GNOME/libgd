@@ -25,6 +25,8 @@
 #define SUBTITLE_DIM_PERCENTAGE 0.55
 #define SUBTITLE_SIZE_PERCENTAGE 0.82
 
+typedef struct _GdTwoLinesRendererPrivate GdTwoLinesRendererPrivate;
+
 struct _GdTwoLinesRendererPrivate {
   gchar *line_two;
   gint text_lines;
