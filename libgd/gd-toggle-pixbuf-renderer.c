@@ -21,7 +21,7 @@
 
 #include "gd-toggle-pixbuf-renderer.h"
 
-G_DEFINE_TYPE (GdTogglePixbufRenderer, gd_toggle_pixbuf_renderer, GTK_TYPE_CELL_RENDERER_PIXBUF);
+G_DEFINE_TYPE (GdTogglePixbufRenderer, gd_toggle_pixbuf_renderer, GTK_TYPE_CELL_RENDERER_PIXBUF)
 
 enum {
   PROP_ACTIVE = 1,

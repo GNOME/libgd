@@ -101,7 +101,7 @@ static void     gd_notification_add                            (GtkContainer    
 static void     gd_notification_close_button_clicked_cb        (GtkWidget       *widget,
                                                                  gpointer         user_data);
 
-G_DEFINE_TYPE(GdNotification, gd_notification, GTK_TYPE_BIN);
+G_DEFINE_TYPE(GdNotification, gd_notification, GTK_TYPE_BIN)
 
 static void
 gd_notification_init (GdNotification *notification)

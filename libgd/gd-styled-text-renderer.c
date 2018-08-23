@@ -27,7 +27,7 @@ struct _GdStyledTextRendererPrivate {
   GList *style_classes;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (GdStyledTextRenderer, gd_styled_text_renderer, GTK_TYPE_CELL_RENDERER_TEXT);
+G_DEFINE_TYPE_WITH_PRIVATE (GdStyledTextRenderer, gd_styled_text_renderer, GTK_TYPE_CELL_RENDERER_TEXT)
 
 static void
 gd_styled_text_renderer_render (GtkCellRenderer      *cell,
