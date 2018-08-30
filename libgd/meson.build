@@ -12,6 +12,7 @@ private_c_args = [
 ]
 
 if (get_option('with-gtk-hacks') or
+    get_option('with-main-box') or
     get_option('with-main-icon-box') or
     get_option('with-main-view'))
   sources += [
@@ -33,7 +34,8 @@ if (get_option('with-main-box') or
   ]
   c_args += '-DLIBGD__BOX_COMMON=1'
 
-  if get_option('with-main-icon-box')
+  if (get_option('with-main-box') or
+      get_option('with-main-icon-box'))
     sources += [
       'gd-main-icon-box.c',
       'gd-main-icon-box.h',
