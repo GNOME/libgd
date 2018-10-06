@@ -29,42 +29,18 @@
 G_BEGIN_DECLS
 
 #define GD_TYPE_TOGGLE_PIXBUF_RENDERER gd_toggle_pixbuf_renderer_get_type()
+G_DECLARE_DERIVABLE_TYPE (GdTogglePixbufRenderer,
+                          gd_toggle_pixbuf_renderer,
+                          GD,
+                          TOGGLE_PIXBUF_RENDERER,
+                          GtkCellRendererPixbuf)
 
-#define GD_TOGGLE_PIXBUF_RENDERER(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-   GD_TYPE_TOGGLE_PIXBUF_RENDERER, GdTogglePixbufRenderer))
-
-#define GD_TOGGLE_PIXBUF_RENDERER_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), \
-   GD_TYPE_TOGGLE_PIXBUF_RENDERER, GdTogglePixbufRendererClass))
-
-#define GD_IS_TOGGLE_PIXBUF_RENDERER(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-   GD_TYPE_TOGGLE_PIXBUF_RENDERER))
-
-#define GD_IS_TOGGLE_PIXBUF_RENDERER_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-   GD_TYPE_TOGGLE_PIXBUF_RENDERER))
-
-#define GD_TOGGLE_PIXBUF_RENDERER_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-   GD_TYPE_TOGGLE_PIXBUF_RENDERER, GdTogglePixbufRendererClass))
-
-typedef struct _GdTogglePixbufRenderer GdTogglePixbufRenderer;
-typedef struct _GdTogglePixbufRendererClass GdTogglePixbufRendererClass;
 typedef struct _GdTogglePixbufRendererPrivate GdTogglePixbufRendererPrivate;
-
-struct _GdTogglePixbufRenderer
-{
-  GtkCellRendererPixbuf parent;
-};
 
 struct _GdTogglePixbufRendererClass
 {
   GtkCellRendererPixbufClass parent_class;
 };
-
-GType gd_toggle_pixbuf_renderer_get_type (void) G_GNUC_CONST;
 
 GtkCellRenderer *gd_toggle_pixbuf_renderer_new (void);
 
