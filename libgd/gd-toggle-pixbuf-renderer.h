@@ -57,8 +57,6 @@ typedef struct _GdTogglePixbufRendererPrivate GdTogglePixbufRendererPrivate;
 struct _GdTogglePixbufRenderer
 {
   GtkCellRendererPixbuf parent;
-
-  GdTogglePixbufRendererPrivate *priv;
 };
 
 struct _GdTogglePixbufRendererClass
