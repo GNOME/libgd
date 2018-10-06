@@ -21,8 +21,6 @@
 
 #include "gd-toggle-pixbuf-renderer.h"
 
-G_DEFINE_TYPE (GdTogglePixbufRenderer, gd_toggle_pixbuf_renderer, GTK_TYPE_CELL_RENDERER_PIXBUF)
-
 enum {
   PROP_ACTIVE = 1,
   PROP_TOGGLE_VISIBLE,
@@ -38,6 +36,8 @@ struct _GdTogglePixbufRendererPrivate {
 
   guint pulse;
 };
+
+G_DEFINE_TYPE_WITH_PRIVATE (GdTogglePixbufRenderer, gd_toggle_pixbuf_renderer, GTK_TYPE_CELL_RENDERER_PIXBUF)
 
 static void
 render_check (GdTogglePixbufRenderer *self,
@@ -252,15 +252,13 @@ gd_toggle_pixbuf_renderer_class_init (GdTogglePixbufRendererClass *klass)
 		       G_PARAM_READWRITE |
 		       G_PARAM_STATIC_STRINGS);
 
-  g_type_class_add_private (klass, sizeof (GdTogglePixbufRendererPrivate));
   g_object_class_install_properties (oclass, NUM_PROPERTIES, properties);
 }
 
 static void
 gd_toggle_pixbuf_renderer_init (GdTogglePixbufRenderer *self)
 {
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_TOGGLE_PIXBUF_RENDERER,
-                                            GdTogglePixbufRendererPrivate);
+  self->priv = gd_toggle_pixbuf_renderer_get_instance_private (self);
 }
 
 GtkCellRenderer *
