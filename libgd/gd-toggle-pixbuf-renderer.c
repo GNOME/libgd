@@ -261,7 +261,6 @@ gd_toggle_pixbuf_renderer_init (GdTogglePixbufRenderer *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_TOGGLE_PIXBUF_RENDERER,
                                             GdTogglePixbufRendererPrivate);
-  self->priv->pulse = 0;
 }
 
 GtkCellRenderer *
