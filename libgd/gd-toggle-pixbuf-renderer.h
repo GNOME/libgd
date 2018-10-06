@@ -35,8 +35,6 @@ G_DECLARE_DERIVABLE_TYPE (GdTogglePixbufRenderer,
                           TOGGLE_PIXBUF_RENDERER,
                           GtkCellRendererPixbuf)
 
-typedef struct _GdTogglePixbufRendererPrivate GdTogglePixbufRendererPrivate;
-
 struct _GdTogglePixbufRendererClass
 {
   GtkCellRendererPixbufClass parent_class;

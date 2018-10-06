@@ -30,6 +30,8 @@ enum {
 
 static GParamSpec *properties[NUM_PROPERTIES] = { NULL, };
 
+typedef struct _GdTogglePixbufRendererPrivate GdTogglePixbufRendererPrivate;
+
 struct _GdTogglePixbufRendererPrivate {
   gboolean active;
   gboolean toggle_visible;
