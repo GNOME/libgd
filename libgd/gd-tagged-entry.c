@@ -69,8 +69,8 @@ enum {
   NUM_TAG_PROPERTIES
 };
 
-G_DEFINE_TYPE (GdTaggedEntry, gd_tagged_entry, GTK_TYPE_SEARCH_ENTRY)
-G_DEFINE_TYPE (GdTaggedEntryTag, gd_tagged_entry_tag, G_TYPE_OBJECT)
+G_DEFINE_TYPE_WITH_PRIVATE (GdTaggedEntry, gd_tagged_entry, GTK_TYPE_SEARCH_ENTRY)
+G_DEFINE_TYPE_WITH_PRIVATE (GdTaggedEntryTag, gd_tagged_entry_tag, G_TYPE_OBJECT)
 
 static guint signals[LAST_SIGNAL] = { 0, };
 static GParamSpec *properties[NUM_PROPERTIES] = { NULL, };
@@ -871,7 +871,7 @@ gd_tagged_entry_button_press_event (GtkWidget *widget,
 static void
 gd_tagged_entry_init (GdTaggedEntry *self)
 {
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_TAGGED_ENTRY, GdTaggedEntryPrivate);
+  self->priv = gd_tagged_entry_get_instance_private (self);
   self->priv->button_visible = TRUE;
 }
 
@@ -957,7 +957,6 @@ gd_tagged_entry_class_init (GdTaggedEntryClass *klass)
                           "Whether the close button should be shown in tags.", TRUE,
                           G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS);
 
-  g_type_class_add_private (klass, sizeof (GdTaggedEntryPrivate));
   g_object_class_install_properties (oclass, NUM_PROPERTIES, properties);
 }
 
@@ -966,7 +965,7 @@ gd_tagged_entry_tag_init (GdTaggedEntryTag *self)
 {
   GdTaggedEntryTagPrivate *priv;
 
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_TAGGED_ENTRY_TAG, GdTaggedEntryTagPrivate);
+  self->priv = gd_tagged_entry_tag_get_instance_private (self);
   priv = self->priv;
 
   priv->last_button_state = GTK_STATE_FLAG_NORMAL;
@@ -1059,7 +1058,6 @@ gd_tagged_entry_tag_class_init (GdTaggedEntryTagClass *klass)
                          "Style of the tag.", "entry-tag",
                          G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
-  g_type_class_add_private (klass, sizeof (GdTaggedEntryTagPrivate));
   g_object_class_install_properties (oclass, NUM_TAG_PROPERTIES, tag_properties);
 }
 
