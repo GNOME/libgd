@@ -24,6 +24,7 @@
 #include "gd-margin-container.h"
 
 G_DEFINE_TYPE_WITH_CODE (GdMarginContainer, gd_margin_container, GTK_TYPE_BIN,
+                         G_ADD_PRIVATE (GdMarginContainer)
                          G_IMPLEMENT_INTERFACE (GTK_TYPE_ORIENTABLE,
                                                 NULL))
 
@@ -326,8 +327,7 @@ gd_margin_container_get_preferred_height_for_width (GtkWidget *widget,
 static void
 gd_margin_container_init (GdMarginContainer *self)
 {
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_MARGIN_CONTAINER,
-                                            GdMarginContainerPrivate);
+  self->priv = gd_margin_container_get_instance_private (self);
 
   self->priv->orientation = GTK_ORIENTATION_HORIZONTAL;
 
@@ -368,8 +368,6 @@ gd_margin_container_class_init (GdMarginContainerClass *klass)
                                                      G_PARAM_CONSTRUCT));
   g_object_class_override_property (oclass, PROP_ORIENTATION,
                                     "orientation");
-;
-  g_type_class_add_private (klass, sizeof (GdMarginContainerPrivate));
 }
 
 GdMarginContainer *

@@ -37,6 +37,7 @@ struct _GdMainListViewPrivate {
 
 static void gd_main_view_generic_iface_init (GdMainViewGenericIface *iface);
 G_DEFINE_TYPE_WITH_CODE (GdMainListView, gd_main_list_view, GTK_TYPE_TREE_VIEW,
+                         G_ADD_PRIVATE (GdMainListView)
                          G_IMPLEMENT_INTERFACE (GD_TYPE_MAIN_VIEW_GENERIC,
                                                 gd_main_view_generic_iface_init))
 
@@ -184,8 +185,6 @@ gd_main_list_view_class_init (GdMainListViewClass *klass)
   wclass->drag_data_get = gd_main_list_view_drag_data_get;
   wclass->draw = gd_main_list_view_draw;
 
-  g_type_class_add_private (klass, sizeof (GdMainListViewPrivate));
-
   for (i = 0; i < G_N_ELEMENTS (activate_modifiers); i++)
     {
       gtk_binding_entry_add_signal (binding_set, GDK_KEY_space, activate_modifiers[i],
@@ -210,7 +209,7 @@ gd_main_list_view_class_init (GdMainListViewClass *klass)
 static void
 gd_main_list_view_init (GdMainListView *self)
 {
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GD_TYPE_MAIN_LIST_VIEW, GdMainListViewPrivate);
+  self->priv = gd_main_list_view_get_instance_private (self);
 
   g_signal_connect (self, "notify::model",
 		    G_CALLBACK (set_attributes_from_model), NULL);

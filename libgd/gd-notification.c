@@ -101,7 +101,7 @@ static void     gd_notification_add                            (GtkContainer    
 static void     gd_notification_close_button_clicked_cb        (GtkWidget       *widget,
                                                                  gpointer         user_data);
 
-G_DEFINE_TYPE(GdNotification, gd_notification, GTK_TYPE_BIN)
+G_DEFINE_TYPE_WITH_PRIVATE (GdNotification, gd_notification, GTK_TYPE_BIN)
 
 static void
 gd_notification_init (GdNotification *notification)
@@ -119,10 +119,7 @@ gd_notification_init (GdNotification *notification)
 
   gtk_widget_set_has_window (GTK_WIDGET (notification), TRUE);
 
-  priv = notification->priv =
-    G_TYPE_INSTANCE_GET_PRIVATE (notification,
-                                 GD_TYPE_NOTIFICATION,
-                                 GdNotificationPrivate);
+  priv = notification->priv = gd_notification_get_instance_private (notification);
 
   priv->animate_y = 0;
   priv->close_button = gtk_button_new ();
@@ -536,8 +533,6 @@ gd_notification_class_init (GdNotificationClass *klass)
                                                   g_cclosure_marshal_VOID__VOID,
                                                   G_TYPE_NONE,
                                                   0);
-
-  g_type_class_add_private (object_class, sizeof (GdNotificationPrivate));
 }
 
 static void
