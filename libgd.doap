@@ -10,8 +10,8 @@
 
 <!--
   <homepage rdf:resource="http://live.gnome.org/Libgd" />
-  <bug-database rdf:resource="http://bugzilla.gnome.org/browse.cgi?product=libgd"/>
 -->
+  <bug-database rdf:resource="https://gitlab.gnome.org/GNOME/libgd/issues/" />
 
   <category rdf:resource="http://api.gnome.org/doap-extensions#platform" />
 
