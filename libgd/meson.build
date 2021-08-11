@@ -2,6 +2,7 @@ gnome = import('gnome')
 
 sources = [
   'gd.h',
+  'gd-macros.h',
   'gd-types-catalog.c'
 ]
 built_sources = []
@@ -124,7 +125,7 @@ if get_option('with-notification')
   c_args += '-DLIBGD_NOTIFICATION=1'
 endif
 
-if sources.length() == 2
+if sources.length() == 3
   error('You must include a feature to be built!')
 endif
 

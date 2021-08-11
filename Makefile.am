@@ -24,7 +24,7 @@ endif
 
 libgd_la_LIBADD = $(LIBGD_LIBS) $(LIBM)
 libgd_la_LDFLAGS = -avoid-version
-libgd_la_SOURCES = libgd/gd.h
+libgd_la_SOURCES = libgd/gd.h libgd/gd-macros.h
 nodist_libgd_la_SOURCES =
 
 catalog_sources =				\
