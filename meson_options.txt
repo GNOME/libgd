@@ -23,3 +23,7 @@ option('with-tagged-entry', type: 'boolean', value: false)
 option('with-notification', type: 'boolean', value: false)
 option('with-main-box', type: 'boolean', value: false)
 option('with-main-icon-box', type: 'boolean', value: false)
+
+# Export options (for MSVC-style compilers only)
+option('msvc-export-symbols', type: 'boolean', value: true,
+  description: 'Export symbols for Visual Studio-style builds, ignored on GCC and non-clang-cl builds')
