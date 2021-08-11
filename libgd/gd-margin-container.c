@@ -19,14 +19,7 @@
  *
  */
 
-#include "config.h"
-
 #include "gd-margin-container.h"
-
-G_DEFINE_TYPE_WITH_CODE (GdMarginContainer, gd_margin_container, GTK_TYPE_BIN,
-                         G_ADD_PRIVATE (GdMarginContainer)
-                         G_IMPLEMENT_INTERFACE (GTK_TYPE_ORIENTABLE,
-                                                NULL))
 
 struct _GdMarginContainerPrivate {
   gint min_margin;
@@ -34,6 +27,11 @@ struct _GdMarginContainerPrivate {
 
   GtkOrientation orientation;
 };
+
+G_DEFINE_TYPE_WITH_CODE (GdMarginContainer, gd_margin_container, GTK_TYPE_BIN,
+                         G_ADD_PRIVATE (GdMarginContainer)
+                         G_IMPLEMENT_INTERFACE (GTK_TYPE_ORIENTABLE,
+                                                NULL))
 
 enum {
   PROP_MIN_MARGIN = 1,
