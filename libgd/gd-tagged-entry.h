@@ -24,8 +24,9 @@
 #define __GD_TAGGED_ENTRY_H__
 
 #include <glib-object.h>
-
 #include <gtk/gtk.h>
+
+#include "gd-macros.h"
 
 G_BEGIN_DECLS
 
@@ -75,40 +76,56 @@ struct _GdTaggedEntryTagClass
   GObjectClass parent_class;
 };
 
+GD_API
 GType gd_tagged_entry_get_type (void) G_GNUC_CONST;
 
+GD_API
 GdTaggedEntry *gd_tagged_entry_new (void);
 
+GD_API
 void     gd_tagged_entry_set_tag_button_visible (GdTaggedEntry *self,
                                                  gboolean       visible);
+GD_API
 gboolean gd_tagged_entry_get_tag_button_visible (GdTaggedEntry *self);
 
+GD_API
 gboolean gd_tagged_entry_insert_tag (GdTaggedEntry    *self,
                                      GdTaggedEntryTag *tag,
                                      gint              position);
 
+GD_API
 gboolean gd_tagged_entry_add_tag (GdTaggedEntry    *self,
                                   GdTaggedEntryTag *tag);
 
+GD_API
 gboolean gd_tagged_entry_remove_tag (GdTaggedEntry *self,
                                      GdTaggedEntryTag *tag);
 
+GD_API
 GType gd_tagged_entry_tag_get_type (void) G_GNUC_CONST;
 
+GD_API
 GdTaggedEntryTag *gd_tagged_entry_tag_new (const gchar *label);
 
+GD_API
 void gd_tagged_entry_tag_set_label (GdTaggedEntryTag *tag,
                                     const gchar *label);
+GD_API
 const gchar *gd_tagged_entry_tag_get_label (GdTaggedEntryTag *tag);
 
+GD_API
 void gd_tagged_entry_tag_set_has_close_button (GdTaggedEntryTag *tag,
                                                gboolean has_close_button);
+GD_API
 gboolean gd_tagged_entry_tag_get_has_close_button (GdTaggedEntryTag *tag);
 
+GD_API
 void gd_tagged_entry_tag_set_style (GdTaggedEntryTag *tag,
                                     const gchar *style);
+GD_API
 const gchar *gd_tagged_entry_tag_get_style (GdTaggedEntryTag *tag);
 
+GD_API
 gboolean gd_tagged_entry_tag_get_area (GdTaggedEntryTag      *tag,
                                        cairo_rectangle_int_t *rect);
 

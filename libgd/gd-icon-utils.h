@@ -25,22 +25,30 @@
 #include <cairo.h>
 #include <gtk/gtk.h>
 
+#include "gd-macros.h"
+
+GD_API
 cairo_surface_t *gd_copy_image_surface (cairo_surface_t *surface);
 
+GD_API
 cairo_surface_t *gd_create_surface_with_counter (GtkWidget *widget,
                                                  cairo_surface_t *base,
                                                  gint number);
 
+GD_API
 GIcon *gd_create_symbolic_icon (const gchar *name,
                                 gint base_size);
+GD_API
 GIcon *gd_create_symbolic_icon_for_scale (const gchar *name,
                                           gint base_size,
                                           gint scale);
 
+GD_API
 GdkPixbuf *gd_embed_image_in_frame (GdkPixbuf *source_image,
                                     const gchar *frame_image_url,
                                     GtkBorder *slice_width,
                                     GtkBorder *border_width);
+GD_API
 cairo_surface_t *gd_embed_surface_in_frame (cairo_surface_t *source_image,
                                             const gchar *frame_image_url,
                                             GtkBorder *slice_width,

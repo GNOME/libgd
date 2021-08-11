@@ -25,6 +25,8 @@
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
+#include "gd-macros.h"
+
 G_BEGIN_DECLS
 
 #define GD_TYPE_MAIN_LIST_VIEW gd_main_list_view_get_type()
@@ -65,10 +67,13 @@ struct _GdMainListViewClass
   GtkTreeViewClass parent_class;
 };
 
+GD_API
 GType gd_main_list_view_get_type (void) G_GNUC_CONST;
 
+GD_API
 GtkWidget * gd_main_list_view_new (void);
 
+GD_API
 void gd_main_list_view_add_renderer (GdMainListView *self,
                                      GtkCellRenderer *renderer,
                                      GtkTreeCellDataFunc func,

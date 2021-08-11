@@ -24,6 +24,7 @@
 
 G_BEGIN_DECLS
 
+#include <libgd/gd-macros.h>
 #include <libgd/gd-types-catalog.h>
 
 #ifdef LIBGD_GTK_HACKS

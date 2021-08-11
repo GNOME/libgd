@@ -30,6 +30,7 @@
 G_BEGIN_DECLS
 
 #define GD_TYPE_MAIN_BOX_GENERIC gd_main_box_generic_get_type()
+GD_API
 G_DECLARE_INTERFACE (GdMainBoxGeneric, gd_main_box_generic, GD, MAIN_BOX_GENERIC, GtkWidget)
 
 struct _GdMainBoxGenericInterface
@@ -47,23 +48,39 @@ struct _GdMainBoxGenericInterface
   void              (* unselect_child)         (GdMainBoxGeneric *self, GdMainBoxChild *child);
 };
 
+GD_API
 GdMainBoxChild  * gd_main_box_generic_get_child_at_index       (GdMainBoxGeneric *self, gint index);
+GD_API
 const gchar     * gd_main_box_generic_get_last_selected_id     (GdMainBoxGeneric *self);
+GD_API
 GListModel      * gd_main_box_generic_get_model                (GdMainBoxGeneric *self);
+GD_API
 GList           * gd_main_box_generic_get_selected_children    (GdMainBoxGeneric *self);
+GD_API
 gboolean          gd_main_box_generic_get_selection_mode       (GdMainBoxGeneric *self);
+GD_API
 gboolean          gd_main_box_generic_get_show_primary_text    (GdMainBoxGeneric *self);
+GD_API
 gboolean          gd_main_box_generic_get_show_secondary_text  (GdMainBoxGeneric *self);
+GD_API
 void              gd_main_box_generic_select_all               (GdMainBoxGeneric *self);
+GD_API
 void              gd_main_box_generic_select_child             (GdMainBoxGeneric *self, GdMainBoxChild *child);
+GD_API
 void              gd_main_box_generic_set_model                (GdMainBoxGeneric *self, GListModel *model);
+GD_API
 void              gd_main_box_generic_set_selection_mode       (GdMainBoxGeneric *self, gboolean selection_mode);
+GD_API
 void              gd_main_box_generic_set_show_primary_text    (GdMainBoxGeneric *self, gboolean show_primary_text);
+GD_API
 void              gd_main_box_generic_set_show_secondary_text  (GdMainBoxGeneric *self,
                                                                 gboolean show_secondary_text);
+GD_API
 void              gd_main_box_generic_unselect_all             (GdMainBoxGeneric *self);
+GD_API
 void              gd_main_box_generic_unselect_child           (GdMainBoxGeneric *self, GdMainBoxChild *child);
 
+GD_API
 void              gd_main_box_generic_toggle_selection_for_child   (GdMainBoxGeneric  *self,
                                                                     GdMainBoxChild    *child,
                                                                     gboolean           select_range);

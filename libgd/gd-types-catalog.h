@@ -22,8 +22,11 @@
 
 #include <glib-object.h>
 
+#include "gd-macros.h"
+
 G_BEGIN_DECLS
 
+GD_API
 void gd_ensure_types (void);
 
 G_END_DECLS

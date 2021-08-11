@@ -23,8 +23,9 @@
 #define __GD_MAIN_VIEW_GENERIC_H__
 
 #include <glib-object.h>
-
 #include <gtk/gtk.h>
+
+#include "gd-macros.h"
 
 G_BEGIN_DECLS
 
@@ -84,21 +85,30 @@ struct _GdMainViewGenericIface
                                           gboolean           selection_mode);
 };
 
+GD_API
 GType gd_main_view_generic_get_type (void) G_GNUC_CONST;
 
+GD_API
 void gd_main_view_generic_set_model (GdMainViewGeneric *self,
                                      GtkTreeModel *model);
+GD_API
 GtkTreeModel * gd_main_view_generic_get_model (GdMainViewGeneric *self);
 
+GD_API
 void gd_main_view_generic_scroll_to_path (GdMainViewGeneric *self,
                                           GtkTreePath *path);
+GD_API
 void gd_main_view_generic_set_selection_mode (GdMainViewGeneric *self,
                                               gboolean selection_mode);
+GD_API
 GtkTreePath * gd_main_view_generic_get_path_at_pos (GdMainViewGeneric *self,
                                                     gint x,
                                                     gint y);
+GD_API
 void gd_main_view_generic_select_all (GdMainViewGeneric *self);
+GD_API
 void gd_main_view_generic_unselect_all (GdMainViewGeneric *self);
+GD_API
 void gd_main_view_generic_set_rubberband_range (GdMainViewGeneric *self,
 						GtkTreePath *start,
 						GtkTreePath *end);

@@ -23,12 +23,14 @@
 #define _GD_TOGGLE_PIXBUF_RENDERER_H
 
 #include <glib-object.h>
-
 #include <gtk/gtk.h>
+
+#include "gd-macros.h"
 
 G_BEGIN_DECLS
 
 #define GD_TYPE_TOGGLE_PIXBUF_RENDERER gd_toggle_pixbuf_renderer_get_type()
+GD_API
 G_DECLARE_DERIVABLE_TYPE (GdTogglePixbufRenderer,
                           gd_toggle_pixbuf_renderer,
                           GD,
@@ -40,6 +42,7 @@ struct _GdTogglePixbufRendererClass
   GtkCellRendererPixbufClass parent_class;
 };
 
+GD_API
 GtkCellRenderer *gd_toggle_pixbuf_renderer_new (void);
 
 G_END_DECLS

@@ -25,9 +25,12 @@
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 
+#include "gd-macros.h"
+
 G_BEGIN_DECLS
 
 #define GD_TYPE_MAIN_BOX gd_main_box_get_type()
+GD_API
 G_DECLARE_DERIVABLE_TYPE (GdMainBox, gd_main_box, GD, MAIN_BOX, GtkBin)
 
 typedef enum
@@ -41,19 +44,33 @@ struct _GdMainBoxClass
   GtkBinClass parent_class;
 };
 
+GD_API
 GtkWidget      * gd_main_box_new                      (GdMainBoxType type);
+GD_API
 GdMainBoxType    gd_main_box_get_box_type             (GdMainBox *self);
+GD_API
 GListModel     * gd_main_box_get_model                (GdMainBox *self);
+GD_API
 GList          * gd_main_box_get_selection            (GdMainBox *self);
+GD_API
 gboolean         gd_main_box_get_selection_mode       (GdMainBox *self);
+GD_API
 gboolean         gd_main_box_get_show_primary_text    (GdMainBox *self);
+GD_API
 gboolean         gd_main_box_get_show_secondary_text  (GdMainBox *self);
+GD_API
 void             gd_main_box_select_all               (GdMainBox *self);
+GD_API
 void             gd_main_box_set_box_type             (GdMainBox *self, GdMainBoxType type);
+GD_API
 void             gd_main_box_set_model                (GdMainBox *self, GListModel *model);
+GD_API
 void             gd_main_box_set_selection_mode       (GdMainBox *self, gboolean selection_mode);
+GD_API
 void             gd_main_box_set_show_primary_text    (GdMainBox *self, gboolean show_primary_text);
+GD_API
 void             gd_main_box_set_show_secondary_text  (GdMainBox *self, gboolean show_secondary_text);
+GD_API
 void             gd_main_box_unselect_all             (GdMainBox *self);
 
 G_END_DECLS

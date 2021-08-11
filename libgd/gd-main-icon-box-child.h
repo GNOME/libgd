@@ -29,6 +29,7 @@
 G_BEGIN_DECLS
 
 #define GD_TYPE_MAIN_ICON_BOX_CHILD gd_main_icon_box_child_get_type()
+GD_API
 G_DECLARE_DERIVABLE_TYPE (GdMainIconBoxChild, gd_main_icon_box_child, GD, MAIN_ICON_BOX_CHILD, GtkFlowBoxChild)
 
 struct _GdMainIconBoxChildClass
@@ -36,6 +37,7 @@ struct _GdMainIconBoxChildClass
   GtkFlowBoxChildClass parent_class;
 };
 
+GD_API
 GtkWidget * gd_main_icon_box_child_new (GdMainBoxItem *item, gboolean selection_mode);
 
 G_END_DECLS

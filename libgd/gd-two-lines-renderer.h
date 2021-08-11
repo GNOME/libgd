@@ -23,12 +23,14 @@
 #define _GD_TWO_LINES_RENDERER_H
 
 #include <glib-object.h>
-
 #include <gtk/gtk.h>
+
+#include "gd-macros.h"
 
 G_BEGIN_DECLS
 
 #define GD_TYPE_TWO_LINES_RENDERER gd_two_lines_renderer_get_type()
+GD_API
 G_DECLARE_DERIVABLE_TYPE (GdTwoLinesRenderer, gd_two_lines_renderer, GD, TWO_LINES_RENDERER, GtkCellRendererText)
 
 struct _GdTwoLinesRendererClass
@@ -36,6 +38,7 @@ struct _GdTwoLinesRendererClass
   GtkCellRendererTextClass parent_class;
 };
 
+GD_API
 GtkCellRenderer *gd_two_lines_renderer_new (void);
 
 G_END_DECLS

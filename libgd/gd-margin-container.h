@@ -23,8 +23,9 @@
 #define _GD_MARGIN_CONTAINER_H
 
 #include <glib-object.h>
-
 #include <gtk/gtk.h>
+
+#include "gd-macros.h"
 
 G_BEGIN_DECLS
 
@@ -66,8 +67,10 @@ struct _GdMarginContainerClass
   GtkBinClass parent_class;
 };
 
+GD_API
 GType gd_margin_container_get_type (void) G_GNUC_CONST;
 
+GD_API
 GdMarginContainer *gd_margin_container_new (void);
 
 G_END_DECLS

@@ -26,6 +26,8 @@
 
 #include <gtk/gtk.h>
 
+#include "gd-macros.h"
+
 G_BEGIN_DECLS
 
 #define GD_TYPE_NOTIFICATION             (gd_notification_get_type ())
@@ -53,12 +55,17 @@ struct _GdNotification {
   GdNotificationPrivate *priv;
 };
 
+GD_API
 GType gd_notification_get_type (void) G_GNUC_CONST;
 
+GD_API
 GtkWidget *gd_notification_new         (void);
+GD_API
 void       gd_notification_set_timeout (GdNotification *notification,
                                         gint            timeout_sec);
+GD_API
 void       gd_notification_dismiss     (GdNotification *notification);
+GD_API
 void       gd_notification_set_show_close_button (GdNotification *notification,
                                                   gboolean show_close_button);
 

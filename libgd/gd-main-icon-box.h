@@ -24,9 +24,12 @@
 
 #include <gtk/gtk.h>
 
+#include "gd-macros.h"
+
 G_BEGIN_DECLS
 
 #define GD_TYPE_MAIN_ICON_BOX gd_main_icon_box_get_type()
+GD_API
 G_DECLARE_DERIVABLE_TYPE (GdMainIconBox, gd_main_icon_box, GD, MAIN_ICON_BOX, GtkFlowBox)
 
 struct _GdMainIconBoxClass
@@ -37,6 +40,7 @@ struct _GdMainIconBoxClass
   gboolean  (* move_cursor)            (GdMainIconBox *self, GtkMovementStep step, gint count);
 };
 
+GD_API
 GtkWidget * gd_main_icon_box_new (void);
 
 G_END_DECLS

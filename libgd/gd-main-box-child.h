@@ -29,6 +29,7 @@
 G_BEGIN_DECLS
 
 #define GD_TYPE_MAIN_BOX_CHILD gd_main_box_child_get_type()
+GD_API
 G_DECLARE_INTERFACE (GdMainBoxChild, gd_main_box_child, GD, MAIN_BOX_CHILD, GtkWidget)
 
 struct _GdMainBoxChildInterface
@@ -42,11 +43,17 @@ struct _GdMainBoxChildInterface
   void             (* set_selected)  (GdMainBoxChild *self, gboolean selected);
 };
 
+GD_API
 gint             gd_main_box_child_get_index           (GdMainBoxChild *self);
+GD_API
 GdMainBoxItem  * gd_main_box_child_get_item            (GdMainBoxChild *self);
+GD_API
 gboolean         gd_main_box_child_get_selected        (GdMainBoxChild *self);
+GD_API
 gboolean         gd_main_box_child_get_selection_mode  (GdMainBoxChild *self);
+GD_API
 void             gd_main_box_child_set_selected        (GdMainBoxChild *self, gboolean selected);
+GD_API
 void             gd_main_box_child_set_selection_mode  (GdMainBoxChild *self, gboolean selection_mode);
 
 G_END_DECLS

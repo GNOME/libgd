@@ -25,9 +25,12 @@
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
+#include "gd-macros.h"
+
 G_BEGIN_DECLS
 
 #define GD_TYPE_MAIN_ICON_VIEW gd_main_icon_view_get_type()
+GD_API
 G_DECLARE_DERIVABLE_TYPE (GdMainIconView, gd_main_icon_view, GD, MAIN_ICON_VIEW, GtkIconView)
 
 struct _GdMainIconViewClass
@@ -35,6 +38,7 @@ struct _GdMainIconViewClass
   GtkIconViewClass parent_class;
 };
 
+GD_API
 GtkWidget * gd_main_icon_view_new (void);
 
 G_END_DECLS

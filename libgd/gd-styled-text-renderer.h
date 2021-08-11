@@ -23,12 +23,14 @@
 #define _GD_STYLED_TEXT_RENDERER_H
 
 #include <glib-object.h>
-
 #include <gtk/gtk.h>
+
+#include "gd-macros.h"
 
 G_BEGIN_DECLS
 
 #define GD_TYPE_STYLED_TEXT_RENDERER gd_styled_text_renderer_get_type()
+GD_API
 G_DECLARE_DERIVABLE_TYPE (GdStyledTextRenderer,
                           gd_styled_text_renderer,
                           GD,
@@ -40,9 +42,12 @@ struct _GdStyledTextRendererClass
   GtkCellRendererTextClass parent_class;
 };
 
+GD_API
 GtkCellRenderer *gd_styled_text_renderer_new (void);
+GD_API
 void gd_styled_text_renderer_add_class (GdStyledTextRenderer *self,
                                         const gchar *class);
+GD_API
 void gd_styled_text_renderer_remove_class (GdStyledTextRenderer *self,
                                            const gchar *class);
 

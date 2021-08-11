@@ -29,10 +29,14 @@
 G_BEGIN_DECLS
 
 #define GD_TYPE_MAIN_ICON_BOX_ICON gd_main_icon_box_icon_get_type()
+GD_API
 G_DECLARE_FINAL_TYPE (GdMainIconBoxIcon, gd_main_icon_box_icon, GD, MAIN_ICON_BOX_ICON, GtkDrawingArea)
 
+GD_API
 GtkWidget        * gd_main_icon_box_icon_new          (GdMainBoxItem *item);
+GD_API
 GdMainBoxItem    * gd_main_icon_box_icon_get_item     (GdMainIconBoxIcon *self);
+GD_API
 void               gd_main_icon_box_icon_set_item     (GdMainIconBoxIcon *self, GdMainBoxItem *item);
 
 G_END_DECLS

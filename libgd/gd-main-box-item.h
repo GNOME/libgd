@@ -25,9 +25,12 @@
 #include <cairo.h>
 #include <glib-object.h>
 
+#include "gd-macros.h"
+
 G_BEGIN_DECLS
 
 #define GD_TYPE_MAIN_BOX_ITEM gd_main_box_item_get_type()
+GD_API
 G_DECLARE_INTERFACE (GdMainBoxItem, gd_main_box_item, GD, MAIN_BOX_ITEM, GObject)
 
 struct _GdMainBoxItemInterface
@@ -42,12 +45,19 @@ struct _GdMainBoxItemInterface
   cairo_surface_t  * (* get_icon)            (GdMainBoxItem *self);
 };
 
+GD_API
 const gchar      * gd_main_box_item_get_id              (GdMainBoxItem *self);
+GD_API
 const gchar      * gd_main_box_item_get_uri             (GdMainBoxItem *self);
+GD_API
 const gchar      * gd_main_box_item_get_primary_text    (GdMainBoxItem *self);
+GD_API
 const gchar      * gd_main_box_item_get_secondary_text  (GdMainBoxItem *self);
+GD_API
 cairo_surface_t  * gd_main_box_item_get_icon            (GdMainBoxItem *self);
+GD_API
 gint64             gd_main_box_item_get_mtime           (GdMainBoxItem *self);
+GD_API
 gboolean           gd_main_box_item_get_pulse           (GdMainBoxItem *self);
 
 G_END_DECLS
