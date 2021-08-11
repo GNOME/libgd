@@ -131,8 +131,11 @@ endif
 
 # --------- Building -----------
 
-if (cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl') and get_option('msvc-export-symbols')
-  c_args += '-DMSVC_EXPORT_DLL'
+if cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'
+  c_args += '-FImsvc_recommended_pragmas.h'
+  if get_option('msvc-export-symbols')
+    c_args += '-DMSVC_EXPORT_DLL'
+  endif
 endif
 
 static = get_option('static')
