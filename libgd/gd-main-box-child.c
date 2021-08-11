@@ -170,7 +170,7 @@ gd_main_box_child_set_selected (GdMainBoxChild *self, gboolean selected)
 
   iface = GD_MAIN_BOX_CHILD_GET_IFACE (self);
 
-  return (* iface->set_selected) (self, selected);
+  (* iface->set_selected) (self, selected);
 }
 
 /**
