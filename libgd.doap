@@ -8,9 +8,6 @@
   <shortdesc xml:lang="en">A common GNOME 3 applications submodule</shortdesc>
   <description>No long description yet</description>
 
-<!--
-  <homepage rdf:resource="http://live.gnome.org/Libgd" />
--->
   <bug-database rdf:resource="https://gitlab.gnome.org/GNOME/libgd/issues/" />
 
 <!--
